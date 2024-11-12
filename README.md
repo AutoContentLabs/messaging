@@ -3,15 +3,25 @@
 ## Installation
 
 ```
-const { sendMessage } = require('@auto-content-labs/messaging');
+const { sendMessage, startListener, topics } = require('@auto-content-labs/messaging');
 
-sendMessage('test_topic', { text: 'Hello, World!' });
-```
+function onMessageCallback(topic, partition, message) {
+    // Assuming the message is binary and needs to be converted back to a string
+    const messageString = message.value.toString(); // If message is binary
+    console.log(`Received message on topic ${topic}: ${messageString}`);
+}
 
-```
-const { consumeMessages } = require('@auto-content-labs/messaging');
+try {
+    console.log("Starting Kafka listener...");
+    await startListener(topics.DATA_COLLECT_REQUEST, onMessageCallback);
+    console.log("Kafka listener started.");
+} catch (error) {
+    console.error("Error in starting Kafka listener:", error);
+    throw error;  // Ensure Jest fails if listener setup fails
+}
 
-consumeMessages('test_topic', (message) => {
-  console.log('Received message:', message);
-});
+const message = Buffer.from('Test message for DATA_COLLECT_STATUS topic'); // Convert string to binary (Buffer)
+
+// Send message to Kafka topic
+await sendMessage(topics.DATA_COLLECT_STATUS, [{ value: message }]);
 ```
