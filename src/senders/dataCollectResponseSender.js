@@ -9,9 +9,36 @@ const logger = require('../utils/logger');
  * @returns {Promise<void>}
  */
 async function sendDataCollectResponse(taskId, data) {
-    if (typeof taskId !== 'string' || typeof data !== 'object') {
-        logger.error('Invalid arguments passed to sendDataCollectResponse');
-        throw new Error('Invalid arguments');
+
+    if (typeof taskId !== 'string') {
+        logger.error('Invalid taskId: Must be a string');
+        throw new Error('Invalid taskId: Must be a string');
+    }
+
+    if (typeof data !== 'string' && typeof data !== 'object' && !Buffer.isBuffer(data)) {
+        logger.error('Invalid data: Must be a string, object, or binary data');
+        throw new Error('Invalid data: Must be a string, object, or binary data');
+    }
+
+    let dataToSend;
+
+    if (typeof data === 'string') {
+
+        const isHTML = /<\/?[a-z][\s\S]*>/i.test(data);
+        const isXML = /<\?xml/.test(data);
+
+        if (isHTML || isXML) {
+            dataToSend = data;
+        } else {
+
+            dataToSend = JSON.stringify({ text: data });
+        }
+    } else if (typeof data === 'object') {
+
+        dataToSend = JSON.stringify(data);
+    } else if (Buffer.isBuffer(data)) {
+
+        dataToSend = data.toString('base64');
     }
 
     const message = {
@@ -20,7 +47,7 @@ async function sendDataCollectResponse(taskId, data) {
             timestamp: new Date().toISOString(),
             taskId,
             status: 'completed',
-            data,
+            data: dataToSend,
             message: 'Data collection completed successfully.'
         }))
     };
@@ -30,7 +57,7 @@ async function sendDataCollectResponse(taskId, data) {
         logger.info(`Data collect response sent for taskId: ${taskId}`);
     } catch (error) {
         logger.error(`Failed to send data collect response for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;  // Re-throw error to handle it upstream if needed
+        throw error;
     }
 }
 
