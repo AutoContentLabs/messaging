@@ -20,7 +20,11 @@ const logger = winston.createLogger({
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(), // Add color for console output
-        winston.format.simple() // Simple format for the console output
+        // winston.format.simple(), // Simple format for the console output,
+        winston.format.printf(({ timestamp, level, message }) => {
+          // Custom log message format
+          return `${timestamp} [${level}]: ${message}`;
+        })
       ),
     }),
     new winston.transports.File({

@@ -1,7 +1,7 @@
 // src/transports/kafka/index.js
 
 const logger = require('../../utils/logger');  // Logger utility
-const kafkaConfig = require('./config');  // Kafka configuration file
+const { kafkaConfig, config } = require('./config');  // Kafka configuration file
 const { Kafka, Partitioners } = require('kafkajs');  // KafkaJS library
 
 // Kafka client instance (only one instance should be created)
@@ -30,9 +30,9 @@ async function createTopicIfNotExists(topic) {
           },
         ],
       });
-      logger.info(`Topic ${topic} created successfully.`);
+      logger.info(`Topic [${topic}] created successfully.`);
     } else {
-      logger.info(`Topic ${topic} already exists.`);
+      logger.info(`Topic [${topic}] already exists.`);
     }
 
     await admin.disconnect();  // Disconnect from Kafka admin
@@ -45,25 +45,25 @@ async function createTopicIfNotExists(topic) {
  * Starts a Kafka consumer to listen to a given topic and process messages.
  * 
  * @param {string} topic - The Kafka topic to listen to.
- * @param {Function} onMessageCallback - The callback function to process each message.
+ * @param {Function} onMessage - The callback function to process each message.
+ *        The callback should have the following signature:
+ *        `onMessage(topic: string, partition: number, message: { key: Buffer, value: Buffer, timestamp: string, offset: string })`
  * @returns {Promise<void>} - A promise indicating the completion of the consumer setup.
  */
-async function startListener(topic, onMessageCallback) {
+async function startListener(topic, onMessage) {
   try {
     // Ensure the topic exists before starting the listener
     await createTopicIfNotExists(topic);
 
-    const consumer = kafka.consumer({ groupId: kafkaConfig.groupId });
+    const consumer = kafka.consumer({ groupId: config.KAFKA_GROUP_ID });
     await consumer.connect();  // Connect to the Kafka consumer
     await consumer.subscribe({ topic, fromBeginning: true });  // Subscribe to the topic from the beginning
 
-    logger.info(`Listening to Kafka topic "${topic}"...`);
+    logger.info(`Starting... [${topic}]`);
 
     // Start processing messages
     await consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
-        onMessageCallback(topic, partition, message);  // Call the callback with message data
-      },
+      eachMessage: onMessage
     });
   } catch (error) {
     logger.error(`Error in startListener: ${error.message}`);
@@ -74,26 +74,31 @@ async function startListener(topic, onMessageCallback) {
  * Sends binary data (Buffer) messages to a Kafka topic.
  * 
  * @param {string} topic - The Kafka topic to which the messages will be sent.
- * @param {Buffer[]} messages - An array of messages, each containing binary data (Buffer).
+ * @param {Array<{ key?: Buffer, value: Buffer }>} messagesArray - An array of messages, each containing binary data (Buffer) in the value field, and optionally a key field.
+ * The message structure is compatible with `startListener` consumption requirements.
  * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
  */
-async function sendMessage(topic, messages) {
+async function sendMessage(topic, messagesArray) {
+  const producer = kafka.producer({ createPartitioner: Partitioners.LegacyPartitioner });
+
   try {
-    const producer = kafka.producer({ createPartitioner: Partitioners.LegacyPartitioner });
     await producer.connect();  // Connect to the Kafka producer
 
-    // Send the binary messages to the topic
+    // Validate and prepare the messages
+    const validMessages = messagesArray;
+
+    // Send the valid binary messages to the topic
     await producer.send({
       topic: topic,
-      messages: messages.map((msg) => ({
-        value: msg,  // Each message is a Buffer (binary data)
-      })),
+      messages: validMessages
     });
 
-    logger.info(`Message sent to Kafka topic "${topic}"`);
-    await producer.disconnect();  // Disconnect the producer after sending the message
+    // logger.info(`Sent ${validMessages.length} valid message(s) to Kafka topic "${topic}"`);
+
   } catch (error) {
-    logger.error(`Error sending message to ${topic}: ${error.message}`);
+    logger.error(`Error sending message(s) to ${topic}: ${error.message}`);
+  } finally {
+    await producer.disconnect();  // Ensure the producer always disconnects
   }
 }
 

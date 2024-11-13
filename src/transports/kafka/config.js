@@ -14,8 +14,8 @@ const getEnvVar = (key, defaultValue, isRequired = false) => {
 
 // Fetch Kafka configuration from environment or use defaults
 const brokers = getEnvVar("KAFKA_BROKERS", "localhost:9092");
-const clientId = getEnvVar("KAFKA_CLIENT_ID", `data_collector.client.${environment}`);
-const groupId = getEnvVar("KAFKA_GROUP_ID", `data_collector.collect.group.${environment}`);
+const clientId = getEnvVar("KAFKA_CLIENT_ID", `data_collector_client.${environment}`);
+const groupId = getEnvVar("KAFKA_GROUP_ID", `data_collector_group.${environment}`);
 const logLevel = parseInt(getEnvVar("KAFKA_LOG_LEVEL", "0"), 10);
 
 // Validate Kafka log level
@@ -35,11 +35,10 @@ const config = {
 const kafkaConfig = {
     brokers: config.KAFKA_BROKERS,
     clientId: config.KAFKA_CLIENT_ID,
-    groupId: config.KAFKA_GROUP_ID,
     logLevel: config.KAFKA_LOG_LEVEL,
     retry: { initialRetryTime: 1000, retries: 10 },
     requestTimeout: 60000,
     metadataMaxAge: 60000,
 };
 
-module.exports = kafkaConfig;
+module.exports = { kafkaConfig, config };

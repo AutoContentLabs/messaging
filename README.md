@@ -3,25 +3,24 @@
 ## Installation
 
 ```
-const { sendMessage, startListener, topics } = require('@auto-content-labs/messaging');
+npm install git+https://github.com/AutoContentLabs/messaging.git
+```
 
-function onMessageCallback(topic, partition, message) {
-    // Assuming the message is binary and needs to be converted back to a string
-    const messageString = message.value.toString(); // If message is binary
-    console.log(`Received message on topic ${topic}: ${messageString}`);
-}
+## Usage
+```
+const { sendMessage, startListener, onMessage, topics } = require('@auto-content-labs/messaging');
 
-try {
-    console.log("Starting Kafka listener...");
-    await startListener(topics.DATA_COLLECT_REQUEST, onMessageCallback);
-    console.log("Kafka listener started.");
-} catch (error) {
-    console.error("Error in starting Kafka listener:", error);
-    throw error;  // Ensure Jest fails if listener setup fails
-}
+const dashboard = {
+    key: 'dashboard-001',
+    value: Buffer.from(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        taskId: 'task-001',
+        stats: { 'AI in healthcare': 15000, 'Quantum Computing': 12000 },
+        message: 'Dashboard updated with latest trend statistics.'
+    }))
+};
 
-const message = Buffer.from('Test message for DATA_COLLECT_STATUS topic'); // Convert string to binary (Buffer)
+startListener(topics.dashboard, onMessage);
 
-// Send message to Kafka topic
-await sendMessage(topics.DATA_COLLECT_STATUS, [{ value: message }]);
+sendMessage(topics.dashboard, [dashboard]);
 ```

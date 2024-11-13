@@ -1,22 +1,38 @@
 // src/transports/topics.js
 
-// Determine the environment for topic differentiation (default to "development" if not set)
 const environment = process.env.NODE_ENV || "development";
 
-// Common base topics shared across all environments
+const createTopicName = (baseName) => {
+  return process.env[`MESSAGING_TOPIC_${baseName.toUpperCase()}`] || `${baseName}.${environment}`;
+};
+
 const commonTopics = {
-  DATA_COLLECT_REQUEST: process.env.KAFKA_TOPIC_DATA_COLLECT_REQUEST || "data_collector.collect.request",
-  DATA_COLLECT_STATUS: process.env.KAFKA_TOPIC_DATA_COLLECT_STATUS || "data_collector.collect.status",
-  JOB_SCHEDULE: process.env.KAFKA_TOPIC_JOB_SCHEDULE || "job_scheduler.schedule.create",
-  JOB_STATUS: process.env.KAFKA_TOPIC_JOB_STATUS || "job_scheduler.schedule.status",
+  dataCollectRequest: createTopicName("DATA_COLLECT_REQUEST"),
+  dataCollectStatus: createTopicName("DATA_COLLECT_STATUS"),
+  dataCollectResponse: createTopicName("DATA_COLLECT_RESPONSE"),
+  dataCollectError: createTopicName("DATA_COLLECT_ERROR"),
+
+  jobScheduleCreate: createTopicName("JOB_SCHEDULE_CREATE"),
+  jobScheduleUpdate: createTopicName("JOB_SCHEDULE_UPDATE"),
+  jobStatus: createTopicName("JOB_STATUS"),
+  jobProgress: createTopicName("JOB_PROGRESS"),
+
+  dataProcessingStart: createTopicName("DATA_PROCESSING_START"),
+  dataProcessingStatus: createTopicName("DATA_PROCESSING_STATUS"),
+  dataProcessingResult: createTopicName("DATA_PROCESSING_RESULT"),
+
+  dataStorage: createTopicName("DATA_STORAGE"),
+  dataAggregation: createTopicName("DATA_AGGREGATION"),
+
+  analysisRequest: createTopicName("ANALYSIS_REQUEST"),
+  analysisResult: createTopicName("ANALYSIS_RESULT"),
+  analysisError: createTopicName("ANALYSIS_ERROR"),
+
+  alerts: createTopicName("ALERTS"),
+  logs: createTopicName("LOGS"),
+
+  reports: createTopicName("REPORTS"),
+  dashboard: createTopicName("DASHBOARD")
 };
 
-// Function to append environment suffix to topic names
-const appendEnvironment = (topic) => `${topic}.${environment}`;
-
-module.exports = {
-  DATA_COLLECT_REQUEST: appendEnvironment(commonTopics.DATA_COLLECT_REQUEST),
-  DATA_COLLECT_STATUS: appendEnvironment(commonTopics.DATA_COLLECT_STATUS),
-  JOB_SCHEDULE: appendEnvironment(commonTopics.JOB_SCHEDULE),
-  JOB_STATUS: appendEnvironment(commonTopics.JOB_STATUS),
-};
+module.exports = commonTopics;
