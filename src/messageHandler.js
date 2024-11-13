@@ -1,5 +1,3 @@
-// example/messageHandler.js
-
 const logger = require("./utils/logger");
 
 /**
@@ -19,8 +17,31 @@ async function onMessage({ topic, partition, message }) {
     const timestamp = message.timestamp;
     const value = message.value; // from buffer
 
-    logger.info(`Received: [${topic}] [${partition}] [${key}] [${offset}] [${timestamp}] `);
-    logger.debug(`${value} `);
+    // Log the message header details
+    logger.info(`Received: [${topic}] [${partition}] [${key}] [${offset}] [${timestamp}]`);
+
+    try {
+        // Attempt to parse the value assuming it's a JSON object
+        let parsedValue;
+        if (value) {
+            try {
+                parsedValue = JSON.parse(value.toString());
+            } catch (error) {
+                logger.warn(`Failed to parse message value as JSON. Raw data: ${value.toString()}`);
+            }
+        }
+
+        // Log parsed value if available
+        if (parsedValue) {
+            logger.debug(`Parsed Value: ${JSON.stringify(parsedValue)}`);
+        } else {
+            logger.debug(`Message Value (non-parsed): ${value.toString()}`);
+        }
+
+    } catch (error) {
+        // Log any error during the processing of the message
+        logger.error(`Error processing message: ${error.message}`);
+    }
 }
 
-module.exports = { onMessage }
+module.exports = { onMessage };

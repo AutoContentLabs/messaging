@@ -1,7 +1,21 @@
 // src/senders/jobScheduleSender.js
 const { sendMessage, topics } = require('../messageService');
+const logger = require('../utils/logger');
 
-function sendJobScheduleCreate(jobId, taskId, schedule) {
+/**
+ * Sends a message to schedule the creation of a job.
+ * @param {string} jobId - The unique identifier for the job.
+ * @param {string} taskId - The unique identifier for the task.
+ * @param {object} schedule - The schedule for the job (e.g., { startTime: '2024-11-13T00:00:00Z' }).
+ * @returns {Promise<void>}
+ */
+async function sendJobScheduleCreate(jobId, taskId, schedule) {
+    // Validate parameters
+    if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof schedule !== 'object') {
+        logger.error('Invalid arguments passed to sendJobScheduleCreate');
+        throw new Error('Invalid arguments');
+    }
+
     const message = {
         key: `jobScheduleCreate-${jobId}`,
         value: Buffer.from(JSON.stringify({
@@ -15,10 +29,29 @@ function sendJobScheduleCreate(jobId, taskId, schedule) {
         }))
     };
 
-    sendMessage(topics.jobScheduleCreate, [message]);
+    try {
+        await sendMessage(topics.jobScheduleCreate, [message]);
+        logger.info(`Job schedule creation message sent for jobId: ${jobId}, taskId: ${taskId}`);
+    } catch (error) {
+        logger.error(`Failed to send job schedule creation message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        throw error;
+    }
 }
 
-function sendJobScheduleUpdate(jobId, taskId, schedule) {
+/**
+ * Sends a message to update the schedule of a job.
+ * @param {string} jobId - The unique identifier for the job.
+ * @param {string} taskId - The unique identifier for the task.
+ * @param {object} schedule - The updated schedule for the job.
+ * @returns {Promise<void>}
+ */
+async function sendJobScheduleUpdate(jobId, taskId, schedule) {
+    // Validate parameters
+    if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof schedule !== 'object') {
+        logger.error('Invalid arguments passed to sendJobScheduleUpdate');
+        throw new Error('Invalid arguments');
+    }
+
     const message = {
         key: `jobScheduleUpdate-${jobId}`,
         value: Buffer.from(JSON.stringify({
@@ -31,7 +64,13 @@ function sendJobScheduleUpdate(jobId, taskId, schedule) {
         }))
     };
 
-    sendMessage(topics.jobScheduleUpdate, [message]);
+    try {
+        await sendMessage(topics.jobScheduleUpdate, [message]);
+        logger.info(`Job schedule update message sent for jobId: ${jobId}, taskId: ${taskId}`);
+    } catch (error) {
+        logger.error(`Failed to send job schedule update message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        throw error;
+    }
 }
 
 module.exports = { sendJobScheduleCreate, sendJobScheduleUpdate };
