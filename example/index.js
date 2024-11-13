@@ -1,264 +1,6 @@
 // example/index.js
-
-const { sendMessage, startListener, onMessage, topics } = require("../src/index");
-const { Buffer } = require('buffer');
-
-// EXAMPLES
-
-// dataCollectRequest:
-const dataCollectRequest = {
-    key: 'dataCollectRequest-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        source: 'google_trends',
-        parameters: {
-            region: 'US',
-            language: 'EN',
-            trendCategory: 'Technology'
-        },
-        status: 'pending',
-        message: 'Request to start data collection for trends in Technology category.'
-    }))
-};
-
-// dataCollectStatus:
-const dataCollectStatus = {
-    key: 'dataCollectStatus-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        status: 'in-progress', // Can be 'in-progress', 'completed', 'failed'
-        message: 'Data collection in progress. Fetching latest trend data from Google Trends.'
-    }))
-};
-
-// dataCollectResponse:
-const dataCollectResponse = {
-    key: 'dataCollectResponse-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        status: 'completed',
-        data: [
-            { trend: 'AI in healthcare', mentions: 15000, region: 'US' },
-            { trend: 'Quantum Computing', mentions: 12000, region: 'US' }
-        ],
-        message: 'Successfully collected trend data.'
-    }))
-};
-
-// dataCollectError:
-const dataCollectError = {
-    key: 'dataCollectError-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        errorCode: 'API_TIMEOUT',
-        message: 'Error while fetching data from Google Trends API. Timeout occurred.'
-    }))
-};
-
-// jobScheduleCreate:
-const jobScheduleCreate = {
-    key: 'jobScheduleCreate-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        jobId: 'job-001',
-        taskId: 'task-001',
-        jobType: 'dataProcessing',
-        schedule: '2024-11-12T09:00:00Z',
-        status: 'scheduled',
-        message: 'Job scheduled to start processing collected data.'
-    }))
-};
-
-// jobScheduleUpdate:
-const jobScheduleUpdate = {
-    key: 'jobScheduleUpdate-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        jobId: 'job-001',
-        taskId: 'task-001',
-        schedule: '2024-11-12T15:00:00Z',
-        status: 'updated',
-        message: 'Job schedule updated to start at 3 PM UTC.'
-    }))
-};
-
-// jobStatus:
-const jobStatus = {
-    key: 'jobStatus-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        jobId: 'job-001',
-        taskId: 'task-001',
-        status: 'in-progress', // Can be 'in-progress', 'completed', 'failed'
-        message: 'Job is currently processing collected trend data.'
-    }))
-};
-
-// jobProgress:
-const jobProgress = {
-    key: 'jobProgress-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        jobId: 'job-001',
-        taskId: 'task-001',
-        progress: 65, // Progress as percentage
-        message: 'Data processing is 65% complete.'
-    }))
-};
-
-// dataProcessingStart:
-const dataProcessingStart = {
-    key: 'dataProcessingStart-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        jobId: 'job-001',
-        taskId: 'task-001',
-        status: 'started',
-        message: 'Data processing for trend data has started.'
-    }))
-};
-
-// dataProcessingStatus:
-const dataProcessingStatus = {
-    key: 'dataProcessingStatus-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        jobId: 'job-001',
-        taskId: 'task-001',
-        status: 'in-progress', // Can be 'in-progress', 'completed', 'failed'
-        message: 'Data processing is ongoing. Analyzing trend data.'
-    }))
-};
-
-// dataProcessingResult:
-const dataProcessingResult = {
-    key: 'dataProcessingResult-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        jobId: 'job-001',
-        taskId: 'task-001',
-        result: {
-            trends: [
-                { trend: 'AI in healthcare', score: 85 },
-                { trend: 'Quantum Computing', score: 78 }
-            ],
-            insights: 'AI in healthcare is rapidly growing and attracting significant attention.'
-        },
-        status: 'completed',
-        message: 'Data processing completed. Generated insights for trends.'
-    }))
-};
-
-// dataStorage:
-const dataStorage = {
-    key: 'dataStorage-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        data: { trend: 'AI in healthcare', mentions: 15000 },
-        status: 'stored',
-        message: 'Trend data stored successfully in the database.'
-    }))
-};
-
-// dataAggregation:
-const dataAggregation = {
-    key: 'dataAggregation-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        aggregatedData: { 'AI in healthcare': 35000, 'Quantum Computing': 24000 },
-        status: 'aggregated',
-        message: 'Data aggregation completed for trends.'
-    }))
-};
-
-// analysisRequest:
-const analysisRequest = {
-    key: 'analysisRequest-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        analysisType: 'trend_analysis',
-        parameters: { region: 'US', category: 'Technology' },
-        status: 'pending',
-        message: 'Requesting analysis on technology trends.'
-    }))
-};
-
-// analysisResult:
-const analysisResult = {
-    key: 'analysisResult-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        analysisType: 'trend_analysis',
-        result: { 'AI in healthcare': 85, 'Quantum Computing': 78 },
-        status: 'completed',
-        message: 'Analysis completed. Trends ranked based on their popularity.'
-    }))
-};
-
-// analysisError:
-const analysisError = {
-    key: 'analysisError-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        errorCode: 'API_TIMEOUT',
-        message: 'Analysis request failed due to API timeout.'
-    }))
-};
-
-// alerts:
-const alerts = {
-    key: 'alerts-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        alertType: 'error',
-        taskId: 'task-001',
-        message: 'Critical error occurred during data processing.'
-    }))
-};
-
-// logs:
-const logs = {
-    key: 'logs-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        logLevel: 'info',
-        taskId: 'task-001',
-        message: 'Data collection process started successfully.'
-    }))
-};
-
-// reports:
-const reports = {
-    key: 'reports-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        reportType: 'summary',
-        taskId: 'task-001',
-        data: { 'AI in healthcare': 15000, 'Quantum Computing': 12000 },
-        status: 'completed',
-        message: 'Generated trend summary report.'
-    }))
-};
-
-// dashboard:
-const dashboard = {
-    key: 'dashboard-001',
-    value: Buffer.from(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        taskId: 'task-001',
-        stats: { 'AI in healthcare': 15000, 'Quantum Computing': 12000 },
-        message: 'Dashboard updated with latest trend statistics.'
-    }))
-};
+const { onMessage } = require('../src/messageHandler');
+const { startListener, topics } = require('../src/messageService');
 
 // startListener(topics.dataCollectRequest, onMessage);
 // startListener(topics.dataCollectStatus, onMessage);
@@ -281,23 +23,50 @@ startListener(topics.logs, onMessage);
 // startListener(topics.reports, onMessage);
 // startListener(topics.dashboard, onMessage);
 
-// sendMessage(topics.dataCollectRequest, [dataCollectRequest]);
-// sendMessage(topics.dataCollectStatus, [dataCollectStatus]);
-// sendMessage(topics.dataCollectResponse, [dataCollectResponse]);
-// sendMessage(topics.dataCollectError, [dataCollectError]);
-// sendMessage(topics.jobScheduleCreate, [jobScheduleCreate]);
-// sendMessage(topics.jobScheduleUpdate, [jobScheduleUpdate]);
-// sendMessage(topics.jobStatus, [jobStatus]);
-// sendMessage(topics.jobProgress, [jobProgress]);
-// sendMessage(topics.dataProcessingStart, [dataProcessingStart]);
-// sendMessage(topics.dataProcessingStatus, [dataProcessingStatus]);
-// sendMessage(topics.dataProcessingResult, [dataProcessingResult]);
-// sendMessage(topics.dataStorage, [dataStorage]);
-// sendMessage(topics.dataAggregation, [dataAggregation]);
-// sendMessage(topics.analysisRequest, [analysisRequest]);
-// sendMessage(topics.analysisResult, [analysisResult]);
-// sendMessage(topics.analysisError, [analysisError]);
-// sendMessage(topics.alerts, [alerts]);
-// sendMessage(topics.logs, [logs]);
-// sendMessage(topics.reports, [reports]);
-// sendMessage(topics.dashboard, [dashboard]);
+// const { sendAlert } = require("../src/senders/alertSender");
+// const { sendAnalysisRequest } = require("../src/senders/analysisRequestSender");
+// const { sendAnalysisResult } = require("../src/senders/analysisResultSender");
+// const { sendDashboardUpdate } = require("../src/senders/dashboardSender");
+// const { sendDataAggregation } = require("../src/senders/dataAggregationSender");
+// const { sendDataCollectError } = require("../src/senders/dataCollectErrorSender");
+// const { sendDataCollectRequest } = require("../src/senders/dataCollectRequestSender");
+// const { sendDataCollectResponse } = require("../src/senders/dataCollectResponseSender");
+// const { sendDataCollectStatus } = require("../src/senders/dataCollectStatusSender");
+// const { sendDataProcessingStart, sendDataProcessingStatus, sendDataProcessingResult } = require("../src/senders/dataProcessingSender");
+// const { sendDataStorage } = require("../src/senders/dataStorageSender");
+// const { sendJobProgress } = require("../src/senders/jobProgressSender");
+// const { sendJobScheduleCreate, sendJobScheduleUpdate } = require("../src/senders/jobScheduleSender");
+// const { sendJobStatus } = require("../src/senders/jobStatusSender");
+// const { sendLog } = require("../src/senders/logSender");
+// const { sendReport } = require("../src/senders/reportSender");
+
+// sendAlert("task-001", "warning", "System resource usage exceeded the threshold");
+// const analysisParameters = { region: 'US', category: 'Technology' };
+// sendAnalysisRequest("task-002", "trendAnalysis", analysisParameters);
+// const analysis = { "AI in healthcare": 85, "Quantum Computing": 78 };
+// sendAnalysisResult("task-003", "trendAnalysis", analysis);
+// const stats = { "AI in healthcare": 15000, "Quantum Computing": 12000 };
+// sendDashboardUpdate("task-004", stats);
+// const aggregatedData = { "AI in healthcare": 35000, "Quantum Computing": 24000 };
+// sendDataAggregation("job-001", "task-005", aggregatedData);
+// sendDataCollectError("task-006", "404", "Data source not found");
+// const dataCollectParameters = { source: "Google Trends", query: "Quantum Computing" };
+// sendDataCollectRequest("task-007", "Google Trends", dataCollectParameters);
+// const dataCollect = { "Quantum Computing": 12345 };
+// sendDataCollectResponse("task-008", dataCollect);
+// sendDataCollectStatus("task-009", "in-progress", "Data collection is running smoothly.");
+// sendDataProcessingStart("job-003", "task-011");
+// sendDataProcessingStatus("job-003", "task-011", "in-progress", "Processing data...");
+// const dataProcessing = { trends: [{ trend: 'AI', score: 88 }] };
+// sendDataProcessingResult("job-003", "task-011", dataProcessing);
+// const dataStorage = { trend: "AI in healthcare", mentions: 15000 };
+// sendDataStorage("job-004", "task-012", dataStorage);
+// sendJobProgress("job-005", "task-013", 45, "Data collection is 45% complete.");
+// const schedule = { startTime: "2024-11-14T10:00:00Z", frequency: "daily" };
+// sendJobScheduleCreate("job-006", "task-014", schedule);
+// const updatedSchedule = { startTime: "2024-11-15T10:00:00Z", frequency: "weekly" };
+// sendJobScheduleUpdate("job-006", "task-014", updatedSchedule);
+// sendJobStatus("job-007", "task-015", "completed", "Job has been completed successfully.");
+// sendLog("task-016", "info", "Log message: Data collection started.");
+// const reportData = { "trend": "AI in healthcare", "mentions": 15000 };
+// sendReport("task-017", "trend-report", reportData);
