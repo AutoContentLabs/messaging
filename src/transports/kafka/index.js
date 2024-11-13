@@ -2,7 +2,7 @@
 
 const logger = require('../../utils/logger'); // Logger utility
 const { kafkaConfig, config } = require('./config'); // Kafka configuration file
-const { Kafka, Partitioners } = require('kafkajs'); // KafkaJS library
+const { Kafka, Partitioners, CompressionTypes } = require('kafkajs'); // KafkaJS library
 
 // Kafka client instance (only one instance should be created)
 const kafka = new Kafka(kafkaConfig);
@@ -138,7 +138,7 @@ async function sendMessage(topic, messagesArray) {
       topic,
       messages: messagesArray,
       timeout: 500,
-      compression: Kafka.CompressionTypes.GZIP,
+      compression: CompressionTypes.GZIP,
     });
 
     logger.info(`Sent ${messagesArray.length} message(s) to Kafka topic "${topic}"`);
