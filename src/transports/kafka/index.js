@@ -49,8 +49,8 @@ async function createTopicIfNotExists(topic) {
         topics: [
           {
             topic,
-            numPartitions: 1,
-            replicationFactor: 1,
+            numPartitions: 5, // for topic for scale ( if you are use )
+            replicationFactor: 2, // copy another server
           },
         ],
       });
