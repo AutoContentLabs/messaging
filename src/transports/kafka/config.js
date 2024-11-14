@@ -31,12 +31,12 @@ const DEFAULT_METADATA_MAX_AGE = parseInt(getEnvVar("DEFAULT_METADATA_MAX_AGE", 
 const brokers = getEnvVar("KAFKA_BROKERS", "localhost:9092");
 const clientId = getEnvVar("KAFKA_CLIENT_ID", getUniqueId('client')); // Dynamically generate clientId
 const groupId = getEnvVar("KAFKA_GROUP_ID", getUniqueId('group'));
-let logLevel = parseInt(getEnvVar("KAFKA_LOG_LEVEL", "0"), 10);
-
+let logLevelKafka = parseInt(getEnvVar("KAFKA_LOG_LEVEL", "0"), 10);
+let logLevel = parseInt(getEnvVar("LOG_LEVEL", "debug"));
 // Log level validation
-if (isNaN(logLevel) || logLevel < 0 || logLevel > 7) {
+if (isNaN(logLevelKafka) || logLevelKafka < 0 || logLevelKafka > 7) {
     console.warn(`WARN: Invalid KAFKA_LOG_LEVEL value. Defaulting to log level: 0`);
-    logLevel = 0; // Default log level
+    logLevelKafka = 0; // Default log level
 }
 
 // Kafka configuration object with fallback values
@@ -44,9 +44,10 @@ const config = {
     KAFKA_BROKERS: brokers.split(",").map((broker) => broker.trim()), // Trim to ensure no whitespace issues
     KAFKA_CLIENT_ID: clientId,
     KAFKA_GROUP_ID: groupId,
-    KAFKA_LOG_LEVEL: logLevel,
+    KAFKA_LOG_LEVEL: logLevelKafka,
     KAFKA_NUM_PARTITIONS,
-    KAFKA_REPLICATION_FACTOR
+    KAFKA_REPLICATION_FACTOR,
+    LOG_LEVEL: logLevel
 };
 
 // Kafka configuration object for Kafka client
