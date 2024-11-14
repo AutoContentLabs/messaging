@@ -25,8 +25,8 @@ const getUniqueId = (prefix) => {
 
 // Validate and fetch Kafka configuration from environment or use defaults
 const brokers = getEnvVar("KAFKA_BROKERS", "localhost:9092");
-const clientId = getEnvVar("KAFKA_CLIENT_ID", getUniqueClientId('data_collector_client')); // Dynamically generate clientId
-const groupId = getEnvVar("KAFKA_GROUP_ID", getUniqueClientId('data_collector_group'));
+const clientId = getEnvVar("KAFKA_CLIENT_ID", getUniqueId('data_collector_client')); // Dynamically generate clientId
+const groupId = getEnvVar("KAFKA_GROUP_ID", getUniqueId('data_collector_group'));
 let logLevel = parseInt(getEnvVar("KAFKA_LOG_LEVEL", "0"), 10);
 
 // Log level validation
