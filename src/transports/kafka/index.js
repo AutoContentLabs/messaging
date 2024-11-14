@@ -91,15 +91,21 @@ async function startListener(topic, onMessage) {
 
     const consumerStartTime = Date.now();
     await consumer.run({
-      eachMessage: async(item) => {
+      eachMessage: async (item) => {
         const startTime = Date.now();
         try {
-          // Process the message (for now logging it)
-          logger.info(`Message processed in ${Date.now() - startTime} ms`);
+          // on Message Before
+          let = { topic, partition, message, heartbeatFunc, pauseFunc } = item
+          let { key, value, timestamp, offset, headers, batchContext } = message
+          let { producerId } = batchContext
+          logger.debug(topic, `${timestamp}, ${producerId}, ${partition}, ${offset}, ${key}`)
           // Call your message processing function here
           if (onMessage) {
             await onMessage(item);
           }
+          // on Message After
+          // Process the message (for now logging it)
+          logger.info(`processed in ${Date.now() - startTime} ms`);
         } catch (processError) {
           logger.error(`Error processing message: ${processError.message}`);
         }
