@@ -1,11 +1,5 @@
 const environment = process.env.NODE_ENV || "development";
 
-// Constants for retry and timeout settings to improve readability and maintainability
-const DEFAULT_INITIAL_RETRY_TIME = 1000;
-const DEFAULT_RETRIES = 10;
-const DEFAULT_REQUEST_TIMEOUT = 60000;
-const DEFAULT_METADATA_MAX_AGE = 60000;
-
 // Helper function to handle default values and logging
 const getEnvVar = (key, defaultValue, isRequired = false) => {
     const value = process.env[key] || defaultValue;
@@ -23,10 +17,20 @@ const getUniqueId = (prefix) => {
     return `${prefix}.${environment}.${hostname}.${instanceId}`;
 };
 
+// Fetching the values from environment variables
+const KAFKA_NUM_PARTITIONS = parseInt(process.env.KAFKA_NUM_PARTITIONS || "3", 10); // Default: 3 if not set
+const KAFKA_REPLICATION_FACTOR = parseInt(process.env.KAFKA_REPLICATION_FACTOR || "1", 10); // Default: 1 if not set
+
+// Constants for retry and timeout settings to improve readability and maintainability
+const DEFAULT_INITIAL_RETRY_TIME = parseInt(getEnvVar("DEFAULT_INITIAL_RETRY_TIME", "200"), 10); // 1000
+const DEFAULT_RETRIES = parseInt(getEnvVar("DEFAULT_INITIAL_RETRY_TIME", "5"), 10); // 10
+const DEFAULT_REQUEST_TIMEOUT = parseInt(getEnvVar("DEFAULT_REQUEST_TIMEOUT", "30000"), 10); // 60000
+const DEFAULT_METADATA_MAX_AGE = parseInt(getEnvVar("DEFAULT_METADATA_MAX_AGE", "10000"), 10); //  60000;
+
 // Validate and fetch Kafka configuration from environment or use defaults
 const brokers = getEnvVar("KAFKA_BROKERS", "localhost:9092");
-const clientId = getEnvVar("KAFKA_CLIENT_ID", getUniqueId('data_collector_client')); // Dynamically generate clientId
-const groupId = getEnvVar("KAFKA_GROUP_ID", getUniqueId('data_collector_group'));
+const clientId = getEnvVar("KAFKA_CLIENT_ID", getUniqueId('client')); // Dynamically generate clientId
+const groupId = getEnvVar("KAFKA_GROUP_ID", getUniqueId('group'));
 let logLevel = parseInt(getEnvVar("KAFKA_LOG_LEVEL", "0"), 10);
 
 // Log level validation
@@ -41,6 +45,8 @@ const config = {
     KAFKA_CLIENT_ID: clientId,
     KAFKA_GROUP_ID: groupId,
     KAFKA_LOG_LEVEL: logLevel,
+    KAFKA_NUM_PARTITIONS,
+    KAFKA_REPLICATION_FACTOR
 };
 
 // Kafka configuration object for Kafka client

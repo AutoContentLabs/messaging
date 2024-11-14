@@ -10,28 +10,33 @@ const admin = kafka.admin();
 const consumer = kafka.consumer({ groupId: config.KAFKA_GROUP_ID });
 const producer = kafka.producer({ createPartitioner: Partitioners.LegacyPartitioner });
 
+// Clean shutdown on SIGINT (Ctrl+C)
 process.on('SIGINT', async () => {
   try {
-    // Kafka consumer bağlantısını kapatmadan önce işlemleri tamamla
-    await consumer.disconnect();
-    logger.info("Kafka consumer disconnected successfully");
+    // Kafka consumer connection
+    if (consumer) {
+      await consumer.disconnect();
+      logger.info("Kafka consumer disconnected successfully");
+    }
 
-    // Producer bağlantısını sonlandır
-    await producer.disconnect();
-    logger.info("Kafka producer disconnected successfully");
+    // Producer connection
+    if (producer) {
+      await producer.disconnect();
+      logger.info("Kafka producer disconnected successfully");
+    }
 
-    // Admin bağlantısını sonlandır
-    await admin.disconnect();
-    logger.info("Kafka admin disconnected successfully");
-
+    // Admin connection
+    if (admin) {
+      await admin.disconnect();
+      logger.info("Kafka admin disconnected successfully");
+    }
   } catch (error) {
     logger.error(`Error during shutdown: ${error.message}`);
   } finally {
     console.log("Application shutting down...");
-    process.exit(0); // Uygulamanın kapanmasını sağla
+    process.exit(0); // Gracefully shutdown the application
   }
 });
-
 
 /**
  * Creates a Kafka topic if it does not already exist.
@@ -40,7 +45,6 @@ process.on('SIGINT', async () => {
  * @returns {Promise<void>} - A promise indicating the completion of topic creation or existence check.
  */
 async function createTopicIfNotExists(topic) {
-
   try {
     await admin.connect(); // Connect to Kafka admin
     const topics = await admin.listTopics(); // List existing topics
@@ -49,8 +53,8 @@ async function createTopicIfNotExists(topic) {
         topics: [
           {
             topic,
-            numPartitions: 5, // for topic for scale ( if you are use )
-            replicationFactor: 2, // copy another server
+            numPartitions: config.KAFKA_NUM_PARTITIONS,
+            replicationFactor: config.KAFKA_REPLICATION_FACTOR
           },
         ],
       });
@@ -67,29 +71,34 @@ async function createTopicIfNotExists(topic) {
 
 /**
  * Starts a Kafka consumer to listen to a given topic and process messages.
+ * This consumer can be reused for multiple topics without creating new instances.
  * 
  * @param {string} topic - The Kafka topic to listen to.
  * @param {Function} onMessage - The callback function to process each message.
  * @returns {Promise<void>} - A promise indicating the completion of the consumer setup.
  */
 async function startListener(topic, onMessage) {
-  await createTopicIfNotExists(topic);
-
   try {
-    await consumer.connect(); // Connect to Kafka
+    await createTopicIfNotExists(topic);
+
+    // Only connect once to the consumer
+    if (!consumer._connected) {
+      await consumer.connect(); // Connect to Kafka if not already connected
+    }
+
     await consumer.subscribe({ topic, fromBeginning: true }); // Subscribe to the topic
     logger.info(`Starting listener on topic [${topic}]...`);
 
     const consumerStartTime = Date.now();
     await consumer.run({
-      eachMessage: async (messageArray) => {
+      eachMessage: async(item) => {
         const startTime = Date.now();
         try {
           // Process the message (for now logging it)
           logger.info(`Message processed in ${Date.now() - startTime} ms`);
           // Call your message processing function here
           if (onMessage) {
-            await onMessage(messageArray);
+            await onMessage(item);
           }
         } catch (processError) {
           logger.error(`Error processing message: ${processError.message}`);
@@ -105,33 +114,28 @@ async function startListener(topic, onMessage) {
     logger.info(`Consumer is running and processing messages. ${Date.now() - consumerStartTime} ms`);
   } catch (error) {
     logger.error(`Error in startListener for topic ${topic}: ${error.message}`);
-  } finally {
-    try {
-      // await consumer.disconnect(); // Ensure the consumer disconnects after finishing
-    } catch (error) {
-      logger.error(`Error during consumer disconnect: ${error.message}`);
-    }
   }
 }
 
-
 /**
  * Sends binary data (Buffer) messages to a Kafka topic.
+ * The producer instance is reused for multiple sends.
  * 
  * @param {string} topic - The Kafka topic to which the messages will be sent.
  * @param {Array<{ key?: Buffer, value: Buffer }>} messagesArray - An array of messages, each containing binary data (Buffer) in the value field, and optionally a key field.
  * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
  */
 async function sendMessage(topic, messagesArray) {
-
-
   if (!Array.isArray(messagesArray) || messagesArray.length === 0) {
     logger.warn("No messages to send. Message array is empty or invalid.");
     return;
   }
 
   try {
-    await producer.connect(); // Connect to the Kafka producer
+    // Only connect once to the producer
+    if (!producer._connected) {
+      await producer.connect(); // Connect to Kafka producer if not already connected
+    }
 
     // Send the valid binary messages to the topic
     await producer.send({
@@ -144,8 +148,6 @@ async function sendMessage(topic, messagesArray) {
     logger.info(`Sent ${messagesArray.length} message(s) to Kafka topic "${topic}"`);
   } catch (error) {
     logger.error(`Error sending message(s) to ${topic}: ${error.message}`);
-  } finally {
-    await producer.disconnect(); // Ensure the producer always disconnects
   }
 }
 
