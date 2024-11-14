@@ -16,17 +16,17 @@ const getEnvVar = (key, defaultValue, isRequired = false) => {
     return value;
 };
 
-// Generate a unique clientId for each container using HOSTNAME or fallback to default if undefined
-const getUniqueClientId = () => {
+// Generate a unique Id for each container using HOSTNAME or fallback to default if undefined
+const getUniqueId = (prefix) => {
     const hostname = process.env.HOSTNAME || "default"; // Default to 'default' if HOSTNAME is undefined
     const instanceId = process.env.INSTANCE_ID || Math.random().toString(36).substring(2, 10); // Fallback to random ID if INSTANCE_ID is undefined
-    return `data_collector_client.${environment}.${hostname}.${instanceId}`;
+    return `${prefix}.${environment}.${hostname}.${instanceId}`;
 };
 
 // Validate and fetch Kafka configuration from environment or use defaults
 const brokers = getEnvVar("KAFKA_BROKERS", "localhost:9092");
-const clientId = getEnvVar("KAFKA_CLIENT_ID", getUniqueClientId()); // Dynamically generate clientId
-const groupId = getEnvVar("KAFKA_GROUP_ID", `data_collector_group.${environment}`);
+const clientId = getEnvVar("KAFKA_CLIENT_ID", getUniqueClientId('data_collector_client')); // Dynamically generate clientId
+const groupId = getEnvVar("KAFKA_GROUP_ID", getUniqueClientId('data_collector_group'));
 let logLevel = parseInt(getEnvVar("KAFKA_LOG_LEVEL", "0"), 10);
 
 // Log level validation
