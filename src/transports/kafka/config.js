@@ -1,5 +1,3 @@
-// src/transports/kafka/config.js
-
 const environment = process.env.NODE_ENV || "development";
 
 // Constants for retry and timeout settings to improve readability and maintainability
@@ -18,9 +16,16 @@ const getEnvVar = (key, defaultValue, isRequired = false) => {
     return value;
 };
 
+// Generate a unique clientId for each container using HOSTNAME or fallback to default if undefined
+const getUniqueClientId = () => {
+    const hostname = process.env.HOSTNAME || "default"; // Default to 'default' if HOSTNAME is undefined
+    const instanceId = process.env.INSTANCE_ID || Math.random().toString(36).substring(2, 10); // Fallback to random ID if INSTANCE_ID is undefined
+    return `data_collector_client.${environment}.${hostname}.${instanceId}`;
+};
+
 // Validate and fetch Kafka configuration from environment or use defaults
 const brokers = getEnvVar("KAFKA_BROKERS", "localhost:9092");
-const clientId = getEnvVar("KAFKA_CLIENT_ID", `data_collector_client.${environment}`);
+const clientId = getEnvVar("KAFKA_CLIENT_ID", getUniqueClientId()); // Dynamically generate clientId
 const groupId = getEnvVar("KAFKA_GROUP_ID", `data_collector_group.${environment}`);
 let logLevel = parseInt(getEnvVar("KAFKA_LOG_LEVEL", "0"), 10);
 
