@@ -1,5 +1,7 @@
 // src/messageService.js
 
+require('events').EventEmitter.defaultMaxListeners = 20; // MaxListenersExceededWarning
+
 const transports = require('./transports');
 const logger = require('./utils/logger');
 

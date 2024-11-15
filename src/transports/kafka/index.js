@@ -91,6 +91,7 @@ async function startListener(topic, onMessage) {
     logger.info(`[LISTENER] [subscribe] Subscribed to topic: ${topic}`);
 
     const consumerStartTime = Date.now();
+    // if consumer running true ?
     await consumer.run({
       eachMessage: async (item) => {
         const startTime = Date.now();
