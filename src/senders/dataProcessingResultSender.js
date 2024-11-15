@@ -12,7 +12,7 @@ const logger = require('../utils/logger');
 async function sendDataProcessingResult(jobId, taskId, result) {
     // Validate inputs
     if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof result !== 'object') {
-        logger.error('Invalid arguments passed to sendDataProcessingResult');
+        logger.error('[DataProcessingResultSender] [sendDataProcessingResult] [error] Invalid arguments passed to sendDataProcessingResult');
         throw new Error('Invalid arguments');
     }
 
@@ -31,10 +31,10 @@ async function sendDataProcessingResult(jobId, taskId, result) {
     try {
         // Send the data processing result message to the dataProcessingResult topic
         await sendMessage(topics.dataProcessingResult, [message]);
-        logger.info(`Data processing completed successfully for jobId: ${jobId}, taskId: ${taskId}`);
+        logger.info(`[DataProcessingResultSender] [sendDataProcessingResult] [success] Data processing completed successfully for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
         // Log error if message sending fails
-        logger.error(`Failed to send data processing result message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[DataProcessingResultSender] [sendDataProcessingResult] [error] Failed to send data processing result message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
         throw error;  // Re-throw the error to be handled upstream if needed
     }
 }

@@ -13,7 +13,7 @@ const logger = require('../utils/logger');
 async function sendJobProgress(jobId, taskId, progress, message) {
     // Validate parameters
     if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof progress !== 'number' || typeof message !== 'string') {
-        logger.error('Invalid arguments passed to sendJobProgress');
+        logger.error('[JobProgressSender] [sendJobProgress] [error] Invalid arguments passed to sendJobProgress');
         throw new Error('Invalid arguments');
     }
 
@@ -30,9 +30,9 @@ async function sendJobProgress(jobId, taskId, progress, message) {
 
     try {
         await sendMessage(topics.jobProgress, [jobProgressMessage]);
-        logger.info(`Job progress message sent for jobId: ${jobId}, taskId: ${taskId}, progress: ${progress}%`);
+        logger.info(`[JobProgressSender] [sendJobProgress] [success] Job progress message sent for jobId: ${jobId}, taskId: ${taskId}, progress: ${progress}%`);
     } catch (error) {
-        logger.error(`Failed to send job progress message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[JobProgressSender] [sendJobProgress] [error] Failed to send job progress message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
         throw error;
     }
 }

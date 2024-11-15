@@ -1,4 +1,7 @@
-// src/senders/alertSender.js
+/**
+ * src\senders\alertSender.js
+ */
+
 const { sendMessage, topics } = require('../messageService');
 const logger = require('../utils/logger');
 
@@ -10,11 +13,14 @@ const logger = require('../utils/logger');
  * @returns {Promise<void>}
  */
 async function sendAlert(taskId, alertType, messageText) {
-    // Validate inputs
+    // Girişleri doğrula
     if (typeof taskId !== 'string' || typeof alertType !== 'string' || typeof messageText !== 'string') {
-        logger.error('Invalid arguments passed to sendAlert');
+        logger.alert(`[AlertSender] [sendAlert] [alert] Invalid arguments for taskId: ${taskId}`);
         throw new Error('Invalid arguments');
     }
+
+    // Debug log
+    logger.debug(`[AlertSender] [sendAlert] [debug] Starting sendAlert for taskId: ${taskId} with alertType: ${alertType}`);
 
     const message = {
         key: `alert-${taskId}`,
@@ -27,13 +33,11 @@ async function sendAlert(taskId, alertType, messageText) {
     };
 
     try {
-        // Send the alert message to the alerts topic
         await sendMessage(topics.alerts, [message]);
-        logger.info(`Alert message sent for taskId: ${taskId} with alert type: ${alertType}`);
+        logger.info(`[AlertSender] [sendAlert] [info] Alert sent successfully for taskId: ${taskId} with alert type: ${alertType}`);
     } catch (error) {
-        // Log error if message sending fails
-        logger.error(`Failed to send alert message for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;  // Re-throw the error to be handled upstream if needed
+        logger.error(`[AlertSender] [sendAlert] [error] Failed to send alert for taskId: ${taskId} - ${error.message}`);
+        throw error;
     }
 }
 

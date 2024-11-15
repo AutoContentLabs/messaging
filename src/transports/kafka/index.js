@@ -1,5 +1,6 @@
-// src/transports/kafka/index.js
-
+/**
+ * src\transports\kafka\index.js
+ */
 const logger = require('../../utils/logger'); // Logger utility
 const { kafkaConfig, config } = require('./config'); // Kafka configuration file
 const { Kafka, Partitioners, CompressionTypes } = require('kafkajs'); // KafkaJS library
@@ -16,24 +17,24 @@ process.on('SIGINT', async () => {
     // Kafka consumer connection
     if (consumer) {
       await consumer.disconnect();
-      logger.info("Kafka consumer disconnected successfully");
+      logger.debug(`[SIGINT] [consumer] disconnected`);
     }
 
     // Producer connection
     if (producer) {
       await producer.disconnect();
-      logger.info("Kafka producer disconnected successfully");
+      logger.debug(`[SIGINT] [producer] disconnected`);
     }
 
     // Admin connection
     if (admin) {
       await admin.disconnect();
-      logger.info("Kafka admin disconnected successfully");
+      logger.debug(`[SIGINT] [admin] disconnected`);
     }
   } catch (error) {
-    logger.error(`Error during shutdown: ${error.message}`);
+    logger.error(`[SIGINT] [shutdown] [error] ${error.message}`);
   } finally {
-    console.log("Application shutting down...");
+    logger.info(`[SIGINT] [shutdown] Application shutting down...`);
     process.exit(0); // Gracefully shutdown the application
   }
 });
@@ -58,12 +59,12 @@ async function createTopicIfNotExists(topic) {
           },
         ],
       });
-      logger.info(`Topic [${topic}] created successfully.`);
+      logger.debug(`[TOPIC] [create] Topic created: ${topic}`);
     } else {
-      logger.info(`Topic [${topic}] already exists.`);
+      logger.debug(`[TOPIC] [exists] Topic already exists: ${topic}`);
     }
   } catch (error) {
-    logger.error(`Error creating topic ${topic}: ${error.message}`);
+    logger.error(`[TOPIC] [create] [error] ${topic} - ${error.message}`);
   } finally {
     await admin.disconnect(); // Ensure disconnect after admin operations
   }
@@ -87,27 +88,20 @@ async function startListener(topic, onMessage) {
     }
 
     await consumer.subscribe({ topic, fromBeginning: true }); // Subscribe to the topic
-    logger.info(`Starting listener on topic [${topic}]...`);
+    logger.info(`[LISTENER] [subscribe] Subscribed to topic: ${topic}`);
 
     const consumerStartTime = Date.now();
     await consumer.run({
       eachMessage: async (item) => {
         const startTime = Date.now();
         try {
-          // on Message Before
-          let = { topic, partition, message, heartbeatFunc, pauseFunc } = item
-          let { key, value, timestamp, offset, headers, batchContext } = message
-          let { producerId } = batchContext
-          logger.debug(topic, `${timestamp}, ${producerId}, ${partition}, ${offset}, ${key}`)
-          // Call your message processing function here
+          logger.debug(`[LISTENER] [eachMessage] Processing message - ${JSON.stringify(item)}`);
           if (onMessage) {
             await onMessage(item);
           }
-          // on Message After
-          // Process the message (for now logging it)
-          logger.info(`processed in ${Date.now() - startTime} ms`);
+          logger.debug(`[LISTENER] [eachMessage] Message processed in ${Date.now() - startTime} ms`);
         } catch (processError) {
-          logger.error(`Error processing message: ${processError.message}`);
+          logger.error(`[LISTENER] [eachMessage] [processError] ${processError.message}`);
         }
       },
       autoCommit: true, // Prevent auto commit of messages
@@ -117,9 +111,9 @@ async function startListener(topic, onMessage) {
       maxWaitTimeInMs: 500,
     });
 
-    logger.info(`Consumer is running and processing messages. ${Date.now() - consumerStartTime} ms`);
+    logger.debug(`[LISTENER] [consumer.run] Consumer started in ${Date.now() - consumerStartTime} ms`);
   } catch (error) {
-    logger.error(`Error in startListener for topic ${topic}: ${error.message}`);
+    logger.error(`[LISTENER] [Error] [topic: ${topic}] ${error.message}`);
   }
 }
 
@@ -133,7 +127,7 @@ async function startListener(topic, onMessage) {
  */
 async function sendMessage(topic, messagesArray) {
   if (!Array.isArray(messagesArray) || messagesArray.length === 0) {
-    logger.warn("No messages to send. Message array is empty or invalid.");
+    logger.warn(`[SEND] [check] No messages to send. Message array is empty or invalid.`);
     return;
   }
 
@@ -151,9 +145,9 @@ async function sendMessage(topic, messagesArray) {
       compression: CompressionTypes.GZIP,
     });
 
-    logger.info(`Sent ${messagesArray.length} message(s) to Kafka topic "${topic}"`);
+    logger.debug(`[SEND] [message] Sent ${messagesArray.length} message(s) to topic: ${topic}`);
   } catch (error) {
-    logger.error(`Error sending message(s) to ${topic}: ${error.message}`);
+    logger.error(`[SEND] [message] [error] ${topic} - ${error.message}`);
   }
 }
 

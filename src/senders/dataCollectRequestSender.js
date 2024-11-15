@@ -11,9 +11,11 @@ const logger = require('../utils/logger');
  */
 async function sendDataCollectRequest(taskId, source, parameters) {
     if (typeof taskId !== 'string' || typeof source !== 'string' || typeof parameters !== 'object') {
-        logger.error('Invalid arguments passed to sendDataCollectRequest');
+        logger.crit(`[DataCollectRequestSender] [sendDataCollectRequest] [crit] Invalid arguments passed for taskId: ${taskId}, source: ${source}`);
         throw new Error('Invalid arguments');
     }
+
+    logger.debug(`[DataCollectRequestSender] [sendDataCollectRequest] [debug] Starting to send data collection request for taskId: ${taskId}, source: ${source}`);
 
     const message = {
         key: `dataCollectRequest-${taskId}`,
@@ -29,10 +31,10 @@ async function sendDataCollectRequest(taskId, source, parameters) {
 
     try {
         await sendMessage(topics.dataCollectRequest, [message]);
-        logger.info(`Data collect request sent for taskId: ${taskId}, source: ${source}`);
+        logger.info(`[DataCollectRequestSender] [sendDataCollectRequest] [info] Data collect request sent successfully for taskId: ${taskId}, source: ${source}`);
     } catch (error) {
-        logger.error(`Failed to send data collect request for taskId: ${taskId}, source: ${source}. Error: ${error.message}`);
-        throw error;  // Re-throw error to handle it upstream if needed
+        logger.error(`[DataCollectRequestSender] [sendDataCollectRequest] [error] Failed to send data collect request for taskId: ${taskId}, source: ${source}. Error: ${error.message}`);
+        throw error;
     }
 }
 

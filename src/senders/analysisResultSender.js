@@ -12,7 +12,7 @@ const logger = require('../utils/logger');
 async function sendAnalysisResult(taskId, analysisType, result) {
     // Validate inputs
     if (typeof taskId !== 'string' || typeof analysisType !== 'string' || typeof result !== 'object') {
-        logger.error('Invalid arguments passed to sendAnalysisResult');
+        logger.alert(`[AnalysisResultSender] [sendAnalysisResult] [alert] Invalid arguments for taskId: ${taskId}`);
         throw new Error('Invalid arguments');
     }
 
@@ -31,10 +31,10 @@ async function sendAnalysisResult(taskId, analysisType, result) {
     try {
         // Send the analysis result message to the analysisResult topic
         await sendMessage(topics.analysisResult, [message]);
-        logger.info(`Analysis result sent for taskId: ${taskId} with analysis type: ${analysisType}`);
+        logger.info(`[AnalysisResultSender] [sendAnalysisResult] [info] Analysis result sent successfully for taskId: ${taskId} with analysis type: ${analysisType}`);
     } catch (error) {
         // Log error if message sending fails
-        logger.error(`Failed to send analysis result for taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[AnalysisResultSender] [sendAnalysisResult] [error] Failed to send analysis result for taskId: ${taskId}. Error: ${error.message}`);
         throw error;  // Re-throw the error to be handled upstream if needed
     }
 }

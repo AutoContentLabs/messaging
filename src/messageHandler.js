@@ -3,7 +3,7 @@ const logger = require("./utils/logger");
 /**
  * Handles incoming messages.
  * 
- * @param {string} topic - The Kafka topic from which the message was received.
+ * @param {string} topic - The topic from which the message was received.
  * @param {number} partition - The partition number from which the message was received.
  * @param {Object} message - The message object containing key, value, timestamp, and offset.
  * @param {Buffer} message.key - The key of the message.
@@ -18,7 +18,7 @@ async function onMessage({ topic, partition, message }) {
     const value = message.value; // from buffer
 
     // Log the message header details
-    logger.info(`Received: [${topic}] [${partition}] [${key}] [${offset}] [${timestamp}]`);
+    logger.debug(`[onMessage] [debug] Received message - topic: ${topic}, partition: ${partition}, key: ${key}, offset: ${offset}, timestamp: ${timestamp}`);
 
     try {
         // Attempt to parse the value assuming it's a JSON object
@@ -26,21 +26,20 @@ async function onMessage({ topic, partition, message }) {
         if (value) {
             try {
                 parsedValue = JSON.parse(value.toString());
+                logger.debug(`[onMessage] [debug] Parsed message value successfully - topic: ${topic}, parsedValue: ${JSON.stringify(parsedValue)}`);
             } catch (error) {
-                logger.warn(`Failed to parse message value as JSON. Raw data: ${value.toString()}`);
+                logger.warn(`[onMessage] [warn] Failed to parse message value as JSON - topic: ${topic}, error: ${error.message}, value: ${value.toString()}`);
             }
         }
 
-        // Log parsed value if available
-        if (parsedValue) {
-            logger.debug(`Parsed Value: ${JSON.stringify(parsedValue)}`);
-        } else {
-            logger.debug(`Message Value (non-parsed): ${value.toString()}`);
+        // Log parsed value or raw value if parsing failed
+        if (!parsedValue) {
+            logger.debug(`[onMessage] [debug] Message value as string - topic: ${topic}, value: ${value.toString()}`);
         }
 
     } catch (error) {
         // Log any error during the processing of the message
-        logger.error(`Error processing message: ${error.message}`);
+        logger.error(`[onMessage] [error] Error processing Kafka message - topic: ${topic}, partition: ${partition}, error: ${error.message}`);
     }
 }
 

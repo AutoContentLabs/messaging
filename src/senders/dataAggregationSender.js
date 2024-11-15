@@ -12,9 +12,11 @@ const logger = require('../utils/logger');
 async function sendDataAggregation(jobId, taskId, aggregatedData) {
     // Validate inputs
     if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof aggregatedData !== 'object') {
-        logger.error('Invalid arguments passed to sendDataAggregation');
+        logger.crit(`[DataAggregationSender] [sendDataAggregation] [crit] Invalid arguments passed for jobId: ${jobId}, taskId: ${taskId}`);
         throw new Error('Invalid arguments');
     }
+
+    logger.debug(`[DataAggregationSender] [sendDataAggregation] [debug] Starting data aggregation for jobId: ${jobId}, taskId: ${taskId}`);
 
     const message = {
         key: `dataAggregation-${jobId}`,
@@ -29,13 +31,11 @@ async function sendDataAggregation(jobId, taskId, aggregatedData) {
     };
 
     try {
-        // Send the data aggregation message to the dataAggregation topic
         await sendMessage(topics.dataAggregation, [message]);
-        logger.info(`Data aggregation completed successfully for jobId: ${jobId}, taskId: ${taskId}`);
+        logger.info(`[DataAggregationSender] [sendDataAggregation] [info] Data aggregation completed successfully for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
-        // Log error if message sending fails
-        logger.error(`Failed to send data aggregation message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
-        throw error;  // Re-throw the error to be handled upstream if needed
+        logger.error(`[DataAggregationSender] [sendDataAggregation] [error] Failed to send data aggregation message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        throw error;
     }
 }
 

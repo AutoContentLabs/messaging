@@ -1,4 +1,7 @@
-// src/senders/dataCollectErrorSender.js
+/**
+ * src\senders\dataCollectErrorSender.js
+ */
+
 const { sendMessage, topics } = require('../messageService');
 const logger = require('../utils/logger');
 
@@ -12,9 +15,11 @@ const logger = require('../utils/logger');
 async function sendDataCollectError(taskId, errorCode, errorMessage) {
     // Validate inputs
     if (typeof taskId !== 'string' || typeof errorCode !== 'string' || typeof errorMessage !== 'string') {
-        logger.error('Invalid arguments passed to sendDataCollectError');
+        logger.crit(`[DataCollectErrorSender] [sendDataCollectError] [crit] Invalid arguments passed for taskId: ${taskId}, errorCode: ${errorCode}`);
         throw new Error('Invalid arguments');
     }
+
+    logger.debug(`[DataCollectErrorSender] [sendDataCollectError] [debug] Starting to send error message for taskId: ${taskId}, errorCode: ${errorCode}`);
 
     const message = {
         key: `dataCollectError-${taskId}`,
@@ -27,13 +32,11 @@ async function sendDataCollectError(taskId, errorCode, errorMessage) {
     };
 
     try {
-        // Send the error message to the error topic
         await sendMessage(topics.dataCollectError, [message]);
-        logger.info(`Error message sent for taskId: ${taskId} with error code: ${errorCode}`);
+        logger.info(`[DataCollectErrorSender] [sendDataCollectError] [info] Error message sent successfully for taskId: ${taskId} with error code: ${errorCode}`);
     } catch (error) {
-        // Log error if message sending fails
-        logger.error(`Failed to send error message for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;  // Re-throw the error to be handled upstream if needed
+        logger.error(`[DataCollectErrorSender] [sendDataCollectError] [error] Failed to send error message for taskId: ${taskId}. Error: ${error.message}`);
+        throw error;
     }
 }
 

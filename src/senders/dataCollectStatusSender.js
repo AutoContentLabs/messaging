@@ -11,7 +11,7 @@ const logger = require('../utils/logger');
  */
 async function sendDataCollectStatus(taskId, status, messageText) {
     if (typeof taskId !== 'string' || typeof status !== 'string' || typeof messageText !== 'string') {
-        logger.error('Invalid arguments passed to sendDataCollectStatus');
+        logger.error('[DataCollectStatusSender] [sendDataCollectStatus] [error] Invalid arguments passed to sendDataCollectStatus');
         throw new Error('Invalid arguments');
     }
 
@@ -27,9 +27,9 @@ async function sendDataCollectStatus(taskId, status, messageText) {
 
     try {
         await sendMessage(topics.dataCollectStatus, [message]);
-        logger.info(`Data collect status sent for taskId: ${taskId} with status: ${status}`);
+        logger.info(`[DataCollectStatusSender] [sendDataCollectStatus] [success] Data collect status sent successfully for taskId: ${taskId} with status: ${status}`);
     } catch (error) {
-        logger.error(`Failed to send data collect status for taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[DataCollectStatusSender] [sendDataCollectStatus] [error] Failed to send data collect status for taskId: ${taskId}. Error: ${error.message}`);
         throw error;  // Re-throw error to handle it upstream if needed
     }
 }

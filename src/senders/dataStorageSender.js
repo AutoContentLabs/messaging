@@ -11,7 +11,7 @@ const logger = require('../utils/logger');
  */
 async function sendDataStorage(jobId, taskId, data) {
     if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof data !== 'object') {
-        logger.error('Invalid arguments passed to sendDataStorage');
+        logger.error('[DataStorageSender] [sendDataStorage] [error] Invalid arguments passed to sendDataStorage');
         throw new Error('Invalid arguments');
     }
 
@@ -29,9 +29,9 @@ async function sendDataStorage(jobId, taskId, data) {
 
     try {
         await sendMessage(topics.dataStorage, [message]);
-        logger.info(`Data storage message sent for jobId: ${jobId}, taskId: ${taskId}`);
+        logger.info(`[DataStorageSender] [sendDataStorage] [success] Data storage message sent for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
-        logger.error(`Failed to send data storage message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[DataStorageSender] [sendDataStorage] [error] Failed to send data storage message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
         throw error;
     }
 }

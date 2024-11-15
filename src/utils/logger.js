@@ -58,6 +58,7 @@ const customLevels = {
   }
 };
 
+
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'debug',
   levels: customLevels.levels,

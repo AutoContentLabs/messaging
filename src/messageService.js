@@ -26,35 +26,31 @@ const topics = transports.topics;
  */
 async function sendMessage(topic, messageArray) {
     try {
+        // Log sending attempt details
+        logger.debug(`[sendMessage] [debug] Starting to send message to Kafka topic: ${topic}, message count: ${messageArray.length}, transport: ${transports.config.transport}`);
 
         // Send messages in parallel for better throughput
         await Promise.all(messageArray.map(message => transport.sendMessage(topic, [message])));
-        logger.info(`Messages sent to ${topic} via ${transports.config.transport}`);
-
-
-        // // Batch sending allows for sending multiple messages at once to improve throughput.
-        // await transport.sendMessage(topic, messageArray);
-        // logger.info(`Message sent to ${topic} via ${transports.config.transport}`);
-
-
-
+        logger.debug(`[sendMessage] [debug] Successfully sent messages to Kafka topic: ${topic}, message count: ${messageArray.length}, transport: ${transports.config.transport}`);
     } catch (error) {
-        logger.error(`Failed to send message to ${topic}: ${error.message}`);
-       
+        logger.error(`[sendMessage] [error] Failed to send messages to Kafka topic: ${topic}, error: ${error.message}, transport: ${transports.config.transport}`);
+
         // Implementing retry logic for transient issues (with max retries)
         const maxRetries = 3;
         let attempt = 0;
         while (attempt < maxRetries) {
             try {
+                logger.debug(`[sendMessage] [debug] Retrying to send message to Kafka topic: ${topic}, attempt: ${attempt + 1}`);
+
                 await transport.sendMessage(topic, messageArray);
-                logger.info(`Retry ${attempt + 1} successful for ${topic}`);
+                logger.debug(`[sendMessage] [debug] Successfully retried sending messages to Kafka topic: ${topic}, attempt: ${attempt + 1}`);
                 return;
             } catch (retryError) {
                 attempt++;
-                logger.warn(`Retry ${attempt} failed for ${topic}: ${retryError.message}`);
+                logger.warn(`[sendMessage] [warn] Retry attempt failed to send message to Kafka topic: ${topic}, attempt: ${attempt}, retry error: ${retryError.message}`);
             }
         }
-        
+
         // After max retries, throw the error to notify the system
         throw new Error(`Failed to send message to ${topic} after ${maxRetries} retries`);
     }
@@ -76,13 +72,13 @@ async function startListener(topic, onMessage) {
                 // Asynchronous processing for messages to avoid blocking
                 await onMessage(message);
             } catch (error) {
-                logger.error(`Error processing message from ${topic}: ${error.message}`);
+                logger.error(`[startListener] [error] Error processing message in listener for topic: ${topic}, error: ${error.message}`);
             }
         });
-        logger.info(`Listening [${topic}] [${transports.config.transport}]`);
+        logger.debug(`[startListener] [debug] Started listener for Kafka topic: ${topic}, transport: ${transports.config.transport}`);
     } catch (error) {
-        logger.error(`Failed to start listener for ${topic}: ${error.message}`);
-        // Retry logic can be added here as well for listener issues.
+        logger.error(`[startListener] [error] Error starting listener for Kafka topic: ${topic}, error: ${error.message}`);
+        // Retry logic for listener could be implemented here as well.
         throw error;
     }
 }

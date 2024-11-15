@@ -12,7 +12,7 @@ const logger = require('../utils/logger');
 async function sendJobScheduleCreate(jobId, taskId, schedule) {
     // Validate parameters
     if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof schedule !== 'object') {
-        logger.error('Invalid arguments passed to sendJobScheduleCreate');
+        logger.error('[JobScheduleSender] [sendJobScheduleCreate] [error] Invalid arguments passed to sendJobScheduleCreate');
         throw new Error('Invalid arguments');
     }
 
@@ -31,9 +31,9 @@ async function sendJobScheduleCreate(jobId, taskId, schedule) {
 
     try {
         await sendMessage(topics.jobScheduleCreate, [message]);
-        logger.info(`Job schedule creation message sent for jobId: ${jobId}, taskId: ${taskId}`);
+        logger.info(`[JobScheduleSender] [sendJobScheduleCreate] [success] Job schedule creation message sent for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
-        logger.error(`Failed to send job schedule creation message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[JobScheduleSender] [sendJobScheduleCreate] [error] Failed to send job schedule creation message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
         throw error;
     }
 }
@@ -48,7 +48,7 @@ async function sendJobScheduleCreate(jobId, taskId, schedule) {
 async function sendJobScheduleUpdate(jobId, taskId, schedule) {
     // Validate parameters
     if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof schedule !== 'object') {
-        logger.error('Invalid arguments passed to sendJobScheduleUpdate');
+        logger.error('[JobScheduleSender] [sendJobScheduleUpdate] [error] Invalid arguments passed to sendJobScheduleUpdate');
         throw new Error('Invalid arguments');
     }
 
@@ -66,9 +66,9 @@ async function sendJobScheduleUpdate(jobId, taskId, schedule) {
 
     try {
         await sendMessage(topics.jobScheduleUpdate, [message]);
-        logger.info(`Job schedule update message sent for jobId: ${jobId}, taskId: ${taskId}`);
+        logger.info(`[JobScheduleSender] [sendJobScheduleUpdate] [success] Job schedule update message sent for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
-        logger.error(`Failed to send job schedule update message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[JobScheduleSender] [sendJobScheduleUpdate] [error] Failed to send job schedule update message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
         throw error;
     }
 }

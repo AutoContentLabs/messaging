@@ -10,7 +10,7 @@ const logger = require('../utils/logger');
  */
 async function sendDataProcessingStart(jobId, taskId) {
     if (typeof jobId !== 'string' || typeof taskId !== 'string') {
-        logger.error('Invalid jobId or taskId in sendDataProcessingStart');
+        logger.error('[DataProcessingSender] [sendDataProcessingStart] [error] Invalid jobId or taskId in sendDataProcessingStart');
         throw new Error('Invalid jobId or taskId');
     }
 
@@ -27,9 +27,9 @@ async function sendDataProcessingStart(jobId, taskId) {
 
     try {
         await sendMessage(topics.dataProcessingStart, [startMessage]);
-        logger.info(`Data processing started for jobId: ${jobId}, taskId: ${taskId}`);
+        logger.info(`[DataProcessingSender] [sendDataProcessingStart] [success] Data processing started for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
-        logger.error(`Failed to send start message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[DataProcessingSender] [sendDataProcessingStart] [error] Failed to send start message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
         throw error;
     }
 }
@@ -44,7 +44,7 @@ async function sendDataProcessingStart(jobId, taskId) {
  */
 async function sendDataProcessingStatus(jobId, taskId, status, statusMessage) {
     if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof status !== 'string' || typeof statusMessage !== 'string') {
-        logger.error('Invalid arguments passed to sendDataProcessingStatus');
+        logger.error('[DataProcessingSender] [sendDataProcessingStatus] [error] Invalid arguments passed to sendDataProcessingStatus');
         throw new Error('Invalid arguments');
     }
 
@@ -61,9 +61,9 @@ async function sendDataProcessingStatus(jobId, taskId, status, statusMessage) {
 
     try {
         await sendMessage(topics.dataProcessingStatus, [statusMessageData]);
-        logger.info(`Data processing status updated for jobId: ${jobId}, taskId: ${taskId}`);
+        logger.info(`[DataProcessingSender] [sendDataProcessingStatus] [success] Data processing status updated for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
-        logger.error(`Failed to send status message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[DataProcessingSender] [sendDataProcessingStatus] [error] Failed to send status message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
         throw error;
     }
 }
@@ -77,7 +77,7 @@ async function sendDataProcessingStatus(jobId, taskId, status, statusMessage) {
  */
 async function sendDataProcessingResult(jobId, taskId, result) {
     if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof result !== 'object') {
-        logger.error('Invalid arguments passed to sendDataProcessingResult');
+        logger.error('[DataProcessingSender] [sendDataProcessingResult] [error] Invalid arguments passed to sendDataProcessingResult');
         throw new Error('Invalid arguments');
     }
 
@@ -95,9 +95,9 @@ async function sendDataProcessingResult(jobId, taskId, result) {
 
     try {
         await sendMessage(topics.dataProcessingResult, [resultMessage]);
-        logger.info(`Data processing completed for jobId: ${jobId}, taskId: ${taskId}`);
+        logger.info(`[DataProcessingSender] [sendDataProcessingResult] [success] Data processing completed for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
-        logger.error(`Failed to send result message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[DataProcessingSender] [sendDataProcessingResult] [error] Failed to send result message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
         throw error;
     }
 }

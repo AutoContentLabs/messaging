@@ -11,28 +11,28 @@ const logger = require('../utils/logger');
 async function sendDashboardUpdate(taskId, stats) {
     // Validate inputs
     if (typeof taskId !== 'string' || typeof stats !== 'object') {
-        logger.error('Invalid arguments passed to sendDashboardUpdate');
+        logger.alert(`[DashboardSender] [sendDashboardUpdate] [alert] Invalid arguments for taskId: ${taskId}`);
         throw new Error('Invalid arguments');
     }
+
+    logger.debug(`[DashboardSender] [sendDashboardUpdate] [debug] Starting dashboard update for taskId: ${taskId}`);
 
     const message = {
         key: `dashboard-${taskId}`,
         value: Buffer.from(JSON.stringify({
             timestamp: new Date().toISOString(),
             taskId,
-            stats, // Example: { 'AI in healthcare': 15000, 'Quantum Computing': 12000 }
+            stats,
             message: 'Dashboard updated with trend statistics.'
         }))
     };
 
     try {
-        // Send the dashboard update message to the dashboard topic
         await sendMessage(topics.dashboard, [message]);
-        logger.info(`Dashboard updated successfully for taskId: ${taskId}`);
+        logger.info(`[DashboardSender] [sendDashboardUpdate] [info] Dashboard update sent successfully for taskId: ${taskId}`);
     } catch (error) {
-        // Log error if message sending fails
-        logger.error(`Failed to send dashboard update for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;  // Re-throw the error to be handled upstream if needed
+        logger.error(`[DashboardSender] [sendDashboardUpdate] [error] Failed to send message for taskId: ${taskId} - ${error.message}`);
+        throw error;
     }
 }
 

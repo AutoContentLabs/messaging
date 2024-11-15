@@ -13,7 +13,7 @@ async function sendReport(taskId, reportType, data) {
     // Validate reportType
     const validReportTypes = ['trend-report', 'user-engagement', 'content-performance']; // Example types
     if (!validReportTypes.includes(reportType)) {
-        logger.error(`Invalid report type: ${reportType} for taskId: ${taskId}`);
+        logger.error(`[ReportSender] [sendReport] [error] Invalid report type: ${reportType} for taskId: ${taskId}`);
         throw new Error(`Invalid report type: ${reportType}`);
     }
 
@@ -33,9 +33,9 @@ async function sendReport(taskId, reportType, data) {
     try {
         // Send the message to Kafka topic
         await sendMessage(topics.reports, [message]);
-        logger.info(`Report sent for taskId: ${taskId} with report type: ${reportType}`);
+        logger.info(`[ReportSender] [sendReport] [success] Report sent for taskId: ${taskId} with report type: ${reportType}`);
     } catch (error) {
-        logger.error(`Failed to send report for taskId: ${taskId}. Error: ${error.message}`);
+        logger.error(`[ReportSender] [sendReport] [error] Failed to send report for taskId: ${taskId}. Error: ${error.message}`);
         throw error;  // Re-throw error to handle it upstream if needed
     }
 }
