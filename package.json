@@ -1,7 +1,7 @@
 {
   "name": "@auto-content-labs/messaging",
   "version": "1.0.2",
-  "description": "A flexible messaging module supporting Kafka",
+  "description": "A flexible messaging system",
   "main": "src/index.js",
   "scripts": {
     "start": "dotenvx run -f .env -- node src/index.js",
@@ -23,5 +23,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

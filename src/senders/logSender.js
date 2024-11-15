@@ -1,5 +1,9 @@
-// src/senders/logSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\logSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -23,20 +27,26 @@ async function sendLog(taskId, logLevel, messageText) {
         throw new Error(`Invalid log level: ${logLevel}`);
     }
 
-    // Prepare message object
-    const message = {
-        key: `log-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(), // ISO string format
-            logLevel,
-            taskId,
-            message: messageText
-        }))
-    };
+    // parameters
+    const key = `log-${taskId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(), // ISO string format
+                logLevel,
+                taskId,
+                message: messageText
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
         // Attempt to send the log message to Kafka
-        await sendMessage(topics.logs, [message]);
+        await sendMessage(topics.logs, pairs);
         logger.info(`[LogSender] [sendLog] [success] Log sent for taskId: ${taskId} with log level: ${logLevel}`);
     } catch (error) {
         // Log the error and rethrow to propagate

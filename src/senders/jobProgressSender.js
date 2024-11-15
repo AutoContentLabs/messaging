@@ -1,5 +1,9 @@
-// src/senders/jobProgressSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\jobProgressSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -17,19 +21,26 @@ async function sendJobProgress(jobId, taskId, progress, message) {
         throw new Error('Invalid arguments');
     }
 
-    const jobProgressMessage = {
-        key: `jobProgress-${jobId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            jobId,
-            taskId,
-            progress, // e.g., 65 for 65%
-            message
-        }))
-    };
+    // parameters
+    const key = `jobProgress-${jobId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                jobId,
+                taskId,
+                progress, // e.g., 65 for 65%
+                message
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
-        await sendMessage(topics.jobProgress, [jobProgressMessage]);
+        await sendMessage(topics.jobProgress, pairs);
         logger.info(`[JobProgressSender] [sendJobProgress] [success] Job progress message sent for jobId: ${jobId}, taskId: ${taskId}, progress: ${progress}%`);
     } catch (error) {
         logger.error(`[JobProgressSender] [sendJobProgress] [error] Failed to send job progress message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);

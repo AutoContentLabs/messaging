@@ -1,5 +1,9 @@
-// src/senders/dataAggregationSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\dataAggregationSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -18,20 +22,27 @@ async function sendDataAggregation(jobId, taskId, aggregatedData) {
 
     logger.debug(`[DataAggregationSender] [sendDataAggregation] [debug] Starting data aggregation for jobId: ${jobId}, taskId: ${taskId}`);
 
-    const message = {
-        key: `dataAggregation-${jobId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            jobId,
-            taskId,
-            aggregatedData, // Example: { 'AI in healthcare': 35000, 'Quantum Computing': 24000 }
-            status: 'aggregated',
-            message: 'Data aggregation completed.'
-        }))
-    };
+    // parameters
+    const key = `dataAggregation-${jobId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                jobId,
+                taskId,
+                aggregatedData, // Example: { 'AI in healthcare': 35000, 'Quantum Computing': 24000 }
+                status: 'aggregated',
+                message: 'Data aggregation completed.'
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
-        await sendMessage(topics.dataAggregation, [message]);
+        await sendMessage(topics.dataAggregation, pairs);
         logger.info(`[DataAggregationSender] [sendDataAggregation] [info] Data aggregation completed successfully for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
         logger.error(`[DataAggregationSender] [sendDataAggregation] [error] Failed to send data aggregation message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);

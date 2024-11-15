@@ -1,5 +1,9 @@
-// src/senders/dashboardSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\dashboardSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -8,32 +12,39 @@ const logger = require('../utils/logger');
  * @param {object} stats - The statistics to update on the dashboard (e.g., { 'AI in healthcare': 15000, 'Quantum Computing': 12000 }).
  * @returns {Promise<void>}
  */
-async function sendDashboardUpdate(taskId, stats) {
+async function sendDashboard(taskId, stats) {
     // Validate inputs
     if (typeof taskId !== 'string' || typeof stats !== 'object') {
-        logger.alert(`[DashboardSender] [sendDashboardUpdate] [alert] Invalid arguments for taskId: ${taskId}`);
+        logger.alert(`[DashboardSender] [sendDashboard] [alert] Invalid arguments for taskId: ${taskId}`);
         throw new Error('Invalid arguments');
     }
 
-    logger.debug(`[DashboardSender] [sendDashboardUpdate] [debug] Starting dashboard update for taskId: ${taskId}`);
+    logger.debug(`[DashboardSender] [sendDashboard] [debug] Starting dashboard update for taskId: ${taskId}`);
 
-    const message = {
-        key: `dashboard-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            taskId,
-            stats,
-            message: 'Dashboard updated with trend statistics.'
-        }))
-    };
+    // parameters
+    const key = `dashboard-${taskId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                taskId,
+                stats,
+                message: 'Dashboard updated with trend statistics.'
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
-        await sendMessage(topics.dashboard, [message]);
-        logger.info(`[DashboardSender] [sendDashboardUpdate] [info] Dashboard update sent successfully for taskId: ${taskId}`);
+        await sendMessage(topics.dashboard, pairs);
+        logger.info(`[DashboardSender] [sendDashboard] [info] Dashboard update sent successfully for taskId: ${taskId}`);
     } catch (error) {
-        logger.error(`[DashboardSender] [sendDashboardUpdate] [error] Failed to send message for taskId: ${taskId} - ${error.message}`);
+        logger.error(`[DashboardSender] [sendDashboard] [error] Failed to send message for taskId: ${taskId} - ${error.message}`);
         throw error;
     }
 }
 
-module.exports = { sendDashboardUpdate };
+module.exports = { sendDashboard };

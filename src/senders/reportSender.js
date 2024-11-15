@@ -1,5 +1,9 @@
-// src/senders/reportSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\reportSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -16,23 +20,30 @@ async function sendReport(taskId, reportType, data) {
         logger.error(`[ReportSender] [sendReport] [error] Invalid report type: ${reportType} for taskId: ${taskId}`);
         throw new Error(`Invalid report type: ${reportType}`);
     }
+    
+    // parameters
+    const key = `report-${taskId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                reportType,
+                taskId,
+                data, // The data related to the report
+                status: 'completed',
+                message: 'Report generated and sent.'
+            }
+        )
+    )
 
-    // Prepare the report message
-    const message = {
-        key: `report-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            reportType,
-            taskId,
-            data, // The data related to the report
-            status: 'completed',
-            message: 'Report generated and sent.'
-        }))
-    };
+    const pairs = [
+        { key, value }
+    ];
+
 
     try {
         // Send the message to Kafka topic
-        await sendMessage(topics.reports, [message]);
+        await sendMessage(topics.reports, pairs);
         logger.info(`[ReportSender] [sendReport] [success] Report sent for taskId: ${taskId} with report type: ${reportType}`);
     } catch (error) {
         logger.error(`[ReportSender] [sendReport] [error] Failed to send report for taskId: ${taskId}. Error: ${error.message}`);

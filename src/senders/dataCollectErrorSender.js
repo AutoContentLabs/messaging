@@ -2,7 +2,8 @@
  * src\senders\dataCollectErrorSender.js
  */
 
-const { sendMessage, topics } = require('../messageService');
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -21,18 +22,25 @@ async function sendDataCollectError(taskId, errorCode, errorMessage) {
 
     logger.debug(`[DataCollectErrorSender] [sendDataCollectError] [debug] Starting to send error message for taskId: ${taskId}, errorCode: ${errorCode}`);
 
-    const message = {
-        key: `dataCollectError-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            taskId,
-            errorCode,
-            message: errorMessage
-        }))
-    };
+    // parameters
+    const key = `dataCollectError-${taskId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                taskId,
+                errorCode,
+                message: errorMessage
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
-        await sendMessage(topics.dataCollectError, [message]);
+        await sendMessage(topics.dataCollectError, pairs);
         logger.info(`[DataCollectErrorSender] [sendDataCollectError] [info] Error message sent successfully for taskId: ${taskId} with error code: ${errorCode}`);
     } catch (error) {
         logger.error(`[DataCollectErrorSender] [sendDataCollectError] [error] Failed to send error message for taskId: ${taskId}. Error: ${error.message}`);

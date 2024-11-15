@@ -2,7 +2,8 @@
  * src\senders\alertSender.js
  */
 
-const { sendMessage, topics } = require('../messageService');
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -13,7 +14,7 @@ const logger = require('../utils/logger');
  * @returns {Promise<void>}
  */
 async function sendAlert(taskId, alertType, messageText) {
-    // Girişleri doğrula
+    // check
     if (typeof taskId !== 'string' || typeof alertType !== 'string' || typeof messageText !== 'string') {
         logger.alert(`[AlertSender] [sendAlert] [alert] Invalid arguments for taskId: ${taskId}`);
         throw new Error('Invalid arguments');
@@ -22,18 +23,25 @@ async function sendAlert(taskId, alertType, messageText) {
     // Debug log
     logger.debug(`[AlertSender] [sendAlert] [debug] Starting sendAlert for taskId: ${taskId} with alertType: ${alertType}`);
 
-    const message = {
-        key: `alert-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            alertType,
-            taskId,
-            message: messageText
-        }))
-    };
+    // parameters
+    const key = `alert-${taskId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                alertType,
+                taskId,
+                message: messageText
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
-        await sendMessage(topics.alerts, [message]);
+        await sendMessage(topics.alert, pairs);
         logger.info(`[AlertSender] [sendAlert] [info] Alert sent successfully for taskId: ${taskId} with alert type: ${alertType}`);
     } catch (error) {
         logger.error(`[AlertSender] [sendAlert] [error] Failed to send alert for taskId: ${taskId} - ${error.message}`);

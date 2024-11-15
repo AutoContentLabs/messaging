@@ -1,5 +1,9 @@
-// src/senders/dataCollectResponseSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\dataCollectResponseSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -38,19 +42,26 @@ async function sendDataCollectResponse(taskId, data) {
         dataToSend = data.toString('base64');
     }
 
-    const message = {
-        key: `dataCollectResponse-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            taskId,
-            status: 'completed',
-            data: dataToSend,
-            message: 'Data collection completed successfully.'
-        }))
-    };
+    // parameters
+    const key = `dataCollectResponse-${taskId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                taskId,
+                status: 'completed',
+                data: dataToSend,
+                message: 'Data collection completed successfully.'
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
-        await sendMessage(topics.dataCollectResponse, [message]);
+        await sendMessage(topics.dataCollectResponse, pairs);
         logger.info(`[DataCollectResponseSender] [sendDataCollectResponse] [success] Data collect response sent successfully for taskId: ${taskId}`);
     } catch (error) {
         logger.error(`[DataCollectResponseSender] [sendDataCollectResponse] [error] Failed to send data collect response for taskId: ${taskId}. Error: ${error.message}`);

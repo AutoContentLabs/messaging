@@ -1,5 +1,9 @@
-// src/senders/dataCollectStatusSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\dataCollectStatusSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -15,18 +19,25 @@ async function sendDataCollectStatus(taskId, status, messageText) {
         throw new Error('Invalid arguments');
     }
 
-    const message = {
-        key: `dataCollectStatus-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            taskId,
-            status,
-            message: messageText
-        }))
-    };
+    // parameters
+    const key = `dataCollectStatus-${taskId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                taskId,
+                status,
+                message: messageText
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
-        await sendMessage(topics.dataCollectStatus, [message]);
+        await sendMessage(topics.dataCollectStatus, pairs);
         logger.info(`[DataCollectStatusSender] [sendDataCollectStatus] [success] Data collect status sent successfully for taskId: ${taskId} with status: ${status}`);
     } catch (error) {
         logger.error(`[DataCollectStatusSender] [sendDataCollectStatus] [error] Failed to send data collect status for taskId: ${taskId}. Error: ${error.message}`);

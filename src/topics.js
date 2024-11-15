@@ -1,4 +1,4 @@
-// src/transports/topics.js
+// src/topics.js
 
 // Get the current environment or default to "development" if undefined
 const environment = process.env.NODE_ENV || "development";
@@ -45,12 +45,14 @@ const commonTopics = {
   analysisError: createTopicName("ANALYSIS_ERROR"),
 
   // System notifications and logging
-  alerts: createTopicName("ALERTS"),
-  logs: createTopicName("LOGS"),
+  alert: createTopicName("ALERT"),
+  log: createTopicName("LOG"),
 
-  // Reporting and dashboarding
-  reports: createTopicName("REPORTS"),
+  // Reporting and dashboard
+  report: createTopicName("REPORT"),
   dashboard: createTopicName("DASHBOARD")
 };
 
-module.exports = commonTopics;
+module.exports = {
+  topics: commonTopics
+};

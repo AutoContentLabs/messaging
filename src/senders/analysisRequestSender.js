@@ -1,5 +1,9 @@
-// src/senders/analysisRequestSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\analysisRequestSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -16,21 +20,28 @@ async function sendAnalysisRequest(taskId, analysisType, parameters) {
         throw new Error('Invalid arguments');
     }
 
-    const message = {
-        key: `analysisRequest-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            taskId,
-            analysisType,
-            parameters, // Example: { region: 'US', category: 'Technology' }
-            status: 'pending',
-            message: 'Requesting analysis for trends.'
-        }))
-    };
+    // parameters
+    const key = `analysisRequest-${taskId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                taskId,
+                analysisType,
+                parameters, // Example: { region: 'US', category: 'Technology' }
+                status: 'pending',
+                message: 'Requesting analysis for trends.'
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
         // Send the analysis request message to the analysisRequest topic
-        await sendMessage(topics.analysisRequest, [message]);
+        await sendMessage(topics.analysisRequest, pairs);
         logger.info(`[AnalysisRequestSender] [sendAnalysisRequest] [info] Analysis request sent successfully for taskId: ${taskId} with analysis type: ${analysisType}`);
     } catch (error) {
         // Log error if message sending fails

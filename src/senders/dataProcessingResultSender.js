@@ -1,5 +1,9 @@
-// src/senders/dataProcessingResultSender.js
-const { sendMessage, topics } = require('../messageService');
+/**
+ * src\senders\dataProcessingResultSender.js
+ */
+
+const { topics } = require("../topics")
+const { sendMessage } = require("../senders/messageSender");
 const logger = require('../utils/logger');
 
 /**
@@ -16,21 +20,28 @@ async function sendDataProcessingResult(jobId, taskId, result) {
         throw new Error('Invalid arguments');
     }
 
-    const message = {
-        key: `dataProcessingResult-${jobId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            jobId,
-            taskId,
-            result, // Example: { 'AI in healthcare': 85, 'Quantum Computing': 78 }
-            status: 'completed',
-            message: 'Data processing completed. Insights generated.'
-        }))
-    };
+    // parameters
+    const key = `dataProcessingResult-${jobId}`
+    const value = Buffer.from(
+        JSON.stringify(
+            {
+                timestamp: new Date().toISOString(),
+                jobId,
+                taskId,
+                result, // Example: { 'AI in healthcare': 85, 'Quantum Computing': 78 }
+                status: 'completed',
+                message: 'Data processing completed. Insights generated.'
+            }
+        )
+    )
+
+    const pairs = [
+        { key, value }
+    ];
 
     try {
         // Send the data processing result message to the dataProcessingResult topic
-        await sendMessage(topics.dataProcessingResult, [message]);
+        await sendMessage(topics.dataProcessingResult, pairs);
         logger.info(`[DataProcessingResultSender] [sendDataProcessingResult] [success] Data processing completed successfully for jobId: ${jobId}, taskId: ${taskId}`);
     } catch (error) {
         // Log error if message sending fails
