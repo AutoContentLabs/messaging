@@ -1,5 +1,6 @@
 /**
  * Environment Variables
+ * src\transporters\config.js
  */
 
 const environment = process.env.NODE_ENV || "development";
@@ -41,7 +42,7 @@ let KAFKA_CLIENT_ID = getStringEnvironmentVariable("KAFKA_CLIENT_ID", getUniqueI
 let KAFKA_GROUP_ID = getStringEnvironmentVariable("KAFKA_GROUP_ID", getUniqueId('group'))
 let KAFKA_RETRIES = getIntEnvironmentVariable("KAFKA_RETRIES", 5)
 let KAFKA_INITIAL_RETRY_TIME = getIntEnvironmentVariable("KAFKA_INITIAL_RETRY_TIME", 200)
-let KAFKA_REQUEST_TIMEOUT = getIntEnvironmentVariable("KAFKA_REQUEST_TIMEOUT", 30000) // 500
+let KAFKA_REQUEST_TIMEOUT = getIntEnvironmentVariable("KAFKA_REQUEST_TIMEOUT", 60000) // 500 or 30000
 let KAFKA_METADATA_MAX_AGE = getIntEnvironmentVariable("KAFKA_METADATA_MAX_AGE", 10000)
 let KAFKA_NUM_PARTITIONS = getIntEnvironmentVariable("KAFKA_NUM_PARTITIONS", 3)
 let KAFKA_REPLICATION_FACTOR = getIntEnvironmentVariable("KAFKA_REPLICATION_FACTOR", 1)

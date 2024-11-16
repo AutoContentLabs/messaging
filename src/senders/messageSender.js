@@ -21,7 +21,7 @@ async function sendMessage(topic, pairs) {
         logger.debug(`[sendMessage] [debug] Starting to send message to Kafka topic: ${topic}, message count: ${pairs.length}, transport: ${transporter_name}`);
 
         // Send messages in parallel for better throughput
-        await Promise.all(pairs.map(message => transporter.sendMessage(topic, [pair])));
+        await Promise.all(pairs.map(pair => transporter.sendMessage(topic, [pair])));
         logger.debug(`[sendMessage] [debug] Successfully sent messages to Kafka topic: ${topic}, message count: ${pairs.length}, transport: ${transporter_name}`);
     } catch (error) {
         logger.error(`[sendMessage] [error] Failed to send messages to Kafka topic: ${topic}, error: ${error.message}, transport: ${transporter_name}`);

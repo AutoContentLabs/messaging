@@ -1,5 +1,6 @@
 /**
  * KafkaConfig
+ * src\transporters\kafka\kafkaConfig.js
  */
 const config = require("../config")
 
