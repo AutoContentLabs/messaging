@@ -3,7 +3,7 @@ const os = require('os');
 
 function getInstanceInfo() {
     const hostInfo = {
-        name: os.hostname(), )
+        name: os.hostname()
     };
 
     const networkInfo = [];
