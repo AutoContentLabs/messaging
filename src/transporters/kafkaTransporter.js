@@ -99,7 +99,8 @@ async function listenMessage(topic, handler) {
             }
 
             logger.debug(`[KafkaTransporter] [listenMessage] [transformHandler]`, pair)
-            
+            logger.notice(`[KafkaTransporter] [listenMessage] [transformHandler] correlationId: ${pair.headers.correlationId}`)
+
             /**
              * Pair model
              * @param {string} topic - The name of the event to listen for.
@@ -159,7 +160,9 @@ async function sendMessage(topic, { key, value } = {}, useBuffer = true) {
 
         await kafkaSender.sendPairs(topic, pairs);
 
-        logger.debug(`[KafkaTransporter] [sendMessage] Sent ${pairs.length} message(s) to topic: ${topic}`, pairs);
+        logger.info(`[KafkaTransporter] [sendMessage] Sent ${pairs.length} message(s) to topic: ${topic}`, pairs);
+        logger.notice(`[KafkaTransporter] [sendMessage] Sent correlationId: ${pair.headers.correlationId}`);
+
     } catch (error) {
         logger.error(`[KafkaTransporter] [sendMessage] [error] ${topic} - ${error.message}`, pairs);
     }
@@ -217,7 +220,7 @@ async function sendMessages(topic, messages = []) {
                 }
             }
 
-            return transform;
+            return pair;
         }).filter(Boolean); // Remove null entries caused by invalid 
 
         if (pairs.length === 0) {
@@ -228,9 +231,10 @@ async function sendMessages(topic, messages = []) {
         // Send the transformed messages
         await kafkaSender.sendPairs(topic, pairs);
 
-        logger.notice(`[KafkaTransporter] [sendMessages] Sent ${pairs.length} message(s) to topic: ${topic}`, pairs);
+        logger.info(`[KafkaTransporter] [sendMessages] Sent ${pairs.length} message(s) to topic: ${topic}`, pairs);
+
     } catch (error) {
-        logger.error(`[KafkaTransporter] [sendMessages] [error] ${topic} - ${error.message}`, pairs);
+        logger.error(`[KafkaTransporter] [sendMessages] [error] ${topic} - ${error.message}`);
     }
 }
 
