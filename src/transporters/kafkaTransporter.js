@@ -1,98 +1,279 @@
-const logger = require("../utils/logger")
-const kafkaConfig = require("./kafka/kafkaConfig")
-const { init, producer, compressionType, consumer } = require("./kafka/kafkaClient")
+/**
+ * src/transporters/kafkaTransporter.js
+ */
+const { serialize, deserialize, MESSAGE_FORMATS } = require("../utils/transformer");
+const logger = require("../utils/logger");
+const KafkaListener = require("./kafka/KafkaListener");
+const KafkaAdmin = require("./kafka/KafkaAdmin");
 
-init(kafkaConfig)
+const kafkaListener = new KafkaListener();
+const kafkaAdmin = new KafkaAdmin();
+
+const KafkaSender = require("./kafka/KafkaSender");
+const kafkaSender = new KafkaSender();
+
+/**
+ * Starts the Kafka consumer listener to ensure it is connected and ready.
+ * 
+ * This function checks the Kafka topics and connects the consumer.
+ * 
+ * @returns {Promise<void>} - A promise indicating the completion of the listener start-up process.
+ */
+async function StartListener() {
+    try {
+        await kafkaAdmin.checkTopics();
+        await kafkaListener.kafkaConsumer.connect();
+    } catch (error) {
+        logger.error(`[KafkaTransporter] [StartListener] Error Kafka Transporter Listener...: ${error}`);
+    }
+}
+
+/**
+ * @param {Object} dataPackage - The Kafka message data.
+ * @param {Object} dataPackage.message - The Kafka message object.
+ * @param {string} dataPackage.message.key - The optional key of the message.
+ * @param {Object} dataPackage.message.value - The value of the message.
+ * @returns {Promise<void>} - A promise indicating that the handler has processed the message.
+ */
+async function saveLog(dataPackage) {
+    // --
+    // const { topic, message, partition, heartbeat, pause } = dataPackage
+    // const { attributes, timestamp, offset, key, value, headers, isControlRecord, batchContext } = message
+    // const { type, data } = value
+    // const { } = headers
+    // const { firstOffset, firstTimestamp, partitionLeaderEpoch, inTransaction, isControlBatch, lastOffsetDelta, producerId, producerEpoch, firstSequence, maxTimestamp, timestampType, magicByte } = batchContext
+    // logger.debug(`
+    //     Topic: ${topic || 'undefined'} 
+    //     Message: ${message || 'undefined'} 
+    //     Partition: ${partition || 'undefined'} 
+    //     Heartbeat: heartbeat() 
+    //     Pause: pause() 
+    //     Attributes: ${attributes || 'undefined'} 
+    //     Timestamp: ${timestamp || 'undefined'} 
+    //     Offset: ${offset || 'undefined'} 
+    //     Key: ${safeObjectJSON(key,false)} 
+    //     Value: ${safeObjectJSON(value,false)} 
+    //     Headers: ${safeObjectJSON(headers,false)} 
+    //     IsControlRecord: ${isControlRecord || 'undefined'} 
+    //     BatchContext: ${batchContext || 'undefined'} 
+    //     Type: ${type || 'undefined'} 
+    //     Data: ${data || 'undefined'} 
+    //     FirstOffset: ${firstOffset || 'undefined'} 
+    //     FirstTimestamp: ${firstTimestamp || 'undefined'} 
+    //     PartitionLeaderEpoch: ${partitionLeaderEpoch || 'undefined'} 
+    //     InTransaction: ${inTransaction || 'undefined'} 
+    //     IsControlBatch: ${isControlBatch || 'undefined'} 
+    //     LastOffsetDelta: ${lastOffsetDelta || 'undefined'} 
+    //     ProducerId: ${producerId || 'undefined'} 
+    //     ProducerEpoch: ${producerEpoch || 'undefined'} 
+    //     FirstSequence: ${firstSequence || 'undefined'} 
+    //     MaxTimestamp: ${maxTimestamp || 'undefined'} 
+    //     TimestampType: ${timestampType || 'undefined'} 
+    //     MagicByte: ${magicByte || 'undefined'} 
+    // `);
+
+    // --
+
+}
+/**
+ * Listens for incoming messages and triggers a handler when a specific message is received.
+ * 
+ * This function listens for a particular event (message) and, when triggered, it invokes
+ * the specified handler with the message data. The handler should be a function that can 
+ * handle a data pair, such as the `handleMessage` function.
+ * 
+ * @param {string} topic - The name of the event to listen for.
+ * @param {function({ key: (any|undefined), value: any })} handler - The callback function to handle the message data. The handler
+ *                              should expect an object containing a `key` and `value`, both of 
+ *                              which are JSON objects.
+ * @param {Object} handler.pair - The data object containing key-value pair from the Kafka message.
+ * @param {Object} handler.pair.key - The optional key of the message in JSON format.
+ * @param {Object} handler.pair.value - The value of the message in JSON format.
+ * @returns {Promise<void>} - A promise indicating the completion of the consumer setup.
+ * 
+ * @example
+ * // Example usage:
+ * listenMessage("test", ({ key, value }) => {
+ *     console.log(key, value);  // key is optional, value is required
+ * });
+ */
+async function listenMessage(topic, handler) {
+
+    try {
+
+        if (typeof handler !== 'function') {
+            throw new Error('Provided handler is not a function');
+        }
+
+        await StartListener();
+
+        logger.info(`[KafkaTransporter] [listenMessage] starting listening...: ${topic}`);
+        const listenerStartTime = Date.now();
+
+        /**
+         * Transforms the Kafka message data and invokes the handler function.
+         * 
+         * @param {Object} dataPackage - The Kafka message data.
+         * @param {Object} dataPackage.message - The Kafka message object.
+         * @param {Object} dataPackage.message.key - The optional key of the message.
+         * @param {Object} dataPackage.message.value - The value of the message.
+         * @returns {Promise<void>} - A promise indicating that the handler has processed the message.
+         */
+        async function transformHandler(dataPackage) {
+            const { message } = dataPackage
+            const { key, value, timestamp } = message
+
+            // save to details original
+            saveLog(dataPackage);
+
+            // transformer
+            const deserializedKey = deserialize(key);
+            const deserializedValue = deserialize(value);
+
+            if (!deserializedKey) {
+                logger.warning(`[KafkaTransporter] [transformHandler] Invalid 'key' for topic: ${dataPackage.topic}`);
+            }
+            if (!deserializedValue) {
+                logger.warning(`[KafkaTransporter] [transformHandler] Invalid 'value' for topic: ${dataPackage.topic}`);
+                return; // we do not process worthless message
+            }
+
+            const pair = {
+                key: deserializedKey,
+                value: deserializedValue,
+                timestamp
+            }
+
+            /**
+             * Pair model
+             * @param {string} topic - The name of the event to listen for.
+             * @param {function({ key: (any|undefined), value: any })} handler - The callback function to handle the message data. The handler
+             * 
+             */
+            await handler(pair);  // Invoke the handler with the transformed data
+        }
+
+        // Start listening to the Kafka topic
+        await kafkaListener.startListening(topic, transformHandler);
+
+        logger.notice(`[KafkaTransporter] [listenMessage] Listener duration -  ${Date.now() - listenerStartTime} ms`);
+    } catch (error) {
+        logger.error(`[KafkaTransporter] [listenMessage] [error] topic: ${topic}, error message: ${error.message}`);
+    }
+}
 
 /**
  * Sends binary data (Buffer) messages to a Kafka topic.
  * The producer instance is reused for multiple sends.
  * 
  * @param {string} topic - The topic to which the messages will be sent.
- * @param {Array<{ key?: Buffer, value: Buffer }>} pairs - An array of messages, each containing binary data (Buffer) in the value field, and optionally a key field.
+ * @param {Object} pair - The message data object.
+ * @param {Object} pair.key - The optional key of the message in JSON format.
+ * @param {Object} pair.value - The value of the message in JSON format.
  * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
  */
-async function sendMessage(topic, pairs) {
-    if (!Array.isArray(pairs) || pairs.length === 0) {
-        logger.warn(`[SEND] [check] No messages to send. Message array is empty or invalid.`);
+async function sendMessage(topic, { key, value } = {}, useBuffer = true) {
+    if (!key || !value) {
+        logger.error(`[KafkaTransporter] [sendMessage] Invalid message format: missing key or value`);
         return;
     }
 
     try {
-        // Only connect once to the producer
-        if (!producer._connected) {
-            await producer.connect(); // Connect to Kafka producer if not already connected
-            // Cannot read properties ?
-            // producer._connected = true
+
+        // for standard ( JSON, String ) 
+        const jsonSerializedKey = serialize(key, MESSAGE_FORMATS.JSON);
+        const jsonSerializedValue = serialize(value, MESSAGE_FORMATS.JSON);
+
+        // for performance (gzip, Avro, Protobuf)
+        // we will use for data schema and model
+        const bufferSerializedKey = serialize(key, MESSAGE_FORMATS.BUFFER);
+        const bufferSerializedValue = serialize(value, MESSAGE_FORMATS.BUFFER);
+
+        const pair = {
+            key: jsonSerializedKey,
+            value: jsonSerializedValue,
+            // timestamp: is default adding automatically. if need any time you can set
         }
 
-        // Send the valid binary messages to the topic
-        const producerRecord = {
-            topic,
-            messages: pairs,
-            timeout: kafkaConfig.requestTimeout,
-            compression: compressionType,
-        }
-        await producer.send(producerRecord);
+        const pairs = [pair];
 
-        logger.debug(`[SEND] [message] Sent ${messagesArray.length} message(s) to topic: ${topic}`);
+        await kafkaSender.sendPairs(topic, pairs);
+
+        logger.debug(`[KafkaTransporter] [sendMessage] Sent ${pairs.length} message(s) to topic: ${topic}`);
     } catch (error) {
-        logger.error(`[SEND] [message] [error] ${topic} - ${error.message}`);
+        logger.error(`[KafkaTransporter] [sendMessage] [error] ${topic} - ${error.message}`);
     }
 }
 
 /**
- * Starts a consumer to listen to a given topic and process messages.
- * This consumer can be reused for multiple topics without creating new instances.
+ * Sends multiple binary data (Buffer) messages to a Kafka topic.
+ * The producer instance is reused for multiple sends.
  * 
- * @param {string} topic - The topic to listen to.
- * @param {Function} handler - The callback function to process each message.
- * @returns {Promise<void>} - A promise indicating the completion of the consumer setup.
+ * @param {string} topic - The topic to which the messages will be sent.
+ * @param {Array<{ key: Object, value: Object }>} messages - An array of message data objects.
+ * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
+ * 
+ * @example
+ * const topic = "testTopic";
+ * const messages = [
+ *  { key: { id: 1 }, value: { content: "Message 1" } },
+ *  { key: { id: 2 }, value: { content: "Message 2" } },
+ *  { key: { id: 3 }, value: { content: "Message 3" } },
+ * ];
+ * 
+ * sendMessages(topic, messages);
+ * 
  */
-async function listenMessage(topic, handler) {
+async function sendMessages(topic, messages = []) {
+    if (!Array.isArray(messages) || messages.length === 0) {
+        logger.error(`[KafkaTransporter] [sendMessages] Invalid input: 'messages' should be a non-empty array`);
+        return;
+    }
+
     try {
 
-        // Only connect once to the consumer
-        if (!consumer._connected) {
-            await consumer.connect(); // Connect to Kafka if not already connected
+        const pairs = messages.map(({ key, value }) => {
+            if (!value) {
+                logger.warning(`[KafkaTransporter] [sendMessages] Map - Skipping message with missing value`);
+                return null;
+            }
 
-            // Cannot read properties ?
-            // consumer._connected = true
+            // for standard ( JSON, String ) 
+            const jsonSerializedKey = serialize(key, MESSAGE_FORMATS.JSON);
+            const jsonSerializedValue = serialize(value, MESSAGE_FORMATS.JSON);
+
+            // for performance (gzip, Avro, Protobuf)
+            // we will use for data schema and model
+            const bufferSerializedKey = serialize(key, MESSAGE_FORMATS.BUFFER);
+            const bufferSerializedValue = serialize(value, MESSAGE_FORMATS.BUFFER);
+
+            const pair = {
+                key: jsonSerializedKey,
+                value: jsonSerializedValue,
+                // timestamp: is default adding automatically. if need any time you can set
+            }
+
+            return transform;
+        }).filter(Boolean); // Remove null entries caused by invalid 
+
+        if (pairs.length === 0) {
+            logger.warn(`[KafkaTransporter] [sendMessages] Map - No valid messages to send`);
+            return;
         }
 
-        await consumer.subscribe({ topic, fromBeginning: true }); // Subscribe to the topic
-        logger.info(`[Transporter] [listenMessage] Subscribed to topic: ${topic}`);
+        // Send the transformed messages
+        await kafkaSender.sendPairs(topic, pairs);
 
-        const consumerStartTime = Date.now();
-        // if consumer running true ?
-        await consumer.run({
-            eachMessage: async (dataPackage) => {
-                const startTime = Date.now();
-                try {
-                    logger.debug(`[Transporter] [listenMessage] Processing item - ${JSON.stringify(dataPackage)}`);
-                    if (handler) {
-                        await handler(dataPackage);
-                    }
-                    logger.debug(`[Transporter] [listenMessage] Processing duration - ${Date.now() - startTime} ms`);
-                } catch (processError) {
-                    logger.error(`[Transporter] [listenMessage] [processError] ${processError.message}`);
-                }
-            },
-            autoCommit: kafkaConfig.autoCommit,
-            autoCommitInterval: kafkaConfig.autoCommitInterval,
-            minBytes: kafkaConfig.minBytes,
-            maxBytes: kafkaConfig.maxBytes,
-            maxWaitTimeInMs: kafkaConfig.maxWaitTimeInMs
-        });
-
-        logger.debug(`[Transporter] [listenMessage] Consumer duration -  ${Date.now() - consumerStartTime} ms`);
+        logger.notice(`[KafkaTransporter] [sendMessages] Sent ${pairs.length} message(s) to topic: ${topic}`);
     } catch (error) {
-        logger.error(`[Transporter] [listenMessage] [error] topic: ${topic}, error message: ${error.message}`);
+        logger.error(`[KafkaTransporter] [sendMessages] [error] ${topic} - ${error.message}`);
     }
 }
+
 
 module.exports = {
     Name: 'KafkaTransporter',
     sendMessage,
+    sendMessages,
     listenMessage
-}
+};

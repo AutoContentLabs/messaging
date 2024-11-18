@@ -1,52 +1,27 @@
 /**
- * src\senders\alertSender.js
+ * Alert sender
+ * src/senders/AlertSender.js
  */
+const { topics } = require("../topics");
+const Model = require("../models/Model");
+const logger = require("../utils/logger.js")
 
-const { topics } = require("../topics")
-const { sendMessage } = require("../senders/messageSender");
-const logger = require('../utils/logger');
+const alertModel = new Model(`${topics.alert}_Schema`, topics.alert);
 
 /**
- * Sends an alert message related to a task.
- * @param {string} taskId - The task's unique identifier.
- * @param {string} alertType - The type of alert (e.g., "error", "warning").
- * @param {string} messageText - The message describing the alert.
- * @returns {Promise<void>}
+ * Sends an alert to the specified topic with validation.
+ * @param {Object} model - The alert model.
+ * @param {string} model.content - The content of the alert.
+ * @param {string} model.level - The severity level of the alert.
+ * @throws Will throw an error if 'content' or 'level' is missing.
  */
-async function sendAlert(taskId, alertType, messageText) {
-    // check
-    if (typeof taskId !== 'string' || typeof alertType !== 'string' || typeof messageText !== 'string') {
-        logger.alert(`[AlertSender] [sendAlert] [alert] Invalid arguments for taskId: ${taskId}`);
-        throw new Error('Invalid arguments');
+async function sendAlert(model) {
+    if (!model?.content || !model?.level) {
+        throw new Error("Invalid alert data: 'content' and 'level' are required.");
     }
 
-    // Debug log
-    logger.debug(`[AlertSender] [sendAlert] [debug] Starting sendAlert for taskId: ${taskId} with alertType: ${alertType}`);
-
-    // parameters
-    const key = `alert-${taskId}`
-    const value = Buffer.from(
-        JSON.stringify(
-            {
-                timestamp: new Date().toISOString(),
-                alertType,
-                taskId,
-                message: messageText
-            }
-        )
-    )
-
-    const pairs = [
-        { key, value }
-    ];
-
-    try {
-        await sendMessage(topics.alert, pairs);
-        logger.info(`[AlertSender] [sendAlert] [info] Alert sent successfully for taskId: ${taskId} with alert type: ${alertType}`);
-    } catch (error) {
-        logger.error(`[AlertSender] [sendAlert] [error] Failed to send alert for taskId: ${taskId} - ${error.message}`);
-        throw error;
-    }
+    logger.debug("[AlertSender] Sending alert...", model);
+    await alertModel.send(model);
 }
 
 module.exports = { sendAlert };

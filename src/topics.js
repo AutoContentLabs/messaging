@@ -17,7 +17,7 @@ const createTopicName = (baseName) => {
  * Define common topics with environment-based names.
  * Each topic can be customized via environment variables to support flexibility across deployments.
  */
-const commonTopics = {
+const topics = {
   // Data collection related topics
   dataCollectRequest: createTopicName("DATA_COLLECT_REQUEST"),
   dataCollectStatus: createTopicName("DATA_COLLECT_STATUS"),
@@ -47,6 +47,8 @@ const commonTopics = {
   // System notifications and logging
   alert: createTopicName("ALERT"),
   log: createTopicName("LOG"),
+  notification: createTopicName("NOTIFICATION"),
+  metric: createTopicName("METRIC"),
 
   // Reporting and dashboard
   report: createTopicName("REPORT"),
@@ -54,5 +56,5 @@ const commonTopics = {
 };
 
 module.exports = {
-  topics: commonTopics
+  topics
 };

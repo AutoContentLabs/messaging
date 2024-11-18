@@ -1,39 +1,73 @@
 /**
- * src\listeners\messageListener.js
+ * Message Listener with retry and safe JSON parse
+ * src/listeners/messageListener.js
  */
 
-const logger = require("../utils/logger")
-const transporters = require("../transporters")
-const transporter = transporters.kafka
-const transporter_name = transporter.Name
+const { retryWithBackoff } = require("../utils/retry");
+
+const logger = require("../utils/logger");
+const transporters = require("../transporters");
+
+function getTransporter(transporterName) {
+    if (!transporterName || !transporters[transporterName]) {
+        throw new Error(`Transporter "${transporterName}" not found.`);
+    }
+    return transporters[transporterName];
+}
+
+const transporter = getTransporter("kafka");
+const transporter_name = transporter.Name;
+
 
 /**
- * Starts listening for messages on a specific topic.
- * Implements backpressure handling and ensures performance even with large message loads.
- *
- * @param {string} topic - The topic to listen to.
- * @param {Function} handler - The callback function to handle incoming messages.
- * @returns {Promise<void>}
+ * @param {string} eventName 
+ * @param {function({ key: (any|undefined), value: any })} handler - Callback function to process message data.
  */
-async function listenMessage(topic, handler) {
+async function registerListenerWithHandler(eventName, handler) {
+    // transport
+    const topic = eventName
+    await transporter.listenMessage(topic, async (pair) => {
+        try {
+            logger.debug(`[messageListener] [register] [debug] Received message from event: ${eventName}`);
+            //
+            await handler(pair);
+        } catch (handlerError) {
+            logger.error(`[messageListener] [register] [error] Error processing message for event: ${eventName}, error: ${handlerError.message}`);
+
+        }
+    });
+}
+/**
+ * Listens for incoming messages and triggers a handler when a specific message is received.
+ * 
+ * @param {string} eventname - The name of the event/topic/channel to listen for.
+ * @param {function({ key: (any|undefined), value: any })} handler - Callback function to process message data.
+ * @returns {Promise<void>} - Indicates the completion of the listener setup.
+ * 
+ * @example
+ * // Example usage:
+ * listenMessage("test", async ({ key, value }) => {
+ *     console.log("Message Key:", key, "Message Value:", value);
+ * });
+ */
+async function listenMessage(eventName, handler) {
+
     try {
-        // Using an efficient listener system that can handle high throughput
-        await transporter.listenMessage(topic, async (dataPackage) => {
-            try {
-                // Asynchronous processing for messages to avoid blocking
-                await handler(dataPackage);
-            } catch (error) {
-                logger.error(`[messageListener] [listenMessage] [error] Error processing message in listener for topic: ${topic}, error: ${error.message}`);
-            }
-        });
-        logger.debug(`[messageListener] [listenMessage] [debug] listener start: ${topic}, transporter: ${transporter_name}`);
+        logger.info(`[messageListener] [listenMessage] [info] Starting: "${eventName}", transporter: "${transporter_name}"`);
+
+        await retryWithBackoff(
+            () => registerListenerWithHandler(eventName, handler),
+            5, // Max retry count
+            1000 // Initial delay in ms
+        );
+
+        logger.info(`[messageListener] [listenMessage] [info] Listener started: "${eventName}"`);
     } catch (error) {
-        logger.error(`[messageListener] [listenMessage] [error] listener error: ${topic}, transporter: ${transporter_name}, error: ${error.message}`);
-        // Retry logic for listener could be implemented here as well.
-        throw error;
+        logger.error(`[messageListener] [listenMessage] [error] Failed to start listener: "${eventName}", transporter: ${transporter_name}, error: ${error.message}`);
+        throw error; // 
     }
 }
 
 module.exports = {
-    listenMessage
-}
+    listenMessage,
+};

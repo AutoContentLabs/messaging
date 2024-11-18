@@ -6,21 +6,16 @@ const logger = require("../utils/logger");
 const { handleMessage } = require("./messageHandler")
 
 /**
- * Handles incoming messages.
+ * Handles incoming model.
  * 
- * @param {Object} dataPackage - The parameters for the function.
- * @param {string} dataPackage.topic - The topic from which the message was received.
- * @param {Object} dataPackage.pair - The message object containing key, value, timestamp, and offset.
- * @param {Buffer} dataPackage.pair.key - The key of the message.
- * @param {Buffer} dataPackage.pair.value - The value of the message (the main data payload).
- * @param {string} dataPackage.pair.timestamp - The timestamp of the message.
- * @param {string} dataPackage.pair.offset - The offset of the message in the partition.
- * @param {number} dataPackage.partition - The partition number from which the message was received.
+ * @param {JSON} model - The parameters for the function.
+ * @param {STRING} content - 
+ * @param {ENUM} level - 
  */
-async function handleAlert({ topic, pair, partition } = dataPackage) {
+async function handleAlert(model) {
 
     // we must use the base message handler
-    const model = handleMessage(dataPackage)
+    const data = await handleMessage(model)
 
     // Log the message header details
     logger.debug(`[handleAlert] [debug] Ready message model`);
@@ -29,19 +24,18 @@ async function handleAlert({ topic, pair, partition } = dataPackage) {
 
         if (model) {
             try {
-                logger.debug(`[handleAlert] [debug] message model is valid: ${JSON.stringify(model)}`);
-                const { timestamp } = model
-                const { key } = pair
-                logger.notice(`[handleAlert] [notice] key: ${key}, timestamp: ${timestamp}`)
+                logger.debug(`[handleAlert] [debug] message model is valid: ${JSON.stringify(data)}`);
+                const { id, timestamp, content, level } = data
+                logger.debug(`[handleAlert] [notice] id: ${id} timestamp: ${timestamp} level: ${level} content: ${content}`)
                 // Do something
             } catch (error) {
-                logger.warn(`[handleAlert] [warn]  message model is no valid. error: ${error.message}, value: ${JSON.stringify(model)}`);
+                logger.warn(`[handleAlert] [warn]  data model is no valid. error: ${error.message}, value: ${JSON.stringify(data)}`);
             }
         }
 
     } catch (error) {
         // Log any error during the processing of the message
-        logger.error(`[handleAlert] [error] Error message model - topic: ${topic}, partition: ${partition}, error: ${error.message}`);
+        logger.error(`[handleAlert] [error] Error data model - error: ${error.message}`);
     }
 }
 

@@ -6,7 +6,7 @@ const {
     // listener
     // listenMessage, // messageListener.js // global listener
 
-    listenDataCollectRequest, // dataCollectRequestListener.js
+    // listenDataCollectRequest, // dataCollectRequestListener.js
     // listenDataCollectStatus,
     // listenDataCollectResponse,
     // listenDataCollectError,
@@ -28,7 +28,8 @@ const {
     // listenAnalysisResult,
     // listenAnalysisError,
 
-    // listenAlert,
+    listenAlert,
+    sendAlert,
     // listenLog,
 
     // listenReport,
@@ -37,7 +38,7 @@ const {
     // senders
     // sendMessage,// messageSender.js // global sender
 
-    sendDataCollectRequest, // dataCollectRequestSender.js
+    // sendDataCollectRequest, // dataCollectRequestSender.js
     // sendDataCollectStatus,
     // sendDataCollectResponse,
     // sendDataCollectError,
@@ -132,7 +133,7 @@ const {
 
 
 // listen example 2
-listenDataCollectRequest()
+// listenDataCollectRequest()
 // listenDataCollectStatus()
 // listenDataCollectResponse()
 // listenDataCollectError()
@@ -154,7 +155,7 @@ listenDataCollectRequest()
 // listenAnalysisResult()
 // listenAnalysisError()
 
-// listenAlert()
+listenAlert()
 // listenLog()
 
 // listenReport()
@@ -163,7 +164,7 @@ listenDataCollectRequest()
 // senders example
 // sendMessage(topics.dataCollectRequest, []),// messageSender.js // global sender
 
-sendDataCollectRequest("task-0001-01", "Google Trends", { source: "Google Trends", query: "Quantum Computing" });
+// sendDataCollectRequest("task-0001-01", "Google Trends", { source: "Google Trends", query: "Quantum Computing" });
 // sendDataCollectStatus("task-0002-02", "in-progress", "Data collection is running smoothly.");
 // sendDataCollectResponse("task-0003-03", { "Quantum Computing": 12345 });
 // sendDataCollectError("task-0004-04", "404", "Data source not found");
@@ -186,6 +187,7 @@ sendDataCollectRequest("task-0001-01", "Google Trends", { source: "Google Trends
 // sendAnalysisError("task-0002-16", "timeout", "Data source mistake");
 
 // sendAlert("task-0001-17", "warning", "System resource usage exceeded the threshold");
+sendAlert({ level: "notice", content: "this is example" })
 // sendLog("task-0004-18", "info", "Log message: Data collection started.");
 
 // sendReport("task-0001-18", "trend-report", { "trend": "AI in healthcare", "mentions": 15000 });

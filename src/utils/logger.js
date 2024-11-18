@@ -9,7 +9,7 @@
  * info (Info): Used to follow the normal process flow in the system. A process or task that has been successfully completed.
  * debug (Debug): Detailed logs used for development and debugging purposes. Information such as variable values ​​and method calls within the process.
  */
-
+const config = require("../transporters/config")
 const winston = require('winston');
 const path = require('path');
 const fs = require('fs').promises;
@@ -60,7 +60,7 @@ const customLevels = {
 
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'debug',
+  level: config.APP_LOG_LEVEL || "info",
   levels: customLevels.levels,
   format: winston.format.combine(
     winston.format.timestamp(),
