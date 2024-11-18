@@ -24,10 +24,10 @@ async function handleMessage({ key, value, timestamp } = {}) {
         }
 
         const processedData = { ...key, ...value, timestamp };
-        logger.notice(`[handleMessage] Successfully: ${JSON.stringify(processedData)}`);
+        logger.info(`[handleMessage] Successfully processed`, processedData);
         return processedData;
     } catch (error) {
-        logger.error(`[handleMessage] Error processing message: ${error.message}`);
+        logger.error(`[handleMessage] Error processing message: ${error.message}`, { key, value, timestamp });
         return null;
     }
 }

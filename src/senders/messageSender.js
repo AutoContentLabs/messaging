@@ -95,20 +95,18 @@ function calculateBatchSize(totalMessages) {
  */
 async function sendMessage(eventName, pair) {
     try {
-        logger.debug(`[sendMessage] [debug] Starting to send message to ${eventName}, transport: ${transporter_name}`);
+        logger.debug(`[messageSender] [sendMessage] [debug] Starting to send message to ${eventName}, transport: ${transporter_name}`, pair);
 
         // Send message with retry logic
         await retryWithBackoff(
             () => withTimeout(() => transporter.sendMessage(eventName, pair), 5000), // 5s timeout
         );
-        logger.notice(`[sendMessage] ${eventName} ${JSON.stringify(pair)}`);
+        logger.info(`[messageSender] [sendMessage] ${eventName}`, pair);
     } catch (error) {
-        logger.error(`[sendMessage] [error] Failed to send message to ${eventName}, error: ${error.message}, transport: ${transporter_name}`);
+        logger.error(`[messageSender] [sendMessage] [error] Failed to send message to ${eventName}, error: ${error.message}, transport: ${transporter_name}`, pair);
         throw new Error(`Failed to send message after retries: ${error.message}`);
     }
 }
-
-
 
 /**
  * High-level function to send messages to a transport system.
@@ -121,21 +119,21 @@ async function sendMessage(eventName, pair) {
  */
 async function sendMessages(eventName, pairs) {
     try {
-        logger.info(`[sendMessages] [info] Preparing to send ${pairs.length} messages to ${eventName}.`);
+        logger.info(`[messageSender] [sendMessages] [info] Preparing to send ${pairs.length} messages to ${eventName}.`, pairs);
 
         const batchSize = calculateBatchSize(pairs.length);
         for (let i = 0; i < pairs.length; i += batchSize) {
             const batch = pairs.slice(i, i + batchSize);
 
-            logger.debug(`[sendMessages] [debug] Sending batch of ${batch.length} messages to ${eventName}.`);
+            logger.debug(`[messageSender] [sendMessages] [debug] Sending batch of ${batch.length} messages to ${eventName}.`, batch);
             await retryWithBackoff(
                 () => withTimeout(() => transporter.sendMessages(eventName, batch), 10000), // 10s timeout
             );
 
-            logger.info(`[sendMessages] [info] Successfully sent batch of ${batch.length} messages to ${eventName}.`);
+            logger.info(`[messageSender] [sendMessages] [info] Successfully sent batch of ${batch.length} messages to ${eventName}.`);
         }
     } catch (error) {
-        logger.error(`[sendMessages] [error] Failed to send messages to ${eventName}. Error: ${error.message}`);
+        logger.error(`[messageSender] [sendMessages] [error] Failed to send messages to ${eventName}. Error: ${error.message}`, pairs);
         throw error; // Notify higher-level systems
     }
 }

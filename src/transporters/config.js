@@ -85,7 +85,7 @@ const getUniqueId = (prefix) => {
     // return `${prefix}.${process.env.NODE_ENV || 'development'}.${hostname}.${instanceId}`;
 };
 
-let APP_LOG_LEVEL = getStringEnvironmentVariable("APP_LOG_LEVEL", "notice")
+let APP_LOG_LEVEL = getStringEnvironmentVariable("APP_LOG_LEVEL", "info")
 // Kafka-related environment variables
 let KAFKA_BROKERS = getStringEnvironmentVariable("KAFKA_BROKERS", ['localhost:9092']);
 let KAFKA_CLIENT_ID = getStringEnvironmentVariable("KAFKA_CLIENT_ID", getUniqueId('client'));

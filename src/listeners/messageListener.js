@@ -28,11 +28,11 @@ async function registerListenerWithHandler(eventName, handler) {
     const topic = eventName
     await transporter.listenMessage(topic, async (pair) => {
         try {
-            logger.debug(`[messageListener] [register] [debug] Received message from event: ${eventName}`);
+            logger.debug(`[messageListener] [register] [debug] Received message from event: ${eventName}`, pair);
             //
             await handler(pair);
         } catch (handlerError) {
-            logger.error(`[messageListener] [register] [error] Error processing message for event: ${eventName}, error: ${handlerError.message}`);
+            logger.error(`[messageListener] [register] [error] Error processing message for event: ${eventName}, error: ${handlerError.message}`, pair);
 
         }
     });
