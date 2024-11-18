@@ -24,13 +24,21 @@ class Model {
      * @throws Will throw an error if the model is invalid.
      */
     async send(model) {
-        if (!model) {
-            throw new Error("No data provided for sending.");
-        }
+        try {
+            if (!model || typeof model !== "object") {
+                throw new Error("No valid data provided for sending.");
+            }
 
-        const key = { id: model.id || Math.random().toString(36).substring(7) };
-        logger.debug(`[Model] Sending model... ${this.schema}`, { key, model });
-        await sendModel(this.schema, this.eventName, { key, value: model });
+            const key = { id: model.id || Math.random().toString(36).substring(7) };
+            logger.info(`[Model] Sending model to topic "${this.eventName}".`, { key, model });
+
+            await sendModel(this.schema, this.eventName, { key, value: model });
+
+            logger.info(`[Model] Successfully sent model to topic "${this.eventName}".`);
+        } catch (error) {
+            logger.error(`[Model] Failed to send model: ${error.message}`);
+            throw error;
+        }
     }
 }
 

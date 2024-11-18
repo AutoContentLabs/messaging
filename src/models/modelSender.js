@@ -13,15 +13,14 @@ const logger = require("../utils/logger");
  */
 async function sendModel(schema, eventName, pair) {
     try {
-        logger.debug(`[ModelSender] Preparing data for "${eventName}" with schema "${schema}"`);
+        logger.info(`[ModelSender] Preparing to send data to topic "${eventName}" with schema "${schema}".`);
         const enrichedPair = schema ? { schema, ...pair } : pair;
 
-        logger.debug("[ModelSender] Sending enriched pair:", enrichedPair);
         await sendMessage(eventName, enrichedPair);
 
-        logger.debug(`[ModelSender] Successfully sent to "${eventName}" with schema "${schema}"`);
+        logger.info(`[ModelSender] Successfully sent data to topic "${eventName}".`);
     } catch (error) {
-        logger.error(`[ModelSender] Error sending to "${eventName}": ${error.message}`);
+        logger.error(`[ModelSender] Error sending data to topic "${eventName}": ${error.message}`);
         throw new Error(`Failed to send model: ${error.message}`);
     }
 }
