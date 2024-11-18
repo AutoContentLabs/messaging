@@ -53,7 +53,7 @@ async function registerListenerWithHandler(eventName, handler) {
 async function listenMessage(eventName, handler) {
 
     try {
-        logger.info(`[messageListener] [listenMessage] [info] Starting: "${eventName}", transporter: "${transporter_name}"`);
+        logger.info(`[messageListener] [listenMessage] [info] Starting: ${eventName}, transporter: ${transporter_name}`,eventName);
 
         await retryWithBackoff(
             () => registerListenerWithHandler(eventName, handler),
@@ -61,7 +61,7 @@ async function listenMessage(eventName, handler) {
             1000 // Initial delay in ms
         );
 
-        logger.info(`[messageListener] [listenMessage] [info] Listener started: "${eventName}"`);
+        logger.info(`[messageListener] [listenMessage] [info] Listener started: ${eventName}`);
     } catch (error) {
         logger.error(`[messageListener] [listenMessage] [error] Failed to start listener: "${eventName}", transporter: ${transporter_name}, error: ${error.message}`);
         throw error; // 

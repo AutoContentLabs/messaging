@@ -17,7 +17,7 @@ class KafkaProducer {
         });
         this.producer = this.kafka.producer();
         this.status = 'PENDING';
-        logger.debug(`[KafkaProducer] Initializing producer "${config.producerConfig.clientId}"`);
+        logger.debug(`[KafkaProducer] Initializing producer producerId: ${config.producerConfig.clientId}`, { producerId: config.producerConfig.clientId });
     }
 
     /**

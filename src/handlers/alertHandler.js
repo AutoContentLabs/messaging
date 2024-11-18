@@ -11,7 +11,7 @@ const { handleMessage } = require("./messageHandler");
  * @throws Will throw an error if the model is invalid.
  */
 function validateAlertModel(data) {
-    if (!data?.id || !data?.timestamp || !data?.content || !data?.level) {
+    if (!data?.content || !data?.level) {
         throw new Error("Invalid alert data. Required fields: id, timestamp, content, level.");
     }
     if (typeof data.content !== "string" || typeof data.level !== "string") {
@@ -33,9 +33,9 @@ async function handleAlert(model) {
         logger.debug("[handleAlert] Received model. Validating...");
         const data = await handleMessage(model); // Base message handling
         validateAlertModel(data);
-        const { id, timestamp, content, level } = data;
+        const { content, level } = data;
 
-        logger.info(`[handleAlert] Alert processed successfully. ID: ${id}, Timestamp: ${timestamp}, Level: ${level}, Content: ${content}`);
+        logger.info(`[handleAlert] Alert processed successfully. Level: ${level}, Content: ${content}`);
         // Additional processing can be added here.
     } catch (error) {
         logger.error(`[handleAlert] Error processing alert: ${error.message}`, {

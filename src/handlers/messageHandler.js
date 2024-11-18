@@ -15,19 +15,19 @@ const logger = require("../utils/logger");
  * 
  * @returns {Object|null} The processed data, or null if an error occurs.
  */
-async function handleMessage({ key, value, timestamp } = {}) {
-    logger.debug(`[handleMessage] Received data - key: ${JSON.stringify(key)}, value: ${JSON.stringify(value)}, timestamp: ${timestamp}`);
+async function handleMessage({ key, value, timestamp, headers } = {}) {
+    logger.debug(`[handleMessage] Received data`, { key, value, timestamp, headers });
 
     try {
         if (!value || typeof value !== "object") {
             throw new Error("Invalid value in the received message.");
         }
 
-        const processedData = { ...key, ...value, timestamp };
+        const processedData = { ...key, ...value, timestamp, headers };
         logger.info(`[handleMessage] Successfully processed`, processedData);
         return processedData;
     } catch (error) {
-        logger.error(`[handleMessage] Error processing message: ${error.message}`, { key, value, timestamp });
+        logger.error(`[handleMessage] Error processing message: ${error.message}`, { key, value, timestamp, headers });
         return null;
     }
 }

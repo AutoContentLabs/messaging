@@ -63,7 +63,7 @@ class KafkaListener {
             logger.debug(`[KafkaListener] [startListening] Processing after handler duration - ${Date.now() - startTime} ms`);
           } catch (processError) {
             logger.error(`[KafkaListener] [startListening] [processError] ${processError.message}`);
-            throw  processError // DLQ : An error occurred now. Restart this task later.
+            throw processError // DLQ : An error occurred now. Restart this task later.
           }
         },
 
@@ -74,7 +74,7 @@ class KafkaListener {
         maxWaitTimeInMs: config.kafkaConfig.maxWaitTimeInMs
       });
       logger.debug(`[KafkaListener] [startListening] Consumer duration -  ${Date.now() - consumerStartTime} ms`);
-      logger.info(`[KafkaListener] Listening to messages on topic "${topic}"`);
+      logger.info(`[KafkaListener] Listening to messages on topic ${topic}`);
     } catch (error) {
       logger.error(`[KafkaListener] [startListening] [error] topic: ${topic}, error message: ${error.message}`);
     }

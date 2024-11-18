@@ -36,7 +36,7 @@ function validateAlertModel(model) {
 async function sendAlert(model) {
     try {
         validateAlertModel(model);
-        logger.debug(`[AlertSender] Preparing to send alert. Model: ${JSON.stringify(model)}`);
+        logger.debug(`[AlertSender] Preparing to send alert`, model);
         await alertModel.send(model);
         logger.info("[AlertSender] Alert sent successfully.");
     } catch (error) {

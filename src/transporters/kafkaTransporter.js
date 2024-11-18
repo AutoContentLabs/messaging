@@ -11,7 +11,7 @@ const kafkaAdmin = new KafkaAdmin();
 
 const KafkaSender = require("./kafka/KafkaSender");
 const kafkaSender = new KafkaSender();
-
+const { v4: uuidv4 } = require('uuid');
 /**
  * Starts the Kafka consumer listener to ensure it is connected and ready.
  * 
@@ -28,53 +28,6 @@ async function StartListener() {
     }
 }
 
-/**
- * @param {Object} dataPackage - The Kafka message data.
- * @param {Object} dataPackage.message - The Kafka message object.
- * @param {string} dataPackage.message.key - The optional key of the message.
- * @param {Object} dataPackage.message.value - The value of the message.
- * @returns {Promise<void>} - A promise indicating that the handler has processed the message.
- */
-async function saveLog(dataPackage) {
-    // --
-    // const { topic, message, partition, heartbeat, pause } = dataPackage
-    // const { attributes, timestamp, offset, key, value, headers, isControlRecord, batchContext } = message
-    // const { type, data } = value
-    // const { } = headers
-    // const { firstOffset, firstTimestamp, partitionLeaderEpoch, inTransaction, isControlBatch, lastOffsetDelta, producerId, producerEpoch, firstSequence, maxTimestamp, timestampType, magicByte } = batchContext
-    // logger.debug(`
-    //     Topic: ${topic || 'undefined'} 
-    //     Message: ${message || 'undefined'} 
-    //     Partition: ${partition || 'undefined'} 
-    //     Heartbeat: heartbeat() 
-    //     Pause: pause() 
-    //     Attributes: ${attributes || 'undefined'} 
-    //     Timestamp: ${timestamp || 'undefined'} 
-    //     Offset: ${offset || 'undefined'} 
-    //     Key: ${safeObjectJSON(key,false)} 
-    //     Value: ${safeObjectJSON(value,false)} 
-    //     Headers: ${safeObjectJSON(headers,false)} 
-    //     IsControlRecord: ${isControlRecord || 'undefined'} 
-    //     BatchContext: ${batchContext || 'undefined'} 
-    //     Type: ${type || 'undefined'} 
-    //     Data: ${data || 'undefined'} 
-    //     FirstOffset: ${firstOffset || 'undefined'} 
-    //     FirstTimestamp: ${firstTimestamp || 'undefined'} 
-    //     PartitionLeaderEpoch: ${partitionLeaderEpoch || 'undefined'} 
-    //     InTransaction: ${inTransaction || 'undefined'} 
-    //     IsControlBatch: ${isControlBatch || 'undefined'} 
-    //     LastOffsetDelta: ${lastOffsetDelta || 'undefined'} 
-    //     ProducerId: ${producerId || 'undefined'} 
-    //     ProducerEpoch: ${producerEpoch || 'undefined'} 
-    //     FirstSequence: ${firstSequence || 'undefined'} 
-    //     MaxTimestamp: ${maxTimestamp || 'undefined'} 
-    //     TimestampType: ${timestampType || 'undefined'} 
-    //     MagicByte: ${magicByte || 'undefined'} 
-    // `);
-
-    // --
-
-}
 /**
  * Listens for incoming messages and triggers a handler when a specific message is received.
  * 
@@ -121,29 +74,32 @@ async function listenMessage(topic, handler) {
          */
         async function transformHandler(dataPackage) {
             const { message } = dataPackage
-            const { key, value, timestamp } = message
-
-            // save to details original
-            saveLog(dataPackage);
+            const { key, value, timestamp, headers } = message
 
             // transformer
             const deserializedKey = deserialize(key);
             const deserializedValue = deserialize(value);
 
             if (!deserializedKey) {
-                logger.warning(`[KafkaTransporter] [transformHandler] Invalid 'key' for topic: ${dataPackage.topic}`);
+                logger.warning(`[KafkaTransporter] [transformHandler] Invalid 'key' for topic: ${dataPackage.topic}`, dataPackage);
             }
             if (!deserializedValue) {
-                logger.warning(`[KafkaTransporter] [transformHandler] Invalid 'value' for topic: ${dataPackage.topic}`);
+                logger.warning(`[KafkaTransporter] [transformHandler] Invalid 'value' for topic: ${dataPackage.topic}`, dataPackage);
                 return; // we do not process worthless message
             }
 
             const pair = {
                 key: deserializedKey,
                 value: deserializedValue,
-                timestamp
+                timestamp,
+                headers: {
+                    correlationId: headers.correlationId.toString(),
+                    traceId: headers.traceId.toString()
+                }
             }
 
+            logger.debug(`[KafkaTransporter] [listenMessage] [transformHandler]`, pair)
+            
             /**
              * Pair model
              * @param {string} topic - The name of the event to listen for.
@@ -193,15 +149,19 @@ async function sendMessage(topic, { key, value } = {}, useBuffer = true) {
             key: jsonSerializedKey,
             value: jsonSerializedValue,
             // timestamp: is default adding automatically. if need any time you can set
+            headers: {
+                correlationId: uuidv4().toString(),
+                traceId: uuidv4().toString()
+            }
         }
 
         const pairs = [pair];
 
         await kafkaSender.sendPairs(topic, pairs);
 
-        logger.debug(`[KafkaTransporter] [sendMessage] Sent ${pairs.length} message(s) to topic: ${topic}`);
+        logger.debug(`[KafkaTransporter] [sendMessage] Sent ${pairs.length} message(s) to topic: ${topic}`, pairs);
     } catch (error) {
-        logger.error(`[KafkaTransporter] [sendMessage] [error] ${topic} - ${error.message}`);
+        logger.error(`[KafkaTransporter] [sendMessage] [error] ${topic} - ${error.message}`, pairs);
     }
 }
 
@@ -251,25 +211,28 @@ async function sendMessages(topic, messages = []) {
                 key: jsonSerializedKey,
                 value: jsonSerializedValue,
                 // timestamp: is default adding automatically. if need any time you can set
+                headers: {
+                    correlationId: uuidv4().toString(),
+                    traceId: uuidv4().toString()
+                }
             }
 
             return transform;
         }).filter(Boolean); // Remove null entries caused by invalid 
 
         if (pairs.length === 0) {
-            logger.warn(`[KafkaTransporter] [sendMessages] Map - No valid messages to send`);
+            logger.warning(`[KafkaTransporter] [sendMessages] Map - No valid messages to send`, pairs);
             return;
         }
 
         // Send the transformed messages
         await kafkaSender.sendPairs(topic, pairs);
 
-        logger.notice(`[KafkaTransporter] [sendMessages] Sent ${pairs.length} message(s) to topic: ${topic}`);
+        logger.notice(`[KafkaTransporter] [sendMessages] Sent ${pairs.length} message(s) to topic: ${topic}`, pairs);
     } catch (error) {
-        logger.error(`[KafkaTransporter] [sendMessages] [error] ${topic} - ${error.message}`);
+        logger.error(`[KafkaTransporter] [sendMessages] [error] ${topic} - ${error.message}`, pairs);
     }
 }
-
 
 module.exports = {
     Name: 'KafkaTransporter',
