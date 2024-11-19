@@ -1,53 +1,30 @@
 /**
+ * Job Schedule Create Sender
  * src\senders\jobScheduleCreateSender.js
  */
 
-const { topics } = require("../topics")
-const { sendMessage } = require("./messageSender");
-const logger = require('../utils/logger');
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
+
+const schemaName = "JOB_SCHEDULE_CREATE";
+const eventName = topics.jobScheduleCreate;
+const sender = createModel(schemaName, eventName);
 
 /**
- * Sends a message to schedule the creation of a job.
- * @param {string} jobId - The unique identifier for the job.
- * @param {string} taskId - The unique identifier for the task.
- * @param {object} schedule - The schedule for the job (e.g., { startTime: '2024-11-13T00:00:00Z' }).
- * @returns {Promise<void>}
+ * Sends a job schedule creation request to the specified topic.
+ * @param {Object} model - The job schedule creation model.
+ * @throws Will throw an error if sending fails.
  */
-async function sendJobScheduleCreate(jobId, taskId, schedule) {
-    // Validate parameters
-    if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof schedule !== 'object') {
-        logger.error('[JobScheduleSender] [sendJobScheduleCreate] [error] Invalid arguments passed to sendJobScheduleCreate');
-        throw new Error('Invalid arguments');
-    }
-
-    // parameters
-    const key = `jobScheduleCreate-${jobId}`
-    const value = Buffer.from(
-        JSON.stringify(
-            {
-                timestamp: new Date().toISOString(),
-                jobId,
-                taskId,
-                jobType: 'dataProcessing',
-                schedule,
-                status: 'scheduled',
-                message: 'Job scheduled to start processing collected data.'
-            }
-        )
-    )
-
-    const pairs = [
-        { key, value }
-    ];
-
-    try {
-        await sendMessage(topics.jobScheduleCreate, pairs);
-        logger.info(`[JobScheduleSender] [sendJobScheduleCreate] [success] Job schedule creation message sent for jobId: ${jobId}, taskId: ${taskId}`);
-    } catch (error) {
-        logger.error(`[JobScheduleSender] [sendJobScheduleCreate] [error] Failed to send job schedule creation message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
-        throw error;
-    }
+async function sendJobScheduleCreate(model) {
+  try {
+    logger.debug("[JobScheduleCreateSender] Validating and sending request...");
+    await sender.send(model); // Validation handled in Model
+    logger.info("[JobScheduleCreateSender] Request sent successfully.");
+  } catch (error) {
+    logger.error(`[JobScheduleCreateSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
-
 
 module.exports = { sendJobScheduleCreate };

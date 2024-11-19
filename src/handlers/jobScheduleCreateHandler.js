@@ -1,48 +1,31 @@
 /**
+ * Job Schedule Create Handler
  * src\handlers\jobScheduleCreateHandler.js
  */
-
 const logger = require("../utils/logger");
-const { handleMessage } = require("./messageHandler")
+const { handleMessage } = require("./messageHandler");
 
 /**
- * Handles incoming messages.
- * 
- * @param {Object} dataPackage - The parameters for the function.
- * @param {string} dataPackage.topic - The topic from which the message was received.
- * @param {Object} dataPackage.pair - The message object containing key, value, timestamp, and offset.
- * @param {Buffer} dataPackage.pair.key - The key of the message.
- * @param {Buffer} dataPackage.pair.value - The value of the message (the main data payload).
- * @param {string} dataPackage.pair.timestamp - The timestamp of the message.
- * @param {string} dataPackage.pair.offset - The offset of the message in the partition.
- * @param {number} dataPackage.partition - The partition number from which the message was received.
+ * Handles incoming job schedule creation requests.
+ * @param {Object} model - The incoming job schedule creation model.
  */
-async function handleJobScheduleCreate({ topic, pair, partition } = dataPackage) {
+async function handleJobScheduleCreate(model) {
+  try {
+    logger.debug("[JobScheduleCreateHandler] Processing job schedule creation...");
 
-    // we must use the base message handler
-    const model = handleMessage(dataPackage)
+    // Base message handling, including validation
+    const data = await handleMessage(model);
 
-    // Log the message header details
-    logger.debug(`[handleJobScheduleCreate] [debug] Ready message model`);
+    const { jobId, schedule, createdBy, priority } = data;
+    logger.info(`[JobScheduleCreateHandler] Processed job schedule: Job ID: ${jobId}, Schedule: ${schedule}, Priority: ${priority}, Created By: ${createdBy}`);
 
-    try {
-
-        if (model) {
-            try {
-                logger.debug(`[handleJobScheduleCreate] [debug] message model is valid: ${JSON.stringify(model)}`);
-                const { timestamp } = model
-                const { key } = pair
-                logger.notice(`[handleJobScheduleCreate] [notice] key: ${key}, timestamp: ${timestamp}`)
-                // Do something
-            } catch (error) {
-                logger.warn(`[handleJobScheduleCreate] [warn]  message model is no valid. error: ${error.message}, value: ${JSON.stringify(model)}`);
-            }
-        }
-
-    } catch (error) {
-        // Log any error during the processing of the message
-        logger.error(`[handleJobScheduleCreate] [error] Error message model - topic: ${topic}, partition: ${partition}, error: ${error.message}`);
-    }
+    // Additional logic can be added here
+  } catch (error) {
+    logger.error(`[JobScheduleCreateHandler] Error processing job schedule: ${error.message}`, {
+      model,
+      stack: error.stack,
+    });
+  }
 }
 
 module.exports = { handleJobScheduleCreate };
