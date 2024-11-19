@@ -1,42 +1,31 @@
-// src/senders/analysisRequestSender.js
-const { sendMessage, topics } = require('../messageService');
-const logger = require('../utils/logger');
 
 /**
- * Sends a request to analyze trends with specified parameters.
- * @param {string} taskId - The task's unique identifier.
- * @param {string} analysisType - The type of analysis (e.g., "trend", "sentiment").
- * @param {object} parameters - Parameters specific to the analysis request (e.g., { region: 'US', category: 'Technology' }).
- * @returns {Promise<void>}
+ * analysisRequest sender
+ * src/senders/analysisRequestSender.js
  */
-async function sendAnalysisRequest(taskId, analysisType, parameters) {
-    // Validate inputs
-    if (typeof taskId !== 'string' || typeof analysisType !== 'string' || typeof parameters !== 'object') {
-        logger.alert(`[AnalysisRequestSender] [sendAnalysisRequest] [alert] Invalid arguments for taskId: ${taskId}`);
-        throw new Error('Invalid arguments');
-    }
 
-    const message = {
-        key: `analysisRequest-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            taskId,
-            analysisType,
-            parameters, // Example: { region: 'US', category: 'Technology' }
-            status: 'pending',
-            message: 'Requesting analysis for trends.'
-        }))
-    };
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
-    try {
-        // Send the analysis request message to the analysisRequest topic
-        await sendMessage(topics.analysisRequest, [message]);
-        logger.info(`[AnalysisRequestSender] [sendAnalysisRequest] [info] Analysis request sent successfully for taskId: ${taskId} with analysis type: ${analysisType}`);
-    } catch (error) {
-        // Log error if message sending fails
-        logger.error(`[AnalysisRequestSender] [sendAnalysisRequest] [error] Failed to send analysis request for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;  // Re-throw the error to be handled upstream if needed
-    }
+const schemaName = "ANALYSIS_REQUEST";
+const eventName = "ANALYSIS_REQUEST";
+const sender = createModel(schemaName, eventName);
+
+/**
+ * Sends a analysisRequest to the specified topic.
+ * @param {Object} model - The analysisRequest request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendAnalysisRequestRequest(model) {
+  try {
+    logger.debug(`[analysisRequestSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[analysisRequestSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[analysisRequestSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendAnalysisRequest };
+module.exports = { sendAnalysisRequestRequest };

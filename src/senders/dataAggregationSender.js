@@ -1,42 +1,31 @@
-// src/senders/dataAggregationSender.js
-const { sendMessage, topics } = require('../messageService');
-const logger = require('../utils/logger');
 
 /**
- * Sends a data aggregation completion message.
- * @param {string} jobId - The unique identifier for the job.
- * @param {string} taskId - The unique identifier for the task.
- * @param {object} aggregatedData - The aggregated data to be sent (e.g., { 'AI in healthcare': 35000, 'Quantum Computing': 24000 }).
- * @returns {Promise<void>}
+ * dataAggregation sender
+ * src/senders/dataAggregationSender.js
  */
-async function sendDataAggregation(jobId, taskId, aggregatedData) {
-    // Validate inputs
-    if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof aggregatedData !== 'object') {
-        logger.crit(`[DataAggregationSender] [sendDataAggregation] [crit] Invalid arguments passed for jobId: ${jobId}, taskId: ${taskId}`);
-        throw new Error('Invalid arguments');
-    }
 
-    logger.debug(`[DataAggregationSender] [sendDataAggregation] [debug] Starting data aggregation for jobId: ${jobId}, taskId: ${taskId}`);
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
-    const message = {
-        key: `dataAggregation-${jobId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            jobId,
-            taskId,
-            aggregatedData, // Example: { 'AI in healthcare': 35000, 'Quantum Computing': 24000 }
-            status: 'aggregated',
-            message: 'Data aggregation completed.'
-        }))
-    };
+const schemaName = "DATA_AGGREGATION";
+const eventName = "DATA_AGGREGATION";
+const sender = createModel(schemaName, eventName);
 
-    try {
-        await sendMessage(topics.dataAggregation, [message]);
-        logger.info(`[DataAggregationSender] [sendDataAggregation] [info] Data aggregation completed successfully for jobId: ${jobId}, taskId: ${taskId}`);
-    } catch (error) {
-        logger.error(`[DataAggregationSender] [sendDataAggregation] [error] Failed to send data aggregation message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
-        throw error;
-    }
+/**
+ * Sends a dataAggregation to the specified topic.
+ * @param {Object} model - The dataAggregation request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendDataAggregationRequest(model) {
+  try {
+    logger.debug(`[dataAggregationSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[dataAggregationSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[dataAggregationSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendDataAggregation };
+module.exports = { sendDataAggregationRequest };

@@ -1,61 +1,31 @@
-// src/senders/dataCollectResponseSender.js
-const { sendMessage, topics } = require('../messageService');
-const logger = require('../utils/logger');
 
 /**
- * Sends a data collection response message to the specified topic.
- * @param {string} taskId - Unique identifier for the data collection task.
- * @param {object} data - The collected data.
- * @returns {Promise<void>}
+ * dataCollectResponse sender
+ * src/senders/dataCollectResponseSender.js
  */
-async function sendDataCollectResponse(taskId, data) {
 
-    if (typeof taskId !== 'string') {
-        logger.error('[DataCollectResponseSender] [sendDataCollectResponse] [error] Invalid taskId: Must be a string');
-        throw new Error('Invalid taskId: Must be a string');
-    }
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
-    if (typeof data !== 'string' && typeof data !== 'object' && !Buffer.isBuffer(data)) {
-        logger.error('[DataCollectResponseSender] [sendDataCollectResponse] [error] Invalid data: Must be a string, object, or binary data');
-        throw new Error('Invalid data: Must be a string, object, or binary data');
-    }
+const schemaName = "DATA_COLLECT_RESPONSE";
+const eventName = "DATA_COLLECT_RESPONSE";
+const sender = createModel(schemaName, eventName);
 
-    let dataToSend;
-
-    if (typeof data === 'string') {
-
-        const isHTML = /<\/?[a-z][\s\S]*>/i.test(data);
-        const isXML = /<\?xml/.test(data);
-
-        if (isHTML || isXML) {
-            dataToSend = data;
-        } else {
-            dataToSend = JSON.stringify({ text: data });
-        }
-    } else if (typeof data === 'object') {
-        dataToSend = JSON.stringify(data);
-    } else if (Buffer.isBuffer(data)) {
-        dataToSend = data.toString('base64');
-    }
-
-    const message = {
-        key: `dataCollectResponse-${taskId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            taskId,
-            status: 'completed',
-            data: dataToSend,
-            message: 'Data collection completed successfully.'
-        }))
-    };
-
-    try {
-        await sendMessage(topics.dataCollectResponse, [message]);
-        logger.info(`[DataCollectResponseSender] [sendDataCollectResponse] [success] Data collect response sent successfully for taskId: ${taskId}`);
-    } catch (error) {
-        logger.error(`[DataCollectResponseSender] [sendDataCollectResponse] [error] Failed to send data collect response for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;
-    }
+/**
+ * Sends a dataCollectResponse to the specified topic.
+ * @param {Object} model - The dataCollectResponse request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendDataCollectResponseRequest(model) {
+  try {
+    logger.debug(`[dataCollectResponseSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[dataCollectResponseSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[dataCollectResponseSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendDataCollectResponse };
+module.exports = { sendDataCollectResponseRequest };

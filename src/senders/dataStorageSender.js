@@ -1,39 +1,31 @@
-// src/senders/dataStorageSender.js
-const { sendMessage, topics } = require('../messageService');
-const logger = require('../utils/logger');
 
 /**
- * Sends a message indicating that data has been successfully stored.
- * @param {string} jobId - The unique identifier for the job.
- * @param {string} taskId - The unique identifier for the task.
- * @param {object} data - The data to be stored, e.g., { trend: 'AI in healthcare', mentions: 15000 }.
- * @returns {Promise<void>}
+ * dataStorage sender
+ * src/senders/dataStorageSender.js
  */
-async function sendDataStorage(jobId, taskId, data) {
-    if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof data !== 'object') {
-        logger.error('[DataStorageSender] [sendDataStorage] [error] Invalid arguments passed to sendDataStorage');
-        throw new Error('Invalid arguments');
-    }
 
-    const message = {
-        key: `dataStorage-${jobId}`,
-        value: Buffer.from(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            jobId,
-            taskId,
-            data, // Example: { trend: 'AI in healthcare', mentions: 15000 }
-            status: 'stored',
-            message: 'Data stored successfully.'
-        }))
-    };
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
-    try {
-        await sendMessage(topics.dataStorage, [message]);
-        logger.info(`[DataStorageSender] [sendDataStorage] [success] Data storage message sent for jobId: ${jobId}, taskId: ${taskId}`);
-    } catch (error) {
-        logger.error(`[DataStorageSender] [sendDataStorage] [error] Failed to send data storage message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
-        throw error;
-    }
+const schemaName = "DATA_STORAGE";
+const eventName = "DATA_STORAGE";
+const sender = createModel(schemaName, eventName);
+
+/**
+ * Sends a dataStorage to the specified topic.
+ * @param {Object} model - The dataStorage request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendDataStorageRequest(model) {
+  try {
+    logger.debug(`[dataStorageSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[dataStorageSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[dataStorageSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendDataStorage };
+module.exports = { sendDataStorageRequest };
