@@ -172,8 +172,7 @@ sendJobScheduleCreateRequest(
         "jobId": "job12345",
         "schedule": "2024-11-20T10:00:00Z",
         "createdBy": "system",
-        "priority": "high",
-        "timestamp": "2024-11-19T12:50:00Z"
+        "priority": "high"
     }
 );
 
@@ -182,8 +181,7 @@ sendJobScheduleUpdateRequest(
     {
         "jobId": "job12345",
         "schedule": "2024-11-20T12:00:00Z",
-        "updatedBy": "admin",
-        "timestamp": "2024-11-19T12:55:00Z"
+        "updatedBy": "admin"
     }
 );
 
@@ -191,9 +189,9 @@ sendJobScheduleUpdateRequest(
 sendJobStatusRequest(
     {
         "jobId": "job12345",
-        "status": "in-progress",
+        "status": "running",
         "progress": 50,
-        "timestamp": "2024-11-19T13:00:00Z"
+        "timestamp": "2024-11-19T12:45:00Z"
     }
 );
 
@@ -202,7 +200,7 @@ sendJobProgressRequest(
     {
         "jobId": "job12345",
         "progress": 50,
-        "timestamp": "2024-11-19T13:05:00Z"
+         "timestamp": "2024-11-19T12:45:00Z"
     }
 );
 
@@ -219,7 +217,6 @@ sendDataProcessingStatusRequest(
     {
         "taskId": "dp12345",
         "status": "in_progress",
-        "progress": 75,
         "timestamp": "2024-11-19T13:15:00Z"
     }
 );
@@ -333,10 +330,9 @@ sendLogRequest(
 // sendReportRequest
 sendReportRequest(
     {
-        "id": "report12345",
-        "title": "Trend Analysis Report",
+        "reportId": "report12345",
         "content": "Detailed analysis of the trend for 'AI technology' in US",
-        "status": "completed",
+        "generatedBy": "system",
         "timestamp": "2024-11-19T14:00:00Z"
     }
 );
@@ -344,9 +340,9 @@ sendReportRequest(
 // sendDashboardRequest
 sendDashboardRequest(
     {
-        "id": "dashboard12345",
-        "data": "trend_analysis_data",
-        "status": "updated",
+        "dashboardId": "dashboard12345",
+        "reportId": "report12345",
+        "content": "trend_analysis_data",
         "timestamp": "2024-11-19T14:05:00Z"
     }
 );
