@@ -4,25 +4,25 @@
  */
 
 const { topics } = require("../topics");
-const Model = require("../models/Model");
+const { createModel } = require("../models/createModel");
 const logger = require("../utils/logger.js");
 
-const schemaName = topics.alert;
+const schemaName = "ALERT";
 const eventName = topics.alert;
-const alertModel = new Model(schemaName, eventName);
+const sender = createModel(schemaName, eventName);
 
 /**
  * Sends an alert to the specified topic.
- * @param {Object} model - The alert model.
+ * @param {Object} model - The alert request model.
  * @throws Will throw an error if sending fails.
  */
 async function sendAlert(model) {
   try {
-    logger.debug("[AlertSender] Sending alert...");
-    await alertModel.send(model); // Validation and sending handled by Model
-    logger.info("[AlertSender] Alert sent successfully.");
+    logger.debug("[AlertSender] Validating and sending request...");
+    await sender.send(model); // Validation and sending handled by Model
+    logger.info("[AlertSender] Request sent successfully.");
   } catch (error) {
-    logger.error(`[AlertSender] Error sending alert: ${error.message}`);
+    logger.error(`[AlertSender] Failed to send request: ${error.message}`);
     throw error;
   }
 }

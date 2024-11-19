@@ -1,52 +1,30 @@
 /**
+ * Data Collect Request Sender
  * src\senders\dataCollectRequestSender.js
  */
 
-const { topics } = require("../topics")
-const { sendMessage } = require("../senders/messageSender");
-const logger = require('../utils/logger');
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
+
+const schemaName = "DATA_COLLECT_REQUEST";
+const eventName = topics.dataCollectRequest;
+const sender = createModel(schemaName, eventName);
 
 /**
- * Sends a data collection request message to the specified topic.
- * @param {string} taskId - Unique identifier for the data collection task.
- * @param {string} source - Data source (e.g., API name or data origin).
- * @param {object} parameters - Parameters required for data collection (e.g., filters).
- * @returns {Promise<void>}
+ * Sends a data collect request to the specified topic.
+ * @param {Object} model - The data collect request model.
+ * @throws Will throw an error if sending fails.
  */
-async function sendDataCollectRequest(taskId, source, parameters) {
-    if (typeof taskId !== 'string' || typeof source !== 'string' || typeof parameters !== 'object') {
-        logger.crit(`[DataCollectRequestSender] [sendDataCollectRequest] [crit] Invalid arguments passed for taskId: ${taskId}, source: ${source}`);
-        throw new Error('Invalid arguments');
-    }
-
-    logger.debug(`[DataCollectRequestSender] [sendDataCollectRequest] [debug] Starting to send data collection request for taskId: ${taskId}, source: ${source}`);
-
-    // parameters
-    const key = `dataCollectRequest-${taskId}`
-    const value = Buffer.from(
-        JSON.stringify(
-            {
-                timestamp: new Date().toISOString(),
-                taskId,
-                source,
-                parameters,
-                status: 'pending',
-                message: 'Request to start data collection.'
-            }
-        )
-    )
-
-    const pairs = [
-        { key, value }
-    ];
-    
-    try {
-        await sendMessage(topics.dataCollectRequest, pairs);
-        logger.info(`[DataCollectRequestSender] [sendDataCollectRequest] [info] Data collect request sent successfully for taskId: ${taskId}, source: ${source}`);
-    } catch (error) {
-        logger.error(`[DataCollectRequestSender] [sendDataCollectRequest] [error] Failed to send data collect request for taskId: ${taskId}, source: ${source}. Error: ${error.message}`);
-        throw error;
-    }
+async function sendDataCollectRequest(model) {
+  try {
+    logger.debug("[DataCollectRequestSender] Validating and sending request...");
+    await sender.send(model); // Validation handled in Model
+    logger.info("[DataCollectRequestSender] Request sent successfully.");
+  } catch (error) {
+    logger.error(`[DataCollectRequestSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
 module.exports = { sendDataCollectRequest };

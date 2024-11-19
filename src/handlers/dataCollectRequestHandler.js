@@ -1,43 +1,31 @@
 /**
+ * Data Collect Request Handler
  * src\handlers\dataCollectRequestHandler.js
  */
-
 const logger = require("../utils/logger");
-const { handleMessage } = require("./messageHandler")
+const { handleMessage } = require("./messageHandler");
 
 /**
- * Handles incoming messages.
- * 
- * @param {Object} pair - The parameters for the function.
- * @param {JSON} pair.key - The key of the message.
- * @param {JSON} pair.value - The value of the message (the main data payload).
+ * Handles incoming data collect requests.
+ * @param {Object} model - The incoming data collect request model.
  */
-async function handleDataCollectRequest(pair) {
-    console.log("datacollec", pair)
-    // we must use the base message handler
-    const model = handleMessage(pair)
+async function handleDataCollectRequest(model) {
+  try {
+    logger.debug("[DataCollectRequestHandler] Processing request...");
 
-    // Log the message header details
-    logger.debug(`[handleDataCollectRequest] [debug] Ready message model`);
+    // Base message handling, including validation
+    const data = await handleMessage(model);
 
-    try {
+    const { id, source, params, priority, timestamp } = data;
+    logger.info(`[DataCollectRequestHandler] Processed request: ID: ${id}, Source: ${source}, Priority: ${priority}, Timestamp: ${timestamp}`);
 
-        if (model) {
-            try {
-                logger.debug(`[handleDataCollectRequest] [debug] message model is valid: ${JSON.stringify(model)}`);
-                const { key, value } = model
-
-                logger.notice(`[handleDataCollectRequest] [notice] key: ${key} value: ${value}`)
-                // Do something
-            } catch (error) {
-                logger.warn(`[handleDataCollectRequest] [warn]  message model is no valid. error: ${error.message}, value: ${JSON.stringify(model)}`);
-            }
-        }
-
-    } catch (error) {
-        // Log any error during the processing of the message
-        logger.error(`[handleDataCollectRequest] [error] Error message model - error: ${error.message}`);
-    }
+    // Additional logic can be added here
+  } catch (error) {
+    logger.error(`[DataCollectRequestHandler] Error processing request: ${error.message}`, {
+      model,
+      stack: error.stack,
+    });
+  }
 }
 
 module.exports = { handleDataCollectRequest };
