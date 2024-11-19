@@ -1,3 +1,13 @@
-const { sendAlert } = require("../src/index")
+/**
+ * example\sendAlert.js
+ */
 
-sendAlert({ content: "This is example alert", level: "info" })
+const { sendAlert } = require("../src/senders/alertSender");
+
+(async () => {
+    try {
+        await sendAlert({ content: "This is example alert!", level: "crit" });
+    } catch (error) {
+        console.error("Failed to send alert:", error.message);
+    }
+})();

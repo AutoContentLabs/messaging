@@ -1,13 +1,13 @@
 /**
- * src\handlers\messageHandler.js
+ * 
  */
+
 const logger = require("../utils/logger");
+const { validateData } = require("../utils/validator");
 
 /**
  * Handles an incoming data pair (key-value).
  * 
- * This function processes a data pair (key, value), where both key and value
- * are JSON objects.
  * @param {Object} pair - The data pair to process.
  * @param {Object} pair.key - The key in the data pair (optional).
  * @param {Object} pair.value - The value in the data pair (mandatory).
@@ -18,16 +18,31 @@ const logger = require("../utils/logger");
 async function handleMessage({ key, value, timestamp, headers } = {}) {
     logger.debug(`[handleMessage] Received data`, { key, value, timestamp, headers });
 
+    const safeTimestamp = timestamp || Date.now();
+    const safeHeaders = headers || {};
+
     try {
         if (!value || typeof value !== "object") {
             throw new Error("Invalid value in the received message.");
         }
 
-        const processedData = { ...key, ...value, timestamp, headers };
+        const schemaType = safeHeaders?.type;
+        if (!schemaType) {
+            throw new Error("Message type is missing in headers.");
+        }
+
+        const validationErrors = validateData(schemaType, value);
+        if (validationErrors) {
+            logger.warning(`[handleMessage] Validation errors detected`, { errors: validationErrors });
+            throw new Error(`Validation failed: ${JSON.stringify(validationErrors)}`);
+        }
+
+        const processedData = { ...key, ...value, timestamp: safeTimestamp, headers: safeHeaders };
         logger.info(`[handleMessage] Successfully processed`, processedData);
+
         return processedData;
     } catch (error) {
-        logger.error(`[handleMessage] Error processing message: ${error.message}`, { key, value, timestamp, headers });
+        logger.error(`[handleMessage] Error processing message: ${error.message}`, { key, value, timestamp: safeTimestamp, headers: safeHeaders });
         return null;
     }
 }

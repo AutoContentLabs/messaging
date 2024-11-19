@@ -6,8 +6,10 @@
 const logger = require("./logger");
 
 const MESSAGE_FORMATS = {
-    JSON: "json",
-    BUFFER: "buffer",
+    JSON: 'json',
+    BUFFER: 'buffer',
+    AVRO: 'avro',
+    PROTOBUF: 'protobuf'
 };
 
 /**

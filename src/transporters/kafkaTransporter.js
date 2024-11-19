@@ -11,7 +11,7 @@ const kafkaAdmin = new KafkaAdmin();
 
 const KafkaSender = require("./kafka/KafkaSender");
 const kafkaSender = new KafkaSender();
-const { v4: uuidv4 } = require('uuid');
+
 /**
  * Starts the Kafka consumer listener to ensure it is connected and ready.
  * 
@@ -50,7 +50,7 @@ async function StartListener() {
  *     console.log(key, value);  // key is optional, value is required
  * });
  */
-async function listenMessage(topic, handler) {
+async function listenMessage(topic, handler, format = MESSAGE_FORMATS.JSON) {
 
     try {
 
@@ -60,7 +60,7 @@ async function listenMessage(topic, handler) {
 
         await StartListener();
 
-        logger.info(`[KafkaTransporter] [listenMessage] starting listening...: ${topic}`);
+        logger.info(`[listenMessage] Listening on topic: ${topic}`);
         const listenerStartTime = Date.now();
 
         /**
@@ -76,16 +76,16 @@ async function listenMessage(topic, handler) {
             const { message } = dataPackage
             const { key, value, timestamp, headers } = message
 
-            // transformer
-            const deserializedKey = deserialize(key);
-            const deserializedValue = deserialize(value);
+            // Deserialization transformer
+            const startTime = Date.now();
+            const deserializedKey = deserialize(key, format);
+            const deserializedValue = deserialize(value, format);
+            logger.info(`[listenMessage] [transformHandler] Deserialization took ${Date.now() - startTime}ms`);
+            //
 
-            if (!deserializedKey) {
-                logger.warning(`[KafkaTransporter] [transformHandler] Invalid 'key' for topic: ${dataPackage.topic}`, dataPackage);
-            }
             if (!deserializedValue) {
-                logger.warning(`[KafkaTransporter] [transformHandler] Invalid 'value' for topic: ${dataPackage.topic}`, dataPackage);
-                return; // we do not process worthless message
+                logger.warning(`[listenMessage] Skipped message with invalid value`);
+                return;
             }
 
             const pair = {
@@ -94,12 +94,13 @@ async function listenMessage(topic, handler) {
                 timestamp,
                 headers: {
                     correlationId: headers.correlationId.toString(),
-                    traceId: headers.traceId.toString()
+                    traceId: headers.traceId.toString(),
+                    type: headers.type.toString()
                 }
-            }
+            };
 
-            logger.debug(`[KafkaTransporter] [listenMessage] [transformHandler]`, pair)
-            logger.notice(`[KafkaTransporter] [listenMessage] [transformHandler] correlationId: ${pair.headers.correlationId}`)
+            logger.debug(`[listenMessage] [transformHandler]`, pair)
+            logger.notice(`[listenMessage] correlationId: ${pair.headers.correlationId}`)
 
             /**
              * Pair model
@@ -113,9 +114,9 @@ async function listenMessage(topic, handler) {
         // Start listening to the Kafka topic
         await kafkaListener.startListening(topic, transformHandler);
 
-        logger.notice(`[KafkaTransporter] [listenMessage] Listener duration -  ${Date.now() - listenerStartTime} ms`);
+        logger.notice(`[listenMessage] Listener duration -  ${Date.now() - listenerStartTime} ms`);
     } catch (error) {
-        logger.error(`[KafkaTransporter] [listenMessage] [error] topic: ${topic}, error message: ${error.message}`);
+        logger.error(`[listenMessage] Error while listening to topic ${topic}: ${error.message}`);
     }
 }
 
@@ -129,7 +130,7 @@ async function listenMessage(topic, handler) {
  * @param {Object} pair.value - The value of the message in JSON format.
  * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
  */
-async function sendMessage(topic, { key, value } = {}, useBuffer = true) {
+async function sendMessage(topic, { key, value, headers } = {}, format = MESSAGE_FORMATS.JSON) {
     if (!key || !value) {
         logger.error(`[KafkaTransporter] [sendMessage] Invalid message format: missing key or value`);
         return;
@@ -137,34 +138,24 @@ async function sendMessage(topic, { key, value } = {}, useBuffer = true) {
 
     try {
 
-        // for standard ( JSON, String ) 
-        const jsonSerializedKey = serialize(key, MESSAGE_FORMATS.JSON);
-        const jsonSerializedValue = serialize(value, MESSAGE_FORMATS.JSON);
-
-        // for performance (gzip, Avro, Protobuf)
-        // we will use for data schema and model
-        const bufferSerializedKey = serialize(key, MESSAGE_FORMATS.BUFFER);
-        const bufferSerializedValue = serialize(value, MESSAGE_FORMATS.BUFFER);
+        const serializedKey = serialize(key, format);
+        const serializedValue = serialize(value, format);
 
         const pair = {
-            key: jsonSerializedKey,
-            value: jsonSerializedValue,
-            // timestamp: is default adding automatically. if need any time you can set
-            headers: {
-                correlationId: uuidv4().toString(),
-                traceId: uuidv4().toString()
-            }
-        }
+            key: serializedKey,
+            value: serializedValue,
+            headers
+        };
 
         const pairs = [pair];
 
         await kafkaSender.sendPairs(topic, pairs);
 
-        logger.info(`[KafkaTransporter] [sendMessage] Sent ${pairs.length} message(s) to topic: ${topic}`, pairs);
-        logger.notice(`[KafkaTransporter] [sendMessage] Sent correlationId: ${pair.headers.correlationId}`);
+        logger.info(`[sendMessage] Sent message to topic: ${topic}`);
+        logger.notice(`[sendMessage] correlationId: ${pair.headers.correlationId}`)
 
     } catch (error) {
-        logger.error(`[KafkaTransporter] [sendMessage] [error] ${topic} - ${error.message}`, pairs);
+        logger.error(`[sendMessage] Failed to send message: ${error.message}`);
     }
 }
 
@@ -187,7 +178,7 @@ async function sendMessage(topic, { key, value } = {}, useBuffer = true) {
  * sendMessages(topic, messages);
  * 
  */
-async function sendMessages(topic, messages = []) {
+async function sendMessages(topic, messages = [], format = MESSAGE_FORMATS.JSON) {
     if (!Array.isArray(messages) || messages.length === 0) {
         logger.error(`[KafkaTransporter] [sendMessages] Invalid input: 'messages' should be a non-empty array`);
         return;
@@ -195,30 +186,20 @@ async function sendMessages(topic, messages = []) {
 
     try {
 
-        const pairs = messages.map(({ key, value }) => {
+        const pairs = messages.map(({ key, value, headers }) => {
             if (!value) {
                 logger.warning(`[KafkaTransporter] [sendMessages] Map - Skipping message with missing value`);
                 return null;
             }
 
-            // for standard ( JSON, String ) 
-            const jsonSerializedKey = serialize(key, MESSAGE_FORMATS.JSON);
-            const jsonSerializedValue = serialize(value, MESSAGE_FORMATS.JSON);
-
-            // for performance (gzip, Avro, Protobuf)
-            // we will use for data schema and model
-            const bufferSerializedKey = serialize(key, MESSAGE_FORMATS.BUFFER);
-            const bufferSerializedValue = serialize(value, MESSAGE_FORMATS.BUFFER);
+            const serializedKey = serialize(key, format);
+            const serializedValue = serialize(value, format);
 
             const pair = {
-                key: jsonSerializedKey,
-                value: jsonSerializedValue,
-                // timestamp: is default adding automatically. if need any time you can set
-                headers: {
-                    correlationId: uuidv4().toString(),
-                    traceId: uuidv4().toString()
-                }
-            }
+                key: serializedKey,
+                value: serializedValue,
+                headers
+            };
 
             return pair;
         }).filter(Boolean); // Remove null entries caused by invalid 

@@ -10,7 +10,7 @@ const environment = process.env.NODE_ENV || "development";
  * @returns {string} - Complete topic name considering environment and custom configurations.
  */
 const createTopicName = (baseName) => {
-  return process.env[`MESSAGING_TOPIC_${baseName.toUpperCase()}`] || `${baseName}.${environment}`;
+  return process.env[`MESSAGING_TOPIC_${baseName.toUpperCase()}`] || `${baseName}`;
 };
 
 /**
