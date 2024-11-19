@@ -6,7 +6,7 @@ const logger = require("../utils/logger")
 const { listenMessage } = require("./messageListener")
 
 const { topics } = require("../topics")
-const { handleDataAggregation } = require("../handlers/dataAggregationHandler")
+const { handleDataAggregationRequest } = require("../handlers/dataAggregationHandler")
 
 /**
  * Starts listening for messages on a specific topic.
@@ -17,7 +17,7 @@ async function listenDataAggregation() {
     const topic = topics.dataAggregation
     try {
         // we must use base listener
-        listenMessage(topic, handleDataAggregation)
+        listenMessage(topic, handleDataAggregationRequest)
 
         logger.debug(`[Listener] [listenDataAggregation] [debug] listener start`);
     } catch (error) {

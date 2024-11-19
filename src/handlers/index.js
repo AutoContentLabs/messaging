@@ -1,62 +1,62 @@
 // handlers
 const { handleMessage } = require("./messageHandler") // global handler
 
-const { handleDataCollectRequest } = require("./dataCollectRequestHandler")
-const { handleDataCollectStatus } = require("./dataCollectStatusHandler")
-const { handleDataCollectResponse } = require("./dataCollectResponseHandler")
-const { handleDataCollectError } = require("./dataCollectErrorHandler")
+const { handleDataCollectRequestRequest } = require("./dataCollectRequestHandler")
+const { handleDataCollectStatusRequest } = require("./dataCollectStatusHandler")
+const { handleDataCollectResponseRequest } = require("./dataCollectResponseHandler")
+const { handleDataCollectErrorRequest } = require("./dataCollectErrorHandler")
 
-const { handleJobScheduleCreate } = require("./jobScheduleCreateHandler")
-const { handleJobScheduleUpdate } = require("./jobScheduleUpdateHandler")
+const { handleJobScheduleCreateRequest } = require("./jobScheduleCreateHandler")
+const { handleJobScheduleUpdateRequest } = require("./jobScheduleUpdateHandler")
 
-const { handleJobStatus } = require("./jobStatusHandler")
-const { handleJobProgress } = require("./jobProgressHandler")
+const { handleJobStatusRequest } = require("./jobStatusHandler")
+const { handleJobProgressRequest } = require("./jobProgressHandler")
 
-const { handleDataProcessingStart } = require("./dataProcessingStartHandler")
-const { handleDataProcessingStatus } = require("./dataProcessingStatusHandler")
-const { handleDataProcessingResult } = require("./dataProcessingResultHandler")
+const { handleDataProcessingStartRequest } = require("./dataProcessingStartHandler")
+const { handleDataProcessingStatusRequest } = require("./dataProcessingStatusHandler")
+const { handleDataProcessingResultRequest } = require("./dataProcessingResultHandler")
 
-const { handleDataStorage } = require("./dataStorageHandler")
-const { handleDataAggregation } = require("./dataAggregationHandler")
+const { handleDataStorageRequest } = require("./dataStorageHandler")
+const { handleDataAggregationRequest } = require("./dataAggregationHandler")
 
-const { handleAnalysisRequest } = require("./analysisRequestHandler")
-const { handleAnalysisResult } = require("./analysisResultHandler")
-const { handleAnalysisError } = require("./analysisErrorHandler")
+const { handleAnalysisRequestRequest } = require("./analysisRequestHandler")
+const { handleAnalysisResultRequest } = require("./analysisResultHandler")
+const { handleAnalysisErrorRequest } = require("./analysisErrorHandler")
 
 const { handleAlertRequest } = require("./alertHandler")
-const { handleLog } = require("./logHandler")
+const { handleLogRequest } = require("./logHandler")
 
-const { handleReport } = require("./reportHandler")
-const { handleDashboard } = require("./dashboardHandler")
+const { handleReportRequest } = require("./reportHandler")
+const { handleDashboardRequest } = require("./dashboardHandler")
 
 module.exports = {
     handleMessage,// messageHandler.js // global handler
 
-    handleDataCollectRequest, // dataCollectRequestHandler.js
-    handleDataCollectStatus,
-    handleDataCollectResponse,
-    handleDataCollectError,
+    handleDataCollectRequestRequest, // dataCollectRequestHandler.js
+    handleDataCollectStatusRequest,
+    handleDataCollectResponseRequest,
+    handleDataCollectErrorRequest,
 
-    handleJobScheduleCreate,
-    handleJobScheduleUpdate,
+    handleJobScheduleCreateRequest,
+    handleJobScheduleUpdateRequest,
 
-    handleJobStatus,
-    handleJobProgress,
+    handleJobStatusRequest,
+    handleJobProgressRequest,
 
-    handleDataProcessingStart,
-    handleDataProcessingStatus,
-    handleDataProcessingResult,
+    handleDataProcessingStartRequest,
+    handleDataProcessingStatusRequest,
+    handleDataProcessingResultRequest,
 
-    handleDataStorage,
-    handleDataAggregation,
+    handleDataStorageRequest,
+    handleDataAggregationRequest,
 
-    handleAnalysisRequest,
-    handleAnalysisResult,
-    handleAnalysisError,
+    handleAnalysisRequestRequest,
+    handleAnalysisResultRequest,
+    handleAnalysisErrorRequest,
 
     handleAlertRequest,
-    handleLog,
+    handleLogRequest,
 
-    handleReport,
-    handleDashboard
+    handleReportRequest,
+    handleDashboardRequest
 };

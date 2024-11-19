@@ -6,7 +6,7 @@ const logger = require("../utils/logger")
 const { listenMessage } = require("./messageListener")
 
 const { topics } = require("../topics")
-const { handleJobScheduleUpdate } = require("../handlers/jobScheduleUpdateHandler")
+const { handleJobScheduleUpdateRequest } = require("../handlers/jobScheduleUpdateHandler")
 
 /**
  * Starts listening for messages on a specific topic.
@@ -17,7 +17,7 @@ async function listenJobScheduleUpdate() {
     const topic = topics.jobScheduleUpdate
     try {
         // we must use base listener
-        listenMessage(topic, handleJobScheduleUpdate)
+        listenMessage(topic, handleJobScheduleUpdateRequest)
 
         logger.debug(`[Listener] [listenJobScheduleUpdate] [debug] listener start`);
     } catch (error) {

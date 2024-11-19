@@ -6,7 +6,7 @@ const logger = require("../utils/logger")
 const { listenMessage } = require("./messageListener")
 
 const { topics } = require("../topics")
-const { handleDataProcessingStatus } = require("../handlers/dataProcessingStatusHandler")
+const { handleDataProcessingStatusRequest } = require("../handlers/dataProcessingStatusHandler")
 
 /**
  * Starts listening for messages on a specific topic.
@@ -17,7 +17,7 @@ async function listenDataProcessingStatus() {
     const topic = topics.dataProcessingStatus
     try {
         // we must use base listener
-        listenMessage(topic, handleDataProcessingStatus)
+        listenMessage(topic, handleDataProcessingStatusRequest)
 
         logger.debug(`[Listener] [listenDataProcessingStatus] [debug] listener start`);
     } catch (error) {

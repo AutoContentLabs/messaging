@@ -1,63 +1,63 @@
 // senders
 const { sendMessage } = require("./messageSender") // messageSender.js // global sender
 
-const { sendDataCollectRequest } = require("./dataCollectRequestSender") // dataCollectRequestSender.js
-const { sendDataCollectStatus } = require("./dataCollectStatusSender")
-const { sendDataCollectResponse } = require("./dataCollectResponseSender")
-const { sendDataCollectError } = require("./dataCollectErrorSender")
+const { sendDataCollectRequestRequest } = require("./dataCollectRequestSender") // dataCollectRequestSender.js
+const { sendDataCollectStatusRequest } = require("./dataCollectStatusSender")
+const { sendDataCollectResponseRequest } = require("./dataCollectResponseSender")
+const { sendDataCollectErrorRequest } = require("./dataCollectErrorSender")
 
-const { sendJobScheduleCreate } = require("./jobScheduleCreateSender")
-const { sendJobScheduleUpdate } = require("./jobScheduleUpdateSender")
+const { sendJobScheduleCreateRequest } = require("./jobScheduleCreateSender")
+const { sendJobScheduleUpdateRequest } = require("./jobScheduleUpdateSender")
 
-const { sendJobStatus } = require("./jobStatusSender")
-const { sendJobProgress } = require("./jobProgressSender")
+const { sendJobStatusRequest } = require("./jobStatusSender")
+const { sendJobProgressRequest } = require("./jobProgressSender")
 
-const { sendDataProcessingStart } = require("./dataProcessingStartSender")
-const { sendDataProcessingStatus } = require("./dataProcessingStatusSender")
-const { sendDataProcessingResult } = require("./dataProcessingResultSender")
+const { sendDataProcessingStartRequest } = require("./dataProcessingStartSender")
+const { sendDataProcessingStatusRequest } = require("./dataProcessingStatusSender")
+const { sendDataProcessingResultRequest } = require("./dataProcessingResultSender")
 
-const { sendDataStorage } = require("./dataStorageSender")
-const { sendDataAggregation } = require("./dataAggregationSender")
+const { sendDataStorageRequest } = require("./dataStorageSender")
+const { sendDataAggregationRequest } = require("./dataAggregationSender")
 
-const { sendAnalysisRequest } = require("./analysisRequestSender")
-const { sendAnalysisResult } = require("./analysisResultSender")
-const { sendAnalysisError } = require("./analysisErrorSender")
+const { sendAnalysisRequestRequest } = require("./analysisRequestSender")
+const { sendAnalysisResultRequest } = require("./analysisResultSender")
+const { sendAnalysisErrorRequest } = require("./analysisErrorSender")
 
-const { sendAlert } = require("./alertSender")
-const { sendLog } = require("./logSender")
+const { sendAlertRequest } = require("./alertSender")
+const { sendLogRequest } = require("./logSender")
 
-const { sendReport } = require("./reportSender")
-const { sendDashboard } = require("./dashboardSender")
+const { sendReportRequest } = require("./reportSender")
+const { sendDashboardRequest } = require("./dashboardSender")
 
 module.exports = {
     // senders
     sendMessage,// messageSender.js // global sender
 
-    sendDataCollectRequest, // dataCollectRequestSender.js
-    sendDataCollectStatus,
-    sendDataCollectResponse,
-    sendDataCollectError,
+    sendDataCollectRequestRequest, // dataCollectRequestSender.js
+    sendDataCollectStatusRequest,
+    sendDataCollectResponseRequest,
+    sendDataCollectErrorRequest,
 
-    sendJobScheduleCreate,
-    sendJobScheduleUpdate,
+    sendJobScheduleCreateRequest,
+    sendJobScheduleUpdateRequest,
 
-    sendJobStatus,
-    sendJobProgress,
+    sendJobStatusRequest,
+    sendJobProgressRequest,
 
-    sendDataProcessingStart,
-    sendDataProcessingStatus,
-    sendDataProcessingResult,
+    sendDataProcessingStartRequest,
+    sendDataProcessingStatusRequest,
+    sendDataProcessingResultRequest,
 
-    sendDataStorage,
-    sendDataAggregation,
+    sendDataStorageRequest,
+    sendDataAggregationRequest,
 
-    sendAnalysisRequest,
-    sendAnalysisResult,
-    sendAnalysisError,
+    sendAnalysisRequestRequest,
+    sendAnalysisResultRequest,
+    sendAnalysisErrorRequest,
 
-    sendAlert,
-    sendLog,
+    sendAlertRequest,
+    sendLogRequest,
 
-    sendReport,
-    sendDashboard,
+    sendReportRequest,
+    sendDashboardRequest,
 };
