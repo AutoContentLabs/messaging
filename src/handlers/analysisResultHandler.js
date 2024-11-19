@@ -1,48 +1,30 @@
+
 /**
- * src\handlers\analysisResultHandler.js
+ * analysisResult handler
+ * src/handlers/analysisResultHandler.js
  */
 
 const logger = require("../utils/logger");
-const { handleMessage } = require("./messageHandler")
+const { handleMessage } = require("./messageHandler");
 
 /**
- * Handles incoming messages.
- * 
- * @param {Object} dataPackage - The parameters for the function.
- * @param {string} dataPackage.topic - The topic from which the message was received.
- * @param {Object} dataPackage.pair - The message object containing key, value, timestamp, and offset.
- * @param {Buffer} dataPackage.pair.key - The key of the message.
- * @param {Buffer} dataPackage.pair.value - The value of the message (the main data payload).
- * @param {string} dataPackage.pair.timestamp - The timestamp of the message.
- * @param {string} dataPackage.pair.offset - The offset of the message in the partition.
- * @param {number} dataPackage.partition - The partition number from which the message was received.
+ * Handles incoming analysisResult messages.
+ * @param {Object} model - The incoming model.
  */
-async function handleAnalysisResult({ topic, pair, partition } = dataPackage) {
+async function handleAnalysisResultRequest(model) {
+  try {
+    logger.debug(`[analysisResultHandler] Processing request...`);
 
-    // we must use the base message handler
-    const model = handleMessage(dataPackage)
+    // Base message handling, including validation
+    const handleMessageData = await handleMessage(model);
 
-    // Log the message header details
-    logger.debug(`[handleAnalysisResult] [debug] Ready message model`);
-
-    try {
-
-        if (model) {
-            try {
-                logger.debug(`[handleAnalysisResult] [debug] message model is valid: ${JSON.stringify(model)}`);
-                const { timestamp } = model
-                const { key } = pair
-                logger.notice(`[handleAnalysisResult] [notice] key: ${key}, timestamp: ${timestamp}`)
-                // Do something
-            } catch (error) {
-                logger.warn(`[handleAnalysisResult] [warn]  message model is no valid. error: ${error.message}, value: ${JSON.stringify(model)}`);
-            }
-        }
-
-    } catch (error) {
-        // Log any error during the processing of the message
-        logger.error(`[handleAnalysisResult] [error] Error message model - topic: ${topic}, partition: ${partition}, error: ${error.message}`);
-    }
+    // Schema properties destructuring
+    const { analysisId, resultData, timestamp } = handleMessageData;
+      
+    logger.info(`[handleAnalysisResult] Processed request successfully: ${analysisId}, ${resultData}, ${timestamp}`);
+  } catch (error) {
+    logger.error(`[analysisResultHandler] Error processing request: ${error.message}`);
+  }
 }
 
-module.exports = { handleAnalysisResult };
+module.exports = { handleAnalysisResultRequest };

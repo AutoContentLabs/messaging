@@ -1,51 +1,31 @@
-/**
- * src\senders\analysisErrorSender.js
- */
-
-const { topics } = require("../topics")
-const { sendMessage } = require("../senders/messageSender");
-const logger = require('../utils/logger');
 
 /**
- * Sends an error message related to a analysis task.
- * @param {string} taskId - The task's unique identifier.
- * @param {string} errorCode - A unique error code.
- * @param {string} errorMessage - A detailed error message.
- * @returns {Promise<void>}
+ * analysisError sender
+ * src/senders/analysisErrorSender.js
  */
-async function sendAnalysisError(taskId, errorCode, errorMessage) {
-    // Validate inputs
-    if (typeof taskId !== 'string' || typeof errorCode !== 'string' || typeof errorMessage !== 'string') {
-        logger.crit(`[AnalysisErrorSender] [sendAnalysisError] [crit] Invalid arguments passed for taskId: ${taskId}, errorCode: ${errorCode}`);
-        throw new Error('Invalid arguments');
-    }
 
-    logger.debug(`[AnalysisErrorSender] [sendAnalysisError] [debug] Starting to send error message for taskId: ${taskId}, errorCode: ${errorCode}`);
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
-    // parameters
-    const key = `analysisError-${taskId}`
-    const value = Buffer.from(
-        JSON.stringify(
-            {
-                timestamp: new Date().toISOString(),
-                taskId,
-                errorCode,
-                message: errorMessage
-            }
-        )
-    )
+const schemaName = "ANALYSIS_ERROR";
+const eventName = "ANALYSIS_ERROR";
+const sender = createModel(schemaName, eventName);
 
-    const pairs = [
-        { key, value }
-    ];
-
-    try {
-        await sendMessage(topics.analysisError, pairs);
-        logger.info(`[AnalysisErrorSender] [sendAnalysisError] [info] Error message sent successfully for taskId: ${taskId} with error code: ${errorCode}`);
-    } catch (error) {
-        logger.error(`[AnalysisErrorSender] [sendAnalysisError] [error] Failed to send error message for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;
-    }
+/**
+ * Sends a analysisError to the specified topic.
+ * @param {Object} model - The analysisError request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendAnalysisErrorRequest(model) {
+  try {
+    logger.debug(`[analysisErrorSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[analysisErrorSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[analysisErrorSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendAnalysisError };
+module.exports = { sendAnalysisErrorRequest };

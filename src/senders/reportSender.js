@@ -1,54 +1,31 @@
-/**
- * src\senders\reportSender.js
- */
-
-const { topics } = require("../topics")
-const { sendMessage } = require("../senders/messageSender");
-const logger = require('../utils/logger');
 
 /**
- * Sends a generated report message to the reports topic.
- * @param {string} taskId - The task's unique identifier.
- * @param {string} reportType - The type of the report (e.g., 'trend analysis', 'user engagement').
- * @param {object} data - The data contained in the report.
- * @returns {Promise<void>}
+ * report sender
+ * src/senders/reportSender.js
  */
-async function sendReport(taskId, reportType, data) {
-    // Validate reportType
-    const validReportTypes = ['trend-report', 'user-engagement', 'content-performance']; // Example types
-    if (!validReportTypes.includes(reportType)) {
-        logger.error(`[ReportSender] [sendReport] [error] Invalid report type: ${reportType} for taskId: ${taskId}`);
-        throw new Error(`Invalid report type: ${reportType}`);
-    }
-    
-    // parameters
-    const key = `report-${taskId}`
-    const value = Buffer.from(
-        JSON.stringify(
-            {
-                timestamp: new Date().toISOString(),
-                reportType,
-                taskId,
-                data, // The data related to the report
-                status: 'completed',
-                message: 'Report generated and sent.'
-            }
-        )
-    )
 
-    const pairs = [
-        { key, value }
-    ];
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
+const schemaName = "REPORT";
+const eventName = "REPORT";
+const sender = createModel(schemaName, eventName);
 
-    try {
-        // Send the message to Kafka topic
-        await sendMessage(topics.reports, pairs);
-        logger.info(`[ReportSender] [sendReport] [success] Report sent for taskId: ${taskId} with report type: ${reportType}`);
-    } catch (error) {
-        logger.error(`[ReportSender] [sendReport] [error] Failed to send report for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;  // Re-throw error to handle it upstream if needed
-    }
+/**
+ * Sends a report to the specified topic.
+ * @param {Object} model - The report request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendReportRequest(model) {
+  try {
+    logger.debug(`[reportSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[reportSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[reportSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendReport };
+module.exports = { sendReportRequest };

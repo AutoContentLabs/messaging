@@ -1,51 +1,31 @@
-/**
- * src\senders\jobProgressSender.js
- */
-
-const { topics } = require("../topics")
-const { sendMessage } = require("../senders/messageSender");
-const logger = require('../utils/logger');
 
 /**
- * Sends a message indicating the progress of a job.
- * @param {string} jobId - The unique identifier for the job.
- * @param {string} taskId - The unique identifier for the task.
- * @param {number} progress - The current progress of the job (e.g., 65 for 65%).
- * @param {string} message - A message providing additional context about the job's progress.
- * @returns {Promise<void>}
+ * jobProgress sender
+ * src/senders/jobProgressSender.js
  */
-async function sendJobProgress(jobId, taskId, progress, message) {
-    // Validate parameters
-    if (typeof jobId !== 'string' || typeof taskId !== 'string' || typeof progress !== 'number' || typeof message !== 'string') {
-        logger.error('[JobProgressSender] [sendJobProgress] [error] Invalid arguments passed to sendJobProgress');
-        throw new Error('Invalid arguments');
-    }
 
-    // parameters
-    const key = `jobProgress-${jobId}`
-    const value = Buffer.from(
-        JSON.stringify(
-            {
-                timestamp: new Date().toISOString(),
-                jobId,
-                taskId,
-                progress, // e.g., 65 for 65%
-                message
-            }
-        )
-    )
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
-    const pairs = [
-        { key, value }
-    ];
+const schemaName = "JOB_PROGRESS";
+const eventName = "JOB_PROGRESS";
+const sender = createModel(schemaName, eventName);
 
-    try {
-        await sendMessage(topics.jobProgress, pairs);
-        logger.info(`[JobProgressSender] [sendJobProgress] [success] Job progress message sent for jobId: ${jobId}, taskId: ${taskId}, progress: ${progress}%`);
-    } catch (error) {
-        logger.error(`[JobProgressSender] [sendJobProgress] [error] Failed to send job progress message for jobId: ${jobId}, taskId: ${taskId}. Error: ${error.message}`);
-        throw error;
-    }
+/**
+ * Sends a jobProgress to the specified topic.
+ * @param {Object} model - The jobProgress request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendJobProgressRequest(model) {
+  try {
+    logger.debug(`[jobProgressSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[jobProgressSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[jobProgressSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendJobProgress };
+module.exports = { sendJobProgressRequest };

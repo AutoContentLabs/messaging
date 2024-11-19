@@ -1,7 +1,9 @@
+
 /**
- * Alert handler
+ * alert handler
  * src/handlers/alertHandler.js
  */
+
 const logger = require("../utils/logger");
 const { handleMessage } = require("./messageHandler");
 
@@ -9,23 +11,20 @@ const { handleMessage } = require("./messageHandler");
  * Handles incoming alert messages.
  * @param {Object} model - The incoming model.
  */
-async function handleAlert(model) {
-    try {
-        logger.debug("[handleAlert] Processing alert...");
+async function handleAlertRequest(model) {
+  try {
+    logger.debug(`[alertHandler] Processing request...`);
 
-        // Base message handling, including validation
-        const data = await handleMessage(model);
+    // Base message handling, including validation
+    const handleMessageData = await handleMessage(model);
 
-        const { content, level, timestamp } = data;
-        logger.info(`[handleAlert] Alert processed: Level: ${level}, Content: ${content}, Timestamp: ${timestamp}`);
-
-        // Add additional processing here if needed
-    } catch (error) {
-        logger.error(`[handleAlert] Error processing alert: ${error.message}`, {
-            model,
-            stack: error.stack,
-        });
-    }
+    // Schema properties destructuring
+    const { content, level, timestamp } = handleMessageData;
+      
+    logger.info(`[handleAlert] Processed request successfully: ${content}, ${level}, ${timestamp}`);
+  } catch (error) {
+    logger.error(`[alertHandler] Error processing request: ${error.message}`);
+  }
 }
 
-module.exports = { handleAlert };
+module.exports = { handleAlertRequest };

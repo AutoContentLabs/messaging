@@ -1,30 +1,31 @@
+
 /**
- * Alert sender
+ * alert sender
  * src/senders/alertSender.js
  */
 
 const { topics } = require("../topics");
 const { createModel } = require("../models/createModel");
-const logger = require("../utils/logger.js");
+const logger = require("../utils/logger");
 
 const schemaName = "ALERT";
-const eventName = topics.alert;
+const eventName = "ALERT";
 const sender = createModel(schemaName, eventName);
 
 /**
- * Sends an alert to the specified topic.
+ * Sends a alert to the specified topic.
  * @param {Object} model - The alert request model.
  * @throws Will throw an error if sending fails.
  */
-async function sendAlert(model) {
+async function sendAlertRequest(model) {
   try {
-    logger.debug("[AlertSender] Validating and sending request...");
-    await sender.send(model); // Validation and sending handled by Model
-    logger.info("[AlertSender] Request sent successfully.");
+    logger.debug(`[alertSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[alertSender] Request sent successfully.`);
   } catch (error) {
-    logger.error(`[AlertSender] Failed to send request: ${error.message}`);
+    logger.error(`[alertSender] Failed to send request: ${error.message}`);
     throw error;
   }
 }
 
-module.exports = { sendAlert };
+module.exports = { sendAlertRequest };

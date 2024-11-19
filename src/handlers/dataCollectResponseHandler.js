@@ -1,48 +1,30 @@
+
 /**
- * src\handlers\dataCollectResponseHandler.js
+ * dataCollectResponse handler
+ * src/handlers/dataCollectResponseHandler.js
  */
 
 const logger = require("../utils/logger");
-const { handleMessage } = require("./messageHandler")
+const { handleMessage } = require("./messageHandler");
 
 /**
- * Handles incoming messages.
- * 
- * @param {Object} dataPackage - The parameters for the function.
- * @param {string} dataPackage.topic - The topic from which the message was received.
- * @param {Object} dataPackage.pair - The message object containing key, value, timestamp, and offset.
- * @param {Buffer} dataPackage.pair.key - The key of the message.
- * @param {Buffer} dataPackage.pair.value - The value of the message (the main data payload).
- * @param {string} dataPackage.pair.timestamp - The timestamp of the message.
- * @param {string} dataPackage.pair.offset - The offset of the message in the partition.
- * @param {number} dataPackage.partition - The partition number from which the message was received.
+ * Handles incoming dataCollectResponse messages.
+ * @param {Object} model - The incoming model.
  */
-async function handleDataCollectResponse({ topic, pair, partition } = dataPackage) {
+async function handleDataCollectResponseRequest(model) {
+  try {
+    logger.debug(`[dataCollectResponseHandler] Processing request...`);
 
-    // we must use the base message handler
-    const model = handleMessage(dataPackage)
+    // Base message handling, including validation
+    const handleMessageData = await handleMessage(model);
 
-    // Log the message header details
-    logger.debug(`[handleDataCollectResponse] [debug] Ready message model`);
-
-    try {
-
-        if (model) {
-            try {
-                logger.debug(`[handleDataCollectResponse] [debug] message model is valid: ${JSON.stringify(model)}`);
-                const { timestamp } = model
-                const { key } = pair
-                logger.notice(`[handleDataCollectResponse] [notice] key: ${key}, timestamp: ${timestamp}`)
-                // Do something
-            } catch (error) {
-                logger.warn(`[handleDataCollectResponse] [warn]  message model is no valid. error: ${error.message}, value: ${JSON.stringify(model)}`);
-            }
-        }
-
-    } catch (error) {
-        // Log any error during the processing of the message
-        logger.error(`[handleDataCollectResponse] [error] Error message model - topic: ${topic}, partition: ${partition}, error: ${error.message}`);
-    }
+    // Schema properties destructuring
+    const { id, data, timestamp } = handleMessageData;
+      
+    logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}, ${data}, ${timestamp}`);
+  } catch (error) {
+    logger.error(`[dataCollectResponseHandler] Error processing request: ${error.message}`);
+  }
 }
 
-module.exports = { handleDataCollectResponse };
+module.exports = { handleDataCollectResponseRequest };

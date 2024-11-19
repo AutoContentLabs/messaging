@@ -23,7 +23,7 @@ const { handleAnalysisRequest } = require("./analysisRequestHandler")
 const { handleAnalysisResult } = require("./analysisResultHandler")
 const { handleAnalysisError } = require("./analysisErrorHandler")
 
-const { handleAlert } = require("./alertHandler")
+const { handleAlertRequest } = require("./alertHandler")
 const { handleLog } = require("./logHandler")
 
 const { handleReport } = require("./reportHandler")
@@ -54,7 +54,7 @@ module.exports = {
     handleAnalysisResult,
     handleAnalysisError,
 
-    handleAlert,
+    handleAlertRequest,
     handleLog,
 
     handleReport,

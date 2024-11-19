@@ -1,50 +1,31 @@
-/**
- * src\senders\dashboardSender.js
- */
-
-const { topics } = require("../topics")
-const { sendMessage } = require("../senders/messageSender");
-const logger = require('../utils/logger');
 
 /**
- * Sends an update for the dashboard with trend statistics.
- * @param {string} taskId - The unique identifier for the task.
- * @param {object} stats - The statistics to update on the dashboard (e.g., { 'AI in healthcare': 15000, 'Quantum Computing': 12000 }).
- * @returns {Promise<void>}
+ * dashboard sender
+ * src/senders/dashboardSender.js
  */
-async function sendDashboard(taskId, stats) {
-    // Validate inputs
-    if (typeof taskId !== 'string' || typeof stats !== 'object') {
-        logger.alert(`[DashboardSender] [sendDashboard] [alert] Invalid arguments for taskId: ${taskId}`);
-        throw new Error('Invalid arguments');
-    }
 
-    logger.debug(`[DashboardSender] [sendDashboard] [debug] Starting dashboard update for taskId: ${taskId}`);
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
-    // parameters
-    const key = `dashboard-${taskId}`
-    const value = Buffer.from(
-        JSON.stringify(
-            {
-                timestamp: new Date().toISOString(),
-                taskId,
-                stats,
-                message: 'Dashboard updated with trend statistics.'
-            }
-        )
-    )
+const schemaName = "DASHBOARD";
+const eventName = "DASHBOARD";
+const sender = createModel(schemaName, eventName);
 
-    const pairs = [
-        { key, value }
-    ];
-
-    try {
-        await sendMessage(topics.dashboard, pairs);
-        logger.info(`[DashboardSender] [sendDashboard] [info] Dashboard update sent successfully for taskId: ${taskId}`);
-    } catch (error) {
-        logger.error(`[DashboardSender] [sendDashboard] [error] Failed to send message for taskId: ${taskId} - ${error.message}`);
-        throw error;
-    }
+/**
+ * Sends a dashboard to the specified topic.
+ * @param {Object} model - The dashboard request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendDashboardRequest(model) {
+  try {
+    logger.debug(`[dashboardSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[dashboardSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[dashboardSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendDashboard };
+module.exports = { sendDashboardRequest };

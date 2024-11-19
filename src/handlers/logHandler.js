@@ -1,48 +1,30 @@
+
 /**
- * src\handlers\logHandler.js
+ * log handler
+ * src/handlers/logHandler.js
  */
 
 const logger = require("../utils/logger");
-const { handleMessage } = require("./messageHandler")
+const { handleMessage } = require("./messageHandler");
 
 /**
- * Handles incoming messages.
- * 
- * @param {Object} dataPackage - The parameters for the function.
- * @param {string} dataPackage.topic - The topic from which the message was received.
- * @param {Object} dataPackage.pair - The message object containing key, value, timestamp, and offset.
- * @param {Buffer} dataPackage.pair.key - The key of the message.
- * @param {Buffer} dataPackage.pair.value - The value of the message (the main data payload).
- * @param {string} dataPackage.pair.timestamp - The timestamp of the message.
- * @param {string} dataPackage.pair.offset - The offset of the message in the partition.
- * @param {number} dataPackage.partition - The partition number from which the message was received.
+ * Handles incoming log messages.
+ * @param {Object} model - The incoming model.
  */
-async function handleLog({ topic, pair, partition } = dataPackage) {
+async function handleLogRequest(model) {
+  try {
+    logger.debug(`[logHandler] Processing request...`);
 
-    // we must use the base message handler
-    const model = handleMessage(dataPackage)
+    // Base message handling, including validation
+    const handleMessageData = await handleMessage(model);
 
-    // Log the message header details
-    logger.debug(`[handleLog] [debug] Ready message model`);
-
-    try {
-
-        if (model) {
-            try {
-                logger.debug(`[handleLog] [debug] message model is valid: ${JSON.stringify(model)}`);
-                const { timestamp } = model
-                const { key } = pair
-                logger.notice(`[handleLog] [notice] key: ${key}, timestamp: ${timestamp}`)
-                // Do something
-            } catch (error) {
-                logger.warn(`[handleLog] [warn]  message model is no valid. error: ${error.message}, value: ${JSON.stringify(model)}`);
-            }
-        }
-
-    } catch (error) {
-        // Log any error during the processing of the message
-        logger.error(`[handleLog] [error] Error message model - topic: ${topic}, partition: ${partition}, error: ${error.message}`);
-    }
+    // Schema properties destructuring
+    const { logId, message, level, timestamp } = handleMessageData;
+      
+    logger.info(`[handleLog] Processed request successfully: ${logId}, ${message}, ${level}, ${timestamp}`);
+  } catch (error) {
+    logger.error(`[logHandler] Error processing request: ${error.message}`);
+  }
 }
 
-module.exports = { handleLog };
+module.exports = { handleLogRequest };

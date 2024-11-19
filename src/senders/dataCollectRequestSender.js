@@ -1,6 +1,7 @@
+
 /**
- * Data Collect Request Sender
- * src\senders\dataCollectRequestSender.js
+ * dataCollectRequest sender
+ * src/senders/dataCollectRequestSender.js
  */
 
 const { topics } = require("../topics");
@@ -8,23 +9,23 @@ const { createModel } = require("../models/createModel");
 const logger = require("../utils/logger");
 
 const schemaName = "DATA_COLLECT_REQUEST";
-const eventName = topics.dataCollectRequest;
+const eventName = "DATA_COLLECT_REQUEST";
 const sender = createModel(schemaName, eventName);
 
 /**
- * Sends a data collect request to the specified topic.
- * @param {Object} model - The data collect request model.
+ * Sends a dataCollectRequest to the specified topic.
+ * @param {Object} model - The dataCollectRequest request model.
  * @throws Will throw an error if sending fails.
  */
-async function sendDataCollectRequest(model) {
+async function sendDataCollectRequestRequest(model) {
   try {
-    logger.debug("[DataCollectRequestSender] Validating and sending request...");
-    await sender.send(model); // Validation handled in Model
-    logger.info("[DataCollectRequestSender] Request sent successfully.");
+    logger.debug(`[dataCollectRequestSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[dataCollectRequestSender] Request sent successfully.`);
   } catch (error) {
-    logger.error(`[DataCollectRequestSender] Failed to send request: ${error.message}`);
+    logger.error(`[dataCollectRequestSender] Failed to send request: ${error.message}`);
     throw error;
   }
 }
 
-module.exports = { sendDataCollectRequest };
+module.exports = { sendDataCollectRequestRequest };

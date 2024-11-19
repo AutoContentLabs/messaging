@@ -1,31 +1,30 @@
+
 /**
- * Data Collect Request Handler
- * src\handlers\dataCollectRequestHandler.js
+ * dataCollectRequest handler
+ * src/handlers/dataCollectRequestHandler.js
  */
+
 const logger = require("../utils/logger");
 const { handleMessage } = require("./messageHandler");
 
 /**
- * Handles incoming data collect requests.
- * @param {Object} model - The incoming data collect request model.
+ * Handles incoming dataCollectRequest messages.
+ * @param {Object} model - The incoming model.
  */
-async function handleDataCollectRequest(model) {
+async function handleDataCollectRequestRequest(model) {
   try {
-    logger.debug("[DataCollectRequestHandler] Processing request...");
+    logger.debug(`[dataCollectRequestHandler] Processing request...`);
 
     // Base message handling, including validation
-    const data = await handleMessage(model);
+    const handleMessageData = await handleMessage(model);
 
-    const { id, source, params, priority, timestamp } = data;
-    logger.info(`[DataCollectRequestHandler] Processed request: ID: ${id}, Source: ${source}, Priority: ${priority}, Timestamp: ${timestamp}`);
-
-    // Additional logic can be added here
+    // Schema properties destructuring
+    const { id, source, params, priority, timestamp } = handleMessageData;
+      
+    logger.info(`[handleDataCollectRequest] Processed request successfully: ${id}, ${source}, ${params}, ${priority}, ${timestamp}`);
   } catch (error) {
-    logger.error(`[DataCollectRequestHandler] Error processing request: ${error.message}`, {
-      model,
-      stack: error.stack,
-    });
+    logger.error(`[dataCollectRequestHandler] Error processing request: ${error.message}`);
   }
 }
 
-module.exports = { handleDataCollectRequest };
+module.exports = { handleDataCollectRequestRequest };

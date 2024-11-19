@@ -1,53 +1,31 @@
-/**
- * src\senders\analysisResultSender.js
- */
-
-const { topics } = require("../topics")
-const { sendMessage } = require("../senders/messageSender");
-const logger = require('../utils/logger');
 
 /**
- * Sends the result of an analysis once it is completed.
- * @param {string} taskId - The unique identifier for the task.
- * @param {string} analysisType - The type of analysis (e.g., "trend", "sentiment").
- * @param {object} result - The result of the analysis (e.g., { 'AI in healthcare': 85, 'Quantum Computing': 78 }).
- * @returns {Promise<void>}
+ * analysisResult sender
+ * src/senders/analysisResultSender.js
  */
-async function sendAnalysisResult(taskId, analysisType, result) {
-    // Validate inputs
-    if (typeof taskId !== 'string' || typeof analysisType !== 'string' || typeof result !== 'object') {
-        logger.alert(`[AnalysisResultSender] [sendAnalysisResult] [alert] Invalid arguments for taskId: ${taskId}`);
-        throw new Error('Invalid arguments');
-    }
 
-    // parameters
-    const key = `analysisResult-${taskId}`
-    const value = Buffer.from(
-        JSON.stringify(
-            {
-                timestamp: new Date().toISOString(),
-                taskId,
-                analysisType,
-                result, // Example: { 'AI in healthcare': 85, 'Quantum Computing': 78 }
-                status: 'completed',
-                message: 'Analysis completed successfully.'
-            }
-        )
-    )
+const { topics } = require("../topics");
+const { createModel } = require("../models/createModel");
+const logger = require("../utils/logger");
 
-    const pairs = [
-        { key, value }
-    ];
+const schemaName = "ANALYSIS_RESULT";
+const eventName = "ANALYSIS_RESULT";
+const sender = createModel(schemaName, eventName);
 
-    try {
-        // Send the analysis result message to the analysisResult topic
-        await sendMessage(topics.analysisResult, pairs);
-        logger.info(`[AnalysisResultSender] [sendAnalysisResult] [info] Analysis result sent successfully for taskId: ${taskId} with analysis type: ${analysisType}`);
-    } catch (error) {
-        // Log error if message sending fails
-        logger.error(`[AnalysisResultSender] [sendAnalysisResult] [error] Failed to send analysis result for taskId: ${taskId}. Error: ${error.message}`);
-        throw error;  // Re-throw the error to be handled upstream if needed
-    }
+/**
+ * Sends a analysisResult to the specified topic.
+ * @param {Object} model - The analysisResult request model.
+ * @throws Will throw an error if sending fails.
+ */
+async function sendAnalysisResultRequest(model) {
+  try {
+    logger.debug(`[analysisResultSender] Validating and sending request...`);
+    await sender.send(model);
+    logger.info(`[analysisResultSender] Request sent successfully.`);
+  } catch (error) {
+    logger.error(`[analysisResultSender] Failed to send request: ${error.message}`);
+    throw error;
+  }
 }
 
-module.exports = { sendAnalysisResult };
+module.exports = { sendAnalysisResultRequest };
