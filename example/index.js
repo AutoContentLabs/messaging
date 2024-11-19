@@ -1,194 +1,150 @@
-// example/index.js
 const {
     // topics
     topics, // global topics
 
-    // listener
-    // listenMessage, // messageListener.js // global listener
+    // listener functions
+    listenDataCollectRequest,
+    listenDataCollectStatus,
+    listenDataCollectResponse,
+    listenDataCollectError,
 
-    // listenDataCollectRequest, // dataCollectRequestListener.js
-    // listenDataCollectStatus,
-    // listenDataCollectResponse,
-    // listenDataCollectError,
+    listenJobScheduleCreate,
+    listenJobScheduleUpdate,
 
-    // listenJobScheduleCreate,
-    // listenJobScheduleUpdate,
+    listenJobStatus,
+    listenJobProgress,
 
-    // listenJobStatus,
-    // listenJobProgress,
+    listenDataProcessingStart,
+    listenDataProcessingStatus,
+    listenDataProcessingResult,
 
-    // listenDataProcessingStart,
-    // listenDataProcessingStatus,
-    // listenDataProcessingResult,
+    listenDataStorage,
+    listenDataAggregation,
 
-    // listenDataStorage,
-    // listenDataAggregation,
-
-    // listenAnalysisRequest,
-    // listenAnalysisResult,
-    // listenAnalysisError,
+    listenAnalysisRequest,
+    listenAnalysisResult,
+    listenAnalysisError,
 
     listenAlert,
-    sendAlert,
-    // listenLog,
+    listenLog,
 
-    // listenReport,
-    // listenDashboard,
+    listenReport,
+    listenDashboard,
 
-    // senders
-    // sendMessage,// messageSender.js // global sender
+    // sender functions
+    sendDataCollectRequestRequest,
+    sendDataCollectStatusRequest,
+    sendDataCollectResponseRequest,
+    sendDataCollectErrorRequest,
 
-    // sendDataCollectRequest, // dataCollectRequestSender.js
-    // sendDataCollectStatus,
-    // sendDataCollectResponse,
-    // sendDataCollectError,
+    sendJobScheduleCreateRequest,
+    sendJobScheduleUpdateRequest,
 
-    // sendJobScheduleCreate,
-    // sendJobScheduleUpdate,
+    sendJobStatusRequest,
+    sendJobProgressRequest,
 
-    // sendJobStatus,
-    // sendJobProgress,
+    sendDataProcessingStartRequest,
+    sendDataProcessingStatusRequest,
+    sendDataProcessingResultRequest,
 
-    // sendDataProcessingStart,
-    // sendDataProcessingStatus,
-    // sendDataProcessingResult,
+    sendDataStorageRequest,
+    sendDataAggregationRequest,
 
-    // sendDataStorage,
-    // sendDataAggregation,
+    sendAnalysisRequestRequest,
+    sendAnalysisResultRequest,
+    sendAnalysisErrorRequest,
 
-    // sendAnalysisRequest,
-    // sendAnalysisResult,
-    // sendAnalysisError,
+    sendAlertRequest,
+    sendLogRequest,
 
-    // sendAlert,
-    // sendLog,
+    sendReportRequest,
+    sendDashboardRequest,
 
-    // sendReport,
-    // sendDashboard,
+    // handler functions
+    handleDataCollectRequestRequest,
+    handleDataCollectStatusRequest,
+    handleDataCollectResponseRequest,
+    handleDataCollectErrorRequest,
 
-    // handlers
-    // handleMessage,// messageHandler.js // global handler
+    handleJobScheduleCreateRequest,
+    handleJobScheduleUpdateRequest,
 
-    // handleDataCollectRequest, // dataCollectRequestHandler.js
-    // handleDataCollectStatus,
-    // handleDataCollectResponse,
-    // handleDataCollectError,
+    handleJobStatusRequest,
+    handleJobProgressRequest,
 
-    // handleJobScheduleCreate,
-    // handleJobScheduleUpdate,
+    handleDataProcessingStartRequest,
+    handleDataProcessingStatusRequest,
+    handleDataProcessingResultRequest,
 
-    // handleJobStatus,
-    // handleJobProgress,
+    handleDataStorageRequest,
+    handleDataAggregationRequest,
 
-    // handleDataProcessingStart,
-    // handleDataProcessingStatus,
-    // handleDataProcessingResult,
+    handleAnalysisRequestRequest,
+    handleAnalysisResultRequest,
+    handleAnalysisErrorRequest,
 
-    // handleDataStorage,
-    // handleDataAggregation,
+    handleAlertRequest,
+    handleLogRequest,
 
-    // handleAnalysisRequest,
-    // handleAnalysisResult,
-    // handleAnalysisError,
+    handleReportRequest,
+    handleDashboardRequest
 
-    // handleAlert,
-    // handleLog,
+} = require("../src/index");
 
-    // handleReport,
-    // handleDashboard
+// Example listeners
+listenDataCollectRequest();
+listenDataCollectStatus();
+listenDataCollectResponse();
+listenDataCollectError();
 
-    // 
-} = require("../src/index")
+listenJobScheduleCreate();
+listenJobScheduleUpdate();
 
-// listeners example
-// listenMessage(topics.dataCollectRequest, handleMessage); // single handler
+listenJobStatus();
+listenJobProgress();
 
-// listenMessage(topics.dataCollectRequest, handleDataCollectRequest);
-// listenMessage(topics.dataCollectStatus, handleDataCollectStatus);
-// listenMessage(topics.dataCollectResponse, handleDataCollectResponse);
-// listenMessage(topics.dataCollectError, handleDataCollectError);
+listenDataProcessingStart();
+listenDataProcessingStatus();
+listenDataProcessingResult();
 
-// listenMessage(topics.jobScheduleCreate, handleJobScheduleCreate);
-// listenMessage(topics.jobScheduleUpdate, handleJobScheduleUpdate);
+listenDataStorage();
+listenDataAggregation();
 
-// listenMessage(topics.jobStatus, handleJobStatus);
-// listenMessage(topics.jobProgress, handleJobProgress);
+listenAnalysisRequest();
+listenAnalysisResult();
+listenAnalysisError();
 
-// listenMessage(topics.dataProcessingStart, handleDataProcessingStart);
-// listenMessage(topics.dataProcessingStatus, handleDataProcessingStatus);
-// listenMessage(topics.dataProcessingResult, handleDataProcessingResult);
+listenAlert();
+listenLog();
 
-// listenMessage(topics.dataStorage, handleDataStorage);
-// listenMessage(topics.dataAggregation, handleDataAggregation);
+listenReport();
+listenDashboard();
 
-// listenMessage(topics.analysisRequest, handleAnalysisRequest);
-// listenMessage(topics.analysisResult, handleAnalysisResult);
-// listenMessage(topics.analysisError, handleAnalysisError);
+// Example senders
+sendDataCollectRequestRequest("task-0001-01", "Google Trends", { source: "Google Trends", query: "Quantum Computing" });
+sendDataCollectStatusRequest("task-0002-02", "in-progress", "Data collection is running smoothly.");
+sendDataCollectResponseRequest("task-0003-03", { "Quantum Computing": 12345 });
+sendDataCollectErrorRequest("task-0004-04", "404", "Data source not found");
 
-// listenMessage(topics.alert, handleAlert);
-// listenMessage(topics.log, handleLog);
+sendJobScheduleCreateRequest("job-0001-05", "task-1001", { startTime: "2024-11-14T10:00:00Z", frequency: "daily" });
+sendJobScheduleUpdateRequest("job-0002-06", "task-1002", { startTime: "2024-11-15T10:00:00Z", frequency: "weekly" });
 
-// listenMessage(topics.report, handleReport);
-// listenMessage(topics.dashboard, handleDashboard);
+sendJobStatusRequest("job-0001-07", "task-1001", "completed", "Job has been completed successfully.");
+sendJobProgressRequest("job-0002-08", "task-1002", 45, "Data collection is 45% complete.");
 
+sendDataProcessingStartRequest("job-0003-09", "task-1003");
+sendDataProcessingStatusRequest("job-0003-10", "task-1004", "in-progress", "Processing data...");
+sendDataProcessingResultRequest("job-0003-11", "task-1005", { trends: [{ trend: 'AI', score: 88 }] });
 
-// listen example 2
-// listenDataCollectRequest()
-// listenDataCollectStatus()
-// listenDataCollectResponse()
-// listenDataCollectError()
+sendDataStorageRequest("job-0004-12", "task-1006", { trend: "AI in healthcare", mentions: 15000 });
+sendDataAggregationRequest("job-0004-13", "task-1006", { "AI in healthcare": 35000, "Quantum Computing": 24000 });
 
-// listenJobScheduleCreate()
-// listenJobScheduleUpdate()
+sendAnalysisRequestRequest("task-0001-14", "trendAnalysis", { region: 'US', category: 'Technology' });
+sendAnalysisResultRequest("task-0002-15", "trendAnalysis", { "AI in healthcare": 85, "Quantum Computing": 78 });
+sendAnalysisErrorRequest("task-0002-16", "timeout", "Data source mistake");
 
-// listenJobStatus()
-// listenJobProgress()
+sendAlertRequest("task-0001-17", "warning", "System resource usage exceeded the threshold");
+sendLogRequest("task-0004-18", "info", "Log message: Data collection started.");
 
-// listenDataProcessingStart()
-// listenDataProcessingStatus()
-// listenDataProcessingResult()
-
-// listenDataStorage()
-// listenDataAggregation()
-
-// listenAnalysisRequest()
-// listenAnalysisResult()
-// listenAnalysisError()
-
-listenAlert()
-// listenLog()
-
-// listenReport()
-// listenDashboard()
-
-// senders example
-// sendMessage(topics.dataCollectRequest, []),// messageSender.js // global sender
-
-// sendDataCollectRequest("task-0001-01", "Google Trends", { source: "Google Trends", query: "Quantum Computing" });
-// sendDataCollectStatus("task-0002-02", "in-progress", "Data collection is running smoothly.");
-// sendDataCollectResponse("task-0003-03", { "Quantum Computing": 12345 });
-// sendDataCollectError("task-0004-04", "404", "Data source not found");
-
-// sendJobScheduleCreate("job-0001-05", "task-1001", { startTime: "2024-11-14T10:00:00Z", frequency: "daily" });
-// sendJobScheduleUpdate("job-0002-06", "task-1002", { startTime: "2024-11-15T10:00:00Z", frequency: "weekly" });
-
-// sendJobStatus("job-0001-07", "task-1001", "completed", "Job has been completed successfully.");
-// sendJobProgress("job-0002-08", "task-1002", 45, "Data collection is 45% complete.");
-
-// sendDataProcessingStart("job-0003-09", "task-1003");
-// sendDataProcessingStatus("job-0003-10", "task-1004", "in-progress", "Processing data...");
-// sendDataProcessingResult("job-0003-11", "task-1005", { trends: [{ trend: 'AI', score: 88 }] });
-
-// sendDataStorage("job-0004-12", "task-1006", { trend: "AI in healthcare", mentions: 15000 });
-// sendDataAggregation("job-0004-13", "task-1006", { "AI in healthcare": 35000, "Quantum Computing": 24000 });
-
-// sendAnalysisRequest("task-0001-14", "trendAnalysis", { region: 'US', category: 'Technology' });
-// sendAnalysisResult("task-0002-15", "trendAnalysis", { "AI in healthcare": 85, "Quantum Computing": 78 });
-// sendAnalysisError("task-0002-16", "timeout", "Data source mistake");
-
-// sendAlert("task-0001-17", "warning", "System resource usage exceeded the threshold");
-sendAlert({ level: "notice", content: "this is example" })
-// sendLog("task-0004-18", "info", "Log message: Data collection started.");
-
-// sendReport("task-0001-18", "trend-report", { "trend": "AI in healthcare", "mentions": 15000 });
-// sendDashboard("task-0001-19", { "AI in healthcare": 15000, "Quantum Computing": 12000 });
+sendReportRequest("task-0001-18", "trend-report", { "trend": "AI in healthcare", "mentions": 15000 });
+sendDashboardRequest("task-0001-19", { "AI in healthcare": 15000, "Quantum Computing": 12000 });
