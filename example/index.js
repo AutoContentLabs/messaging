@@ -121,30 +121,232 @@ listenReport();
 listenDashboard();
 
 // Example senders
-sendDataCollectRequestRequest("task-0001-01", "Google Trends", { source: "Google Trends", query: "Quantum Computing" });
-sendDataCollectStatusRequest("task-0002-02", "in-progress", "Data collection is running smoothly.");
-sendDataCollectResponseRequest("task-0003-03", { "Quantum Computing": 12345 });
-sendDataCollectErrorRequest("task-0004-04", "404", "Data source not found");
 
-sendJobScheduleCreateRequest("job-0001-05", "task-1001", { startTime: "2024-11-14T10:00:00Z", frequency: "daily" });
-sendJobScheduleUpdateRequest("job-0002-06", "task-1002", { startTime: "2024-11-15T10:00:00Z", frequency: "weekly" });
+sendDataCollectRequestRequest(
+    {
+        "id": "dc12345",
+        "source": "Google Trends",
+        "params": {
+            "keyword": "AI technology",
+            "location": "US"
+        },
+        "priority": "high",
+        "timestamp": "2024-11-19T12:30:00Z"
+    }
+);
 
-sendJobStatusRequest("job-0001-07", "task-1001", "completed", "Job has been completed successfully.");
-sendJobProgressRequest("job-0002-08", "task-1002", 45, "Data collection is 45% complete.");
+// sendDataCollectStatusRequestRequest
+sendDataCollectStatusRequest(
+    {
+        "id": "dc12345",
+        "status": "in_progress",
+        "message": "Data collection is currently in progress",
+        "timestamp": "2024-11-19T12:35:00Z"
+    }
+);
 
-sendDataProcessingStartRequest("job-0003-09", "task-1003");
-sendDataProcessingStatusRequest("job-0003-10", "task-1004", "in-progress", "Processing data...");
-sendDataProcessingResultRequest("job-0003-11", "task-1005", { trends: [{ trend: 'AI', score: 88 }] });
+// sendDataCollectResponseRequest
+sendDataCollectResponseRequest(
+    {
+        "id": "dc12345",
+        "data": {
+            "keywords": ["AI", "machine learning", "technology"]
+        },
+        "timestamp": "2024-11-19T12:40:00Z"
+    }
+);
 
-sendDataStorageRequest("job-0004-12", "task-1006", { trend: "AI in healthcare", mentions: 15000 });
-sendDataAggregationRequest("job-0004-13", "task-1006", { "AI in healthcare": 35000, "Quantum Computing": 24000 });
+// sendDataCollectErrorRequest
+sendDataCollectErrorRequest(
+    {
+        "id": "dc12345",
+        "errorCode": "error",
+        "errorMessage": "Error occurred while collecting data",
+        "timestamp": "2024-11-19T12:45:00Z"
+    }
+);
 
-sendAnalysisRequestRequest("task-0001-14", "trendAnalysis", { region: 'US', category: 'Technology' });
-sendAnalysisResultRequest("task-0002-15", "trendAnalysis", { "AI in healthcare": 85, "Quantum Computing": 78 });
-sendAnalysisErrorRequest("task-0002-16", "timeout", "Data source mistake");
+// sendJobScheduleCreateRequest
+sendJobScheduleCreateRequest(
+    {
+        "jobId": "job12345",
+        "schedule": "2024-11-20T10:00:00Z",
+        "createdBy": "system",
+        "priority": "high",
+        "timestamp": "2024-11-19T12:50:00Z"
+    }
+);
 
-sendAlertRequest("task-0001-17", "warning", "System resource usage exceeded the threshold");
-sendLogRequest("task-0004-18", "info", "Log message: Data collection started.");
+// sendJobScheduleUpdateRequest
+sendJobScheduleUpdateRequest(
+    {
+        "jobId": "job12345",
+        "schedule": "2024-11-20T12:00:00Z",
+        "updatedBy": "admin",
+        "timestamp": "2024-11-19T12:55:00Z"
+    }
+);
 
-sendReportRequest("task-0001-18", "trend-report", { "trend": "AI in healthcare", "mentions": 15000 });
-sendDashboardRequest("task-0001-19", { "AI in healthcare": 15000, "Quantum Computing": 12000 });
+// sendJobStatusRequest
+sendJobStatusRequest(
+    {
+        "jobId": "job12345",
+        "status": "in-progress",
+        "progress": 50,
+        "timestamp": "2024-11-19T13:00:00Z"
+    }
+);
+
+// sendJobProgressRequest
+sendJobProgressRequest(
+    {
+        "jobId": "job12345",
+        "progress": 50,
+        "timestamp": "2024-11-19T13:05:00Z"
+    }
+);
+
+// sendDataProcessingStartRequest
+sendDataProcessingStartRequest(
+    {
+        "taskId": "dp12345",
+        "startTime": "2024-11-19T13:10:00Z"
+    }
+);
+
+// sendDataProcessingStatusRequest
+sendDataProcessingStatusRequest(
+    {
+        "taskId": "dp12345",
+        "status": "in_progress",
+        "progress": 75,
+        "timestamp": "2024-11-19T13:15:00Z"
+    }
+);
+
+// sendDataProcessingResultRequest
+sendDataProcessingResultRequest(
+    {
+        "taskId": "dp12345",
+        "result": {
+            "status": "success",
+            "message": "Data processed successfully"
+        },
+        "timestamp": "2024-11-19T13:20:00Z"
+    }
+);
+
+// sendDataStorageRequest
+sendDataStorageRequest(
+    {
+        "storageId": "storage12345",
+        "data": {
+            "type": "processed_data",
+            "content": "Sample processed data"
+        },
+        "timestamp": "2024-11-19T13:25:00Z"
+    }
+);
+
+// sendDataAggregationRequest
+sendDataAggregationRequest(
+    {
+        "aggregationId": "aggregation12345",
+        "aggregatedData": {
+            "type": "trend_analysis",
+            "data": ["AI", "machine learning", "technology"]
+        },
+        "timestamp": "2024-11-19T13:30:00Z"
+    }
+);
+
+// sendAnalysisRequestRequest
+sendAnalysisRequestRequest(
+    {
+        "analysisId": "analysis12345",
+        "requestData": {
+            "type": "trend",
+            "dataId": "aggregated_data"
+        },
+        "timestamp": "2024-11-19T13:35:00Z"
+    }
+);
+
+// sendAnalysisResultRequest
+sendAnalysisResultRequest(
+    {
+        "analysisId": "analysis12345",
+        "resultData": {
+            "trend": "positive",
+            "message": "Trend analysis completed successfully"
+        },
+        "timestamp": "2024-11-19T13:40:00Z"
+    }
+);
+
+// sendAnalysisErrorRequest
+sendAnalysisErrorRequest(
+    {
+        "analysisId": "analysis12345",
+        "errorCode": "analysis_error",
+        "errorMessage": "Error occurred during analysis",
+        "timestamp": "2024-11-19T13:45:00Z"
+    }
+);
+
+// sendAlertRequest
+sendAlertRequest(
+    {
+        "content": "Data collection has failed, please check logs",
+        "level": "alert",
+        "timestamp": "2024-11-19T13:50:00Z"
+    }
+);
+
+// sendLogRequest
+sendLogRequest(
+    {
+        "logId": "log12345",
+        "message": "Data collection process initiated",
+        "level": "info",
+        "timestamp": "2024-11-19T13:55:00Z"
+    }
+);
+
+
+// Sending notification:
+// {
+//   "recipient": "user123",
+//   "message": "Your AI technology trend report is ready.",
+//   "type": "info",
+//   "timestamp": "2024-11-19T14:30:00Z"
+// }
+
+// Sending metric:
+// {
+//   "metricId": "cpu-usage-001",
+//   "value": 75.5,
+//   "unit": "%",
+//   "timestamp": "2024-11-19T14:35:00Z"
+// }
+
+// sendReportRequest
+sendReportRequest(
+    {
+        "id": "report12345",
+        "title": "Trend Analysis Report",
+        "content": "Detailed analysis of the trend for 'AI technology' in US",
+        "status": "completed",
+        "timestamp": "2024-11-19T14:00:00Z"
+    }
+);
+
+// sendDashboardRequest
+sendDashboardRequest(
+    {
+        "id": "dashboard12345",
+        "data": "trend_analysis_data",
+        "status": "updated",
+        "timestamp": "2024-11-19T14:05:00Z"
+    }
+);
