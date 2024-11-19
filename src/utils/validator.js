@@ -4,50 +4,9 @@
 
 const Ajv = require('ajv');
 const validator = new Ajv(); // validator engine
-
-const schemas = {
-  DATA_COLLECT_REQUEST: {
-    type: "object",
-    properties: {
-      id: { type: "string" },
-      source: { type: "string" },
-      params: { type: "object" },
-    },
-    required: ["id", "source"],
-    additionalProperties: false,
-  },
-  DATA_COLLECT_STATUS: {
-    type: "object",
-    properties: {
-      id: { type: "string" },
-      status: { type: "string", enum: ["pending", "in_progress", "completed", "failed"] },
-      timestamp: { type: "string", format: "date-time" },
-    },
-    required: ["id", "status"],
-    additionalProperties: false,
-  },
-  ALERT: {
-    type: "object",
-    properties: {
-      content: { type: "string" },
-      level: { type: "string", enum: ["emerg", "alert", "crit", "error", "warning", "notice", "info", "debug"] },
-    },
-    required: ["content", "level"],
-    additionalProperties: false,
-  },
-  JOB_SCHEDULE_CREATE: {
-    type: "object",
-    properties: {
-      jobId: { type: "string" },
-      schedule: { type: "string", format: "date-time" },
-    },
-    required: ["jobId", "schedule"],
-    additionalProperties: false,
-  },
-
-};
-
-
+const schemas = require("../schemas")
+const addFormats = require("ajv-formats")
+addFormats(validator)
 function validateData(schemaType, data) {
   const schema = schemas[schemaType];
 

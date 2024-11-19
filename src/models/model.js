@@ -6,7 +6,7 @@
 const logger = require("../utils/logger");
 const { validateData } = require("../utils/validator");
 const { sendMessage } = require("../senders/MessageSender");
-const { v4: uuidv4 } = require('uuid');
+const { generateHeaders, generateKey } = require("../utils/helper");
 
 class Model {
   constructor(schemaType, eventName) {
@@ -27,15 +27,9 @@ class Model {
         throw new Error(`Validation failed: ${JSON.stringify(validationErrors)}`);
       }
 
-      const key = {
-        recordId: uuidv4().toString()
-      };
+      const key = generateKey()
 
-      const headers = {
-        correlationId: uuidv4().toString(),
-        traceId: uuidv4().toString(),
-        type: this.schemaType.toString()
-      }
+      const headers = generateHeaders(this.schemaType);
 
       logger.info(`[Model] Sending model to event "${this.eventName}".`, { key, model });
 

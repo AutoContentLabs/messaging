@@ -12,6 +12,7 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.22.1",
     "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "buffer": "^6.0.3",
     "kafkajs": "^2.2.4",
     "uuid": "^11.0.3",
