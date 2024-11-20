@@ -10,9 +10,17 @@ function generateHeaders(schemaType) {
 }
 
 function generateKey() {
-    return  {
+    return {
         recordId: uuidv4().toString()
-      };
+    };
 }
 
-module.exports = { generateKey,generateHeaders };
+/**
+ * Returns the current timestamp in ISO format.
+ * @returns {string} Current timestamp.
+ */
+function getCurrentTimestamp() {
+    return new Date().toISOString();
+}
+
+module.exports = { generateKey, generateHeaders, getCurrentTimestamp };
