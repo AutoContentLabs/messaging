@@ -5,7 +5,7 @@
 
 const logger = require("../utils/logger");
 const { validateData } = require("../utils/validator");
-const { sendMessage } = require("../senders/MessageSender");
+const { sendMessage } = require("../senders/messageSender");
 const { generateHeaders, generateKey } = require("../utils/helper");
 
 class Model {
