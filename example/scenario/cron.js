@@ -5,11 +5,15 @@ setInterval(async () => {
         await sendDataCollectRequestRequest({
             id: "request12345",
             source: "Google Trends",
-            params: { category: "technology", region: "US" },
+            params: {
+                category: "trend",
+                region: "TR",
+                url: "https://trends.google.com/trending/rss?geo=TR"
+            },
             priority: "high",
             timestamp: new Date().toISOString()
         });
     } catch (error) {
         console.error("Failed:", error.message);
     }
-}, 10000); 
+}, 60000); 
