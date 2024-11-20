@@ -33,6 +33,7 @@ const schemas = {
       id: { type: "string" },
       data: { type: "object" },
       timestamp: { type: "string", format: "date-time" },
+      summary: { type: "object" }
     },
     required: ["id", "data", "timestamp"],
     additionalProperties: false,
