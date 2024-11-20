@@ -2,7 +2,7 @@
  * src\models\createModel.js
  */
 
-const Model = require("./Model");
+const Model = require("./model");
 const schemas = require("../schemas");
 
 function createModel(schemaName, eventName) {
