@@ -15,13 +15,23 @@ const winston = require('winston');
 const path = require('path');
 const fs = require('fs').promises;
 
-// Detect if the application is running inside Docker
-const isDocker = fs.existsSync('/.dockerenv') || fs.existsSync('/proc/1/cgroup');
+async function isDocker() {
+  try {
+    await fs.access('/.dockerenv');
+    return true;
+  } catch (err) {
+    try {
+      await fs.access('/proc/1/cgroup');
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+}
 
 // Define log file path
 const logFilePath = path.resolve('logs/messaging.log');
 
-// Ensure log directory exists
 const ensureLogDirectoryExists = async (dir) => {
   try {
     await fs.mkdir(dir, { recursive: true });
@@ -70,29 +80,25 @@ const logger = winston.createLogger({
   level: config.APP_LOG_LEVEL || "info",
   levels: customLevels.levels,
   format: winston.format.combine(
-    // Conditionally add the timestamp based on the environment
-    ...(isDocker ? [] : [winston.format.timestamp()]), // No timestamp if inside Docker
     winston.format.errors({ stack: true }),
     winston.format.printf(({ timestamp, level, message, stack, ...metadata }) => {
       const icon = customLevels.icons[level] || '';
       let logMessage = '';
 
-      // Include timestamp unless in Docker
-      if (!isDocker && timestamp) {
-        logMessage += `${timestamp} `;
-      }
-
-      logMessage += `${icon} [${level}] ${message}`;
-
-      if (stack) {
-        logMessage += ` - ${stack}`;
-      }
-
-      if (Object.keys(metadata).length) {
-        logMessage += ` ${JSON.stringify(metadata)}`;
-      }
-
-      return logMessage;
+      // Check if running in Docker asynchronously
+      isDocker().then(isInDocker => {
+        if (!isInDocker && timestamp) {
+          logMessage += `${timestamp} `;
+        }
+        logMessage += `${icon} [${level}] ${message}`;
+        if (stack) {
+          logMessage += ` - ${stack}`;
+        }
+        if (Object.keys(metadata).length) {
+          logMessage += ` ${JSON.stringify(metadata)}`;
+        }
+        console.log(logMessage);  // This could be replaced with your log transport logic
+      });
     })
   ),
   transports: [
@@ -102,13 +108,12 @@ const logger = winston.createLogger({
           const { timestamp, level, message } = data;
           const icon = customLevels.icons[level] || '';
           let logMessage = '';
-
-          // Include timestamp unless in Docker
-          if (!isDocker && timestamp) {
-            logMessage += `${timestamp} `;
-          }
-
-          return `${logMessage}${icon} [${level}] ${message}`;
+          isDocker().then(isInDocker => {
+            if (!isInDocker && timestamp) {
+              logMessage += `${timestamp} `;
+            }
+            console.log(`${logMessage}${icon} [${level}] ${message}`);
+          });
         })
       ),
     }),
