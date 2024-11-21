@@ -29,7 +29,6 @@ async function isDocker() {
   }
 }
 
-// Define log file path
 const logFilePath = path.resolve('logs/messaging.log');
 
 const ensureLogDirectoryExists = async (dir) => {
@@ -41,7 +40,6 @@ const ensureLogDirectoryExists = async (dir) => {
 };
 ensureLogDirectoryExists(path.dirname(logFilePath));
 
-// Custom log levels and formatting
 const customLevels = {
   levels: {
     emerg: 0,
@@ -75,45 +73,50 @@ const customLevels = {
   }
 };
 
-// Logger creation
 const logger = winston.createLogger({
   level: config.APP_LOG_LEVEL || "info",
   levels: customLevels.levels,
   format: winston.format.combine(
     winston.format.errors({ stack: true }),
-    winston.format.printf(({ timestamp, level, message, stack, ...metadata }) => {
+    winston.format.printf(async ({ timestamp, level, message, stack, ...metadata }) => {
       const icon = customLevels.icons[level] || '';
       let logMessage = '';
+      const isInDocker = await isDocker(); 
+     
+      if (!isInDocker && timestamp) {
+        logMessage += `${timestamp} `;
+      }
+      
+      logMessage += `${icon} [${level}] ${message}`;
 
-      // Check if running in Docker asynchronously
-      isDocker().then(isInDocker => {
-        if (!isInDocker && timestamp) {
-          logMessage += `${timestamp} `;
-        }
-        logMessage += `${icon} [${level}] ${message}`;
-        if (stack) {
-          logMessage += ` - ${stack}`;
-        }
-        if (Object.keys(metadata).length) {
-          logMessage += ` ${JSON.stringify(metadata)}`;
-        }
-        console.log(logMessage);  // This could be replaced with your log transport logic
-      });
+      if (stack) {
+        logMessage += ` - ${stack}`;
+      }
+
+    
+      if (Object.keys(metadata).length) {
+        logMessage += ` ${JSON.stringify(metadata)}`;
+      }
+
+      return logMessage; 
     })
   ),
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.printf((data) => {
+        winston.format.printf(async (data) => {
           const { timestamp, level, message } = data;
           const icon = customLevels.icons[level] || '';
           let logMessage = '';
-          isDocker().then(isInDocker => {
-            if (!isInDocker && timestamp) {
-              logMessage += `${timestamp} `;
-            }
-            console.log(`${logMessage}${icon} [${level}] ${message}`);
-          });
+          const isInDocker = await isDocker();
+
+          if (!isInDocker && timestamp) {
+            logMessage += `${timestamp} `;
+          }
+          
+          logMessage += `${icon} [${level}] ${message}`;
+          
+          return logMessage;
         })
       ),
     }),
