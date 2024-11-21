@@ -19,9 +19,7 @@ class KafkaSender {
      * @constructor
      */
     constructor() {
-        // this.KafkaProducer = new KafkaProducer(); // KafkaProducer instance is initialized here 
-        // which better  
-        if (this.KafkaProducer) {
+        if (!this.KafkaProducer) {
             this.KafkaProducer = new KafkaProducer(); // KafkaProducer instance is initialized here            
         }
     }
@@ -96,9 +94,13 @@ class KafkaSender {
             throw error;  // Rethrow the error for higher-level handling
         } finally {
             // Step 4: Disconnect the producer to clean up the resources
-            logger.debug(`[KafkaSender] [sendPairs] Disconnecting Kafka producer...`);
-            await this.KafkaProducer.disconnect();
-            logger.debug(`[KafkaSender] [sendPairs] Producer disconnected`);
+            if (this.KafkaProducer) {
+                logger.debug(`[KafkaSender] [sendPairs] Disconnecting Kafka producer...`);
+                await this.KafkaProducer.disconnect();
+                logger.debug(`[KafkaSender] [sendPairs] Producer disconnected`);
+            } else {
+                logger.warn(`[KafkaSender] [sendPairs] KafkaProducer is undefined, skipping disconnect.`);
+            }
         }
     }
 }
