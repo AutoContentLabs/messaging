@@ -63,7 +63,7 @@ class KafkaSender {
         try {
 
             // Step 1
-            await connectProducer()
+            await this.connectProducer()
 
             // Step 2: Create the producer record with topic, messages, timeout, and compression settings
             const producerRecord = {
