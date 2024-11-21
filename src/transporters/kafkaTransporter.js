@@ -21,9 +21,15 @@ const kafkaSender = new KafkaSender();
  */
 async function StartListener() {
     try {
-        // first connection and check
-        await kafkaAdmin.checkTopics();
-        await kafkaListener.kafkaConsumer.connect();
+        // // first connection and check
+        // await kafkaAdmin.checkTopics();
+        // await kafkaListener.kafkaConsumer.connect();
+        // which method is better
+        if (kafkaListener.kafkaConsumer.status !== 'CONNECTED') {
+            // first connection and check
+            await kafkaAdmin.checkTopics();
+            await kafkaListener.kafkaConsumer.connect();
+        }
     } catch (error) {
         logger.error(`[KafkaTransporter] [StartListener] Error Kafka Transporter Listener...: ${error}`);
     }

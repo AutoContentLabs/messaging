@@ -19,14 +19,24 @@ class KafkaSender {
      * @constructor
      */
     constructor() {
-        this.KafkaProducer = new KafkaProducer(); // KafkaProducer instance is initialized here     
+        // this.KafkaProducer = new KafkaProducer(); // KafkaProducer instance is initialized here 
+        // which better  
+        if (this.KafkaProducer) {
+            this.KafkaProducer = new KafkaProducer(); // KafkaProducer instance is initialized here            
+        }
     }
 
     async connectProducer() {
-        // Step 1: Connect the Kafka producer to the Kafka cluster
-        logger.debug(`[KafkaSender] [sendPairs] Connecting to Kafka producer...`);
+        // // Step 1: Connect the Kafka producer to the Kafka cluster
+        // logger.debug(`[KafkaSender] [sendPairs] Connecting to Kafka producer...`);
 
-        await retryWithBackoff(() => this.KafkaProducer.connect())
+        // await retryWithBackoff(() => this.KafkaProducer.connect())
+        // which better
+        if (this.KafkaProducer.status != "CONNECTED") {
+            // Step 1: Connect the Kafka producer to the Kafka cluster
+            logger.debug(`[KafkaSender] [sendPairs] Connecting to Kafka producer...`);
+            await retryWithBackoff(() => this.KafkaProducer.connect())
+        }
     }
 
     /**

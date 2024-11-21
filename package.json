@@ -4,7 +4,7 @@
   "description": "A flexible messaging system",
   "main": "src/index.js",
   "scripts": {
-    "start": "dotenvx run -f .env -- node example/listeners/dataCollectRequestListener.js",
+    "start": "dotenvx run -f .env.production -- node example/listeners/dataCollectRequestListener.js",
     "dev": "dotenvx run -f .env.development -- node example/listeners/dataCollectRequestListener.js",
     "test": "dotenvx run -f .env.test -- jest --detectOpenHandles"
   },
