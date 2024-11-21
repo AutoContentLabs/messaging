@@ -59,36 +59,21 @@ const customLevels = {
   }
 };
 
-// Docker check
-const isDockerEnvironment = async () => {
-  try {
-    await fs.access('/.dockerenv');
-    return true;
-  } catch (err) {
-    try {
-      await fs.access('/proc/1/cgroup');
-      return true;
-    } catch (err) {
-      return false;
-    }
-  }
-};
-const docker = await isDockerEnvironment()
-// Check if we are running inside a Docker container or not
-const isDocker = docker || process.env.NODE_ENV === 'production' || process.env.DOCKER_ENV === 'true';
+// Check if the environment is production
+const isProduction = process.env.NODE_ENV === 'production';
 
 const logger = winston.createLogger({
   level: config.APP_LOG_LEVEL || "info",
   levels: customLevels.levels,
   format: winston.format.combine(
-    // Conditionally add timestamp based on Docker environment
-    isDocker ? winston.format.uncolorize() : winston.format.timestamp(),
+    winston.format.timestamp(),
     winston.format.errors({ stack: true }),
     winston.format.printf(({ timestamp, level, message, stack, ...metadata }) => {
       const icon = customLevels.icons[level] || '';
       let logMessage = `${icon} [${level}] ${message}`;
 
-      if (timestamp && !isDocker) {
+      // If in production, don't add timestamp to the console logs
+      if (timestamp && !isProduction) {
         logMessage = `${timestamp} ${logMessage}`;
       }
 
@@ -111,7 +96,8 @@ const logger = winston.createLogger({
           const icon = customLevels.icons[level] || '';
           let logMessage = `${icon} [${level}] ${message}`;
 
-          if (timestamp && !isDocker) {
+          // If in production, don't add timestamp to the console logs
+          if (timestamp && !isProduction) {
             logMessage = `${timestamp} ${logMessage}`;
           }
 
@@ -119,6 +105,7 @@ const logger = winston.createLogger({
         })
       ),
     }),
+
     new winston.transports.File({
       filename: logFilePath,
       maxsize: 5242880,
