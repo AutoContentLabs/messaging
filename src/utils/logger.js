@@ -17,7 +17,6 @@ const fs = require('fs').promises;
 
 const logFilePath = path.resolve('logs/messaging.log');
 
-// 
 const ensureLogDirectoryExists = async (dir) => {
   try {
     await fs.mkdir(dir, { recursive: true });
@@ -27,7 +26,6 @@ const ensureLogDirectoryExists = async (dir) => {
 };
 ensureLogDirectoryExists(path.dirname(logFilePath));
 
-// 
 const customLevels = {
   levels: {
     emerg: 0,
@@ -62,7 +60,7 @@ const customLevels = {
 };
 
 // Docker check
-const isDocker = async () => {
+const isDockerEnvironment = async () => {
   try {
     await fs.access('/.dockerenv');
     return true;
@@ -75,20 +73,22 @@ const isDocker = async () => {
     }
   }
 };
+const docker = await isDockerEnvironment()
+// Check if we are running inside a Docker container or not
+const isDocker = docker || process.env.NODE_ENV === 'production' || process.env.DOCKER_ENV === 'true';
 
-// 
 const logger = winston.createLogger({
   level: config.APP_LOG_LEVEL || "info",
   levels: customLevels.levels,
   format: winston.format.combine(
+    // Conditionally add timestamp based on Docker environment
+    isDocker ? winston.format.uncolorize() : winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.printf(async ({ timestamp, level, message, stack, ...metadata }) => {
-      const isInDocker = await isDocker();  
+    winston.format.printf(({ timestamp, level, message, stack, ...metadata }) => {
       const icon = customLevels.icons[level] || '';
       let logMessage = `${icon} [${level}] ${message}`;
 
-
-      if (!isInDocker) {
+      if (timestamp && !isDocker) {
         logMessage = `${timestamp} ${logMessage}`;
       }
 
@@ -106,14 +106,12 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.printf(async (data) => {
+        winston.format.printf((data) => {
           const { timestamp, level, message } = data;
           const icon = customLevels.icons[level] || '';
-          const isInDocker = await isDocker(); 
           let logMessage = `${icon} [${level}] ${message}`;
 
-
-          if (!isInDocker) {
+          if (timestamp && !isDocker) {
             logMessage = `${timestamp} ${logMessage}`;
           }
 
@@ -121,7 +119,6 @@ const logger = winston.createLogger({
         })
       ),
     }),
-
     new winston.transports.File({
       filename: logFilePath,
       maxsize: 5242880,
