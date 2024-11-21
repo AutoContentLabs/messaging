@@ -19,7 +19,19 @@ class KafkaSender {
      * @constructor
      */
     constructor() {
-        this.KafkaProducer = new KafkaProducer(); // KafkaProducer instance is initialized here
+        if (this.KafkaProducer) {
+            this.KafkaProducer = new KafkaProducer(); // KafkaProducer instance is initialized here            
+        }
+    }
+
+    async connectProducer() {
+        if (this.KafkaProducer.status != "CONNECTED") {
+
+            // Step 1: Connect the Kafka producer to the Kafka cluster
+            logger.debug(`[KafkaSender] [sendPairs] Connecting to Kafka producer...`);
+
+            await retryWithBackoff(() => this.KafkaProducer.connect())
+        }
     }
 
     /**
@@ -54,10 +66,10 @@ class KafkaSender {
      */
     async sendPairs(topic, pairs) {
         try {
-            // Step 1: Connect the Kafka producer to the Kafka cluster
-            logger.debug(`[KafkaSender] [sendPairs] Connecting to Kafka producer...`);
 
-            await retryWithBackoff(() => this.KafkaProducer.connect())
+            // Step 1
+            await connectProducer()
+
             // Step 2: Create the producer record with topic, messages, timeout, and compression settings
             const producerRecord = {
                 topic: topic,
