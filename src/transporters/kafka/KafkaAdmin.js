@@ -69,6 +69,19 @@ class KafkaAdmin {
         }
     }
 
+    // Topic Metadata
+    async getTopicMetadata(topicName) {
+        try {
+            const metadata = await this.admin.fetchTopicMetadata({ topics: [topicName] });
+            const partitions = metadata.topics[0].partitions;
+            const totalMessages = partitions.reduce((acc, partition) => acc + partition.highWaterMark, 0); 
+            return { partitions, totalMessages };
+        } catch (error) {
+            logger.error(`[KafkaAdmin] Failed to fetch metadata for ${topicName}: ${error.message}`);
+            throw error;
+        }
+    }
+
     /**
      * Checks the existence of required topics and creates any missing ones.
      * 
