@@ -8,16 +8,19 @@ let pairCount = 0
 const startTime = Date.now()
 
 async function listen() {
-    await listenMessage(eventName, async ({ key, value }) => {
+    console.log("start test", startTime)
 
+    await listenMessage(eventName, async ({ key, value }) => {
         pairCount++
+
         if (pairCount % 10000 === 0) {
             const elapsedTime = (Date.now() - startTime) / 1000
-            console.log(`Consumed ${messageCount} pairs in ${elapsedTime} seconds`)
+            console.log(`Consumed ${pairCount} pairs in ${elapsedTime} seconds`)
         }
 
-        if (messageCount >= testLimit) {
+        if (pairCount >= testLimit) {
             console.log("done")
+            process.exit(0) 
         }
     });
 }
