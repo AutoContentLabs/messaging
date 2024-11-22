@@ -107,8 +107,7 @@ async function listenMessage(topic, handler, format = MESSAGE_FORMATS.JSON) {
             };
 
             logger.debug(`[listenMessage] [transformHandler]`, pair)
-            logger.notice(`[listenMessage] correlationId: ${pair.headers.correlationId}`)
-
+            logger.info(`[listenMessage] correlationId: ${pair.headers.correlationId}`)
             /**
              * Pair model
              * @param {string} topic - The name of the event to listen for.

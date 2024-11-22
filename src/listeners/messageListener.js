@@ -32,8 +32,8 @@ async function registerListenerWithHandler(eventName, handler) {
             //
             await handler(pair);
         } catch (handlerError) {
-            logger.error(`[messageListener] [register] [error] Error processing message for event: ${eventName}, error: ${handlerError.message}`, pair);
-
+            const errorMessage = `[messageListener] [register] [error]  ${eventName}, error: ${handlerError.message}`
+            throw new Error(errorMessage);
         }
     });
 }
