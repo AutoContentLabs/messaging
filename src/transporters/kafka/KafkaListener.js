@@ -62,7 +62,7 @@ class KafkaListener {
             }
             logger.debug(`[KafkaListener] [startListening] Processing after handler duration - ${Date.now() - startTime} ms`);
           } catch (processError) {
-            logger.error(`[KafkaListener] [startListening] [processError] ${processError.message}`);
+            // logger.error(`[KafkaListener] [startListening] [processError] ${processError.message}`);
             throw processError // DLQ : An error occurred now. Restart this task later.
           }
         },

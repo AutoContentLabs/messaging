@@ -32,8 +32,7 @@ async function registerListenerWithHandler(eventName, handler) {
             //
             await handler(pair);
         } catch (handlerError) {
-            const errorMessage = `[messageListener] [register] [error]  ${eventName}, error: ${handlerError.message}`
-            throw new Error(errorMessage);
+            // logger.error(`[messageListener] [register] [error] Error processing message for event: ${eventName}, error: ${handlerError.message}`, pair);
         }
     });
 }
@@ -53,7 +52,7 @@ async function registerListenerWithHandler(eventName, handler) {
 async function listenMessage(eventName, handler) {
 
     try {
-        logger.info(`[messageListener] [listenMessage] [info] Starting: ${eventName}, transporter: ${transporter_name}`,eventName);
+        logger.info(`[messageListener] [listenMessage] [info] Starting: ${eventName}, transporter: ${transporter_name}`, eventName);
 
         await retryWithBackoff(
             () => registerListenerWithHandler(eventName, handler),
