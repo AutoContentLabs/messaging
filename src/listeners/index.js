@@ -2,7 +2,7 @@
  * Messaging System
  */
 
-require('events').EventEmitter.defaultMaxListeners = 20; // MaxListenersExceededWarning
+require('events').EventEmitter.defaultMaxListeners = 30; // MaxListenersExceededWarning
 
 // listener
 const { listenMessage } = require("./messageListener") // messageListener.js // global listener
