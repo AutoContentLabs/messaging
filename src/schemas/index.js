@@ -10,6 +10,7 @@ const schemas = {
       params: { type: "object" },
       priority: { type: "string", enum: ["low", "medium", "high"], default: "medium" },
       timestamp: { type: "string", format: "date-time" },
+      total: { type: "number" }
     },
     required: ["id", "source"],
     additionalProperties: false,

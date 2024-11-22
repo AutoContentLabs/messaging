@@ -23,7 +23,7 @@ async function handleDataCollectRequestRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { id, source, params, priority, timestamp } =  handleMessageData.value;
+    const { id, source, params, priority, timestamp, total } = handleMessageData.value;
 
     logger.info(`[handleDataCollectRequest] Processed request successfully: ${id}, ${source}, ${params}, ${priority}, ${timestamp}`, handleMessageData);
   } catch (error) {
