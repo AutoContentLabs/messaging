@@ -36,6 +36,7 @@ async function registerListenerWithHandler(eventName, handler) {
         }
     });
 }
+
 /**
  * Listens for incoming messages and triggers a handler when a specific message is received.
  * 
@@ -45,9 +46,15 @@ async function registerListenerWithHandler(eventName, handler) {
  * 
  * @example
  * // Example usage:
- * listenMessage("test", async ({ key, value }) => {
- *     console.log("Message Key:", key, "Message Value:", value);
+ * 
+ * // topic = channel = event
+ * const eventName = "test";
+ * 
+ * listenMessage(eventName, async ({ key, value }) => {
+ *      console.log("Message Key:", key);
+ *      console.log("Message Value:", value);
  * });
+ * 
  */
 async function listenMessage(eventName, handler) {
 

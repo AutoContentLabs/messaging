@@ -1,5 +1,5 @@
 // senders
-const { sendMessage } = require("./messageSender") // messageSender.js // global sender
+const { sendMessage, sendMessages } = require("./messageSender") // messageSender.js // global sender
 
 const { sendDataCollectRequestRequest } = require("./dataCollectRequestSender") // dataCollectRequestSender.js
 const { sendDataCollectStatusRequest } = require("./dataCollectStatusSender")
@@ -32,7 +32,7 @@ const { sendDashboardRequest } = require("./dashboardSender")
 module.exports = {
     // senders
     sendMessage,// messageSender.js // global sender
-
+    sendMessages,
     sendDataCollectRequestRequest, // dataCollectRequestSender.js
     sendDataCollectStatusRequest,
     sendDataCollectResponseRequest,

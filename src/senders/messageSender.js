@@ -88,9 +88,14 @@ function calculateBatchSize(totalMessages) {
  * @returns {Promise<void>} - A promise that resolves when the message is sent.
  * 
  * @example
- * // Example usage:
- * sendMessage("eventName", { key: { id: 1 }, value: { content: "Hello World" } });
- * // Sends a message with a key and value to "eventName" or "topicName" or "channelName"
+ * 
+ * // topic = channel = event
+ * const eventName = "test";
+ * const pair = {
+ *  key: { id: 1 }, value: { content: "Message 1" }
+ * };
+ * 
+ * sendMessage(eventName, pair);
  *
  */
 async function sendMessage(eventName, pair) {
@@ -116,6 +121,19 @@ async function sendMessage(eventName, pair) {
  * @param {Array<Object>} pairs - List of key-value pairs to send.
  *
  * @returns {Promise<void>}
+ * 
+ * @example
+ * 
+ * // topic = channel = event
+ * const eventName = "test";
+ * const pairs = [
+ *  { key: { id: 1 }, value: { content: "Message 1" } },
+ *  { key: { id: 2 }, value: { content: "Message 2" } },
+ *  { key: { id: 3 }, value: { content: "Message 3" } },
+ * ];
+ * 
+ * sendMessages(eventName, pairs);
+ * 
  */
 async function sendMessages(eventName, pairs) {
     try {
