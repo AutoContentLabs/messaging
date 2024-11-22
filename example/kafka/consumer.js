@@ -8,7 +8,7 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: 'test' })
 const eventName = "test"
-const testLimit = 1000000
+const testLimit = 100000
 
 async function consumeMessages() {
   try {
@@ -20,7 +20,11 @@ async function consumeMessages() {
     console.log("start test", startTime)
 
     await consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
+      eachMessage: async ({ message }) => {
+        // Access the message's key and value directly
+        const key = message.key ? JSON.parse(message.key.toString()) : null;
+        const value = JSON.parse(message.value.toString()) // Parsing value (like { content: "Message" })
+        
         messageCount++
 
         if (messageCount % 10000 === 0) {
@@ -44,5 +48,18 @@ async function consumeMessages() {
     }
   }
 }
+
+// Handle graceful shutdown (e.g., Ctrl+C)
+process.on('SIGINT', async () => {
+  console.log("Gracefully shutting down consumer...")
+  try {
+    await consumer.disconnect()
+    console.log("Consumer disconnected successfully.")
+  } catch (error) {
+    console.error("Error during graceful shutdown:", error)
+  } finally {
+    process.exit(0)
+  }
+})
 
 consumeMessages().catch(console.error)

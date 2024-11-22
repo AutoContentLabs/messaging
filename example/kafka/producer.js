@@ -9,7 +9,8 @@ const kafka = new Kafka({
 const producer = kafka.producer()
 
 const eventName = "test"
-const testLimit = 1000000
+const testLimit = 100000
+const pair = { key: { id: 0 }, value: { content: "Message" } };
 
 async function sendMessages() {
   try {
@@ -20,12 +21,16 @@ async function sendMessages() {
 
     console.log("start test", startTime)
 
-    const interval = setInterval(async () => {
+    async function sendBatch() {
       try {
         const messages = []
 
         for (let i = 0; i < 100; i++) {
-          messages.push({ value: `Message ${messageCount}` })
+          // Serialize the pair object to a string before sending
+          messages.push({
+            value: JSON.stringify(pair.key),  // Ensure the pair is converted to a string
+            key: JSON.stringify(pair.value)  // Ensure the pair is converted to a string
+          })
           messageCount++
         }
 
@@ -39,8 +44,9 @@ async function sendMessages() {
           console.log(`Produced ${messageCount} messages in ${elapsedTime} seconds`)
         }
 
-        if (messageCount >= testLimit) {
-          clearInterval(interval)
+        if (messageCount < testLimit) {
+          setTimeout(sendBatch, 50); // Send next batch after 50ms
+        } else {
           const elapsedTime = (Date.now() - startTime) / 1000
           console.log(`Sent ${messageCount} messages in ${elapsedTime} seconds`)
           await producer.disconnect()
@@ -48,11 +54,20 @@ async function sendMessages() {
       } catch (error) {
         console.error("Error sending messages:", error)
       }
-    }, 50)
+    }
+
+    sendBatch()  // Start the first batch
 
   } catch (error) {
     console.error("Error connecting to Kafka producer:", error)
   }
 }
+
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+  console.log("Gracefully shutting down...")
+  await producer.disconnect()
+  process.exit(0)
+})
 
 sendMessages().catch(console.error)
