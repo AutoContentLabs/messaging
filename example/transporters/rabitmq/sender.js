@@ -84,13 +84,7 @@ async function sendMessage(eventName, pair) {
         await channel.assertQueue(queue, { durable: true });
         const message = JSON.stringify(pair);
         let status = channel.sendToQueue(queue, Buffer.from(message), { persistent: true });
-        
-        if (status) {
-            console.log(`Message sent with key: ${pair.key.id}`);
-        } else {
-            console.log("Failed to send message");
-        }
-        
+
         return status;
     } catch (error) {
         console.error("Error sending message:", error);
@@ -111,10 +105,6 @@ async function send() {
 
             // Calculate processing stats
             calculateProcessing();
-
-            // Handle message processing time
-            const elapsedTime = new Date() - startTime;
-            totalProcessingTime += elapsedTime / messagesProcessed;
 
             if (messagesProcessed >= testLimit) {
                 clearInterval(interval);

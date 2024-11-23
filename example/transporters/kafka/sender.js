@@ -12,7 +12,7 @@ let processLimit = 1000; // Show measure after every 1,000 messages
 let messagesProcessed = 0; // Track number of messages processed
 let startTime = new Date(); // Track when the process starts
 let totalProcessingTime = 0; // Track the total processing time for messages
-let intervalMs = 10; // Send a message every ms 
+let intervalMs = 3000; // Send a message every ms 
 
 const { v4: uuidv4 } = require('uuid');
 
@@ -79,17 +79,8 @@ const kafka = new Kafka({
 // Create a Kafka producer
 const producer = kafka.producer();
 
-async function handler({ event, key, value, headers, status }) {
-  // Your processing logic for each message here
-  console.log("event", event)
-  console.log("key", key)
-  console.log("value", value)
-  console.log("headers", headers)
-  console.log("status", status)
-}
-
 // Function to simulate sending a single message to Kafka
-async function sendMessage(eventName, pair, callback) {
+async function sendMessage(eventName, pair) {
   try {
     await producer.send({
       topic: eventName,
@@ -101,7 +92,8 @@ async function sendMessage(eventName, pair, callback) {
         }
       ],
     });
-    callback({ ...pair, status: true })
+    let status = true
+    return status
   } catch (error) {
     console.error("Error sending message:", error);
   }
@@ -124,10 +116,7 @@ async function sendTest() {
       const pair = createPair();
 
       // Send individual message
-      await sendMessage(eventName, pair, handler);
-
-      // Process time and logging
-      // console.log(`Sent message with key: ${pair.key.id}`);
+      const messageStatus = await sendMessage(eventName, pair);
 
       // Calculate processing stats
       calculateProcessing();

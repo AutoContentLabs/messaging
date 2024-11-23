@@ -58,7 +58,6 @@ async function handler({ event, key, value, headers }) {
     console.log("event", event)
     console.log("key", key)
     console.log("value", value)
-    console.log("headers", headers)
 }
 
 async function listenMessage(eventName, callback) {
