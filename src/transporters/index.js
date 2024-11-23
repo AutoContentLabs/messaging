@@ -10,6 +10,8 @@
  */
 
 const kafkaTransporter = require("./kafkaTransporter");
+const rabbitmqTransporter = require("./rabbitmqTransporter");
+const redisTransporter = require("./redisTransporter");
 
 /**
  * Exposes Kafka transporter functionality.
@@ -21,8 +23,8 @@ const kafkaTransporter = require("./kafkaTransporter");
  * 
  * @example
  * const { kafka } = require('./path/to/this/file');
- * kafka.listenMessage('topicName', handler);
- * kafka.sendMessage('topicName', { key: keyData, value: valueData });
+ * kafka.listenMessage('eventName', handler);
+ * kafka.sendMessage('eventName', { key: keyData, value: valueData });
  * 
  * @exports
  */
@@ -39,7 +41,7 @@ module.exports = {
         /**
          * Listens to messages from the specified Kafka topic and processes them with the provided handler.
          * 
-         * @param {string} topic - The topic to listen to.
+         * @param {string} eventName - The event to listen to.
          * @param {Function} handler - The handler function to process incoming messages.
          * @param {Object} handler.pair - The message data object.
          * @param {Object} handler.pair.key - The optional key of the message (in JSON format).
@@ -48,7 +50,7 @@ module.exports = {
          * @returns {Promise<void>} A promise indicating the completion of the listener setup.
          * 
          * @example
-         * kafka.listenMessage('topicName', (data) => {
+         * listenMessage('test', (data) => {
          *     console.log(data); // Process the message here
          * });
          */
@@ -57,7 +59,7 @@ module.exports = {
         /**
          * Sends a message to the specified  topic.
          * 
-         * @param {string} topic - The topic to send the message to.
+         * @param {string} eventName - The event to send the message to.
          * @param {Object} pair - The message data.
          * @param {Object} pair.key - The optional key of the message (in JSON format).
          * @param {Object} pair.value - The value of the message (in JSON format).
@@ -65,7 +67,7 @@ module.exports = {
          * @returns {Promise<void>} A promise indicating the completion of the message send operation.
          * 
          * @example
-         * kafka.sendMessage('topicName', { key: keyData, value: valueData });
+         * sendMessage('test', { key: keyData, value: valueData });
          */
         sendMessage: kafkaTransporter.sendMessage,
 
@@ -78,16 +80,140 @@ module.exports = {
          * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
          * 
          * @example
-         * const topic = "testTopic";
+         * const eventName = "test";
          * const messages = [
          *  { key: { id: 1 }, value: { content: "Message 1" } },
          *  { key: { id: 2 }, value: { content: "Message 2" } },
          *  { key: { id: 3 }, value: { content: "Message 3" } },
          * ];
          * 
-         * sendMessages(topic, messages);
+         * sendMessages(eventName, messages);
          * 
          */
         sendMessages: kafkaTransporter.sendMessages
+    },
+    rabbitmq: {
+        /**
+         * The name of the RabbitMQ transporter.
+         * 
+         * @type {string}
+         */
+        Name: rabbitmqTransporter.Name,
+
+        /**
+         * Listens to messages from the specified RabbitMQ Queue and processes them with the provided handler.
+         * 
+         * @param {string} eventName - The event to listen to.
+         * @param {Function} handler - The handler function to process incoming messages.
+         * @param {Object} handler.pair - The message data object.
+         * @param {Object} handler.pair.key - The optional key of the message (in JSON format).
+         * @param {Object} handler.pair.value - The value of the message (in JSON format).
+         * 
+         * @returns {Promise<void>} A promise indicating the completion of the listener setup.
+         * 
+         * @example
+         * listenMessage('test', (data) => {
+         *     console.log(data); // Process the message here
+         * });
+         */
+        listenMessage: rabbitmqTransporter.listenMessage,
+
+        /**
+         * Sends a message to the specified  Queue.
+         * 
+         * @param {string} eventName - The event to send the message to.
+         * @param {Object} pair - The message data.
+         * @param {Object} pair.key - The optional key of the message (in JSON format).
+         * @param {Object} pair.value - The value of the message (in JSON format).
+         * 
+         * @returns {Promise<void>} A promise indicating the completion of the message send operation.
+         * 
+         * @example
+         * sendMessage('test', { key: keyData, value: valueData });
+         */
+        sendMessage: rabbitmqTransporter.sendMessage,
+
+        /**
+         * Sends multiple binary data (Buffer) messages.
+         * The producer instance is reused for multiple sends.
+         * 
+         * @param {string} eventName - The event to which the messages will be sent.
+         * @param {Array<{ key: Object, value: Object }>} messages - An array of message data objects.
+         * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
+         * 
+         * @example
+         * const eventName = "test";
+         * const messages = [
+         *  { key: { id: 1 }, value: { content: "Message 1" } },
+         *  { key: { id: 2 }, value: { content: "Message 2" } },
+         *  { key: { id: 3 }, value: { content: "Message 3" } },
+         * ];
+         * 
+         * sendMessages(eventName, messages);
+         * 
+         */
+        sendMessages: kafkaTransporter.sendMessages
+    },
+    redis: {
+        /**
+         * The name of the Redis transporter.
+         * 
+         * @type {string}
+         */
+        Name: redisTransporter.Name,
+
+        /**
+         * Listens to messages from the specified Redis stream and processes them with the provided handler.
+         * 
+         * @param {string} eventName - The event to listen to.
+         * @param {Function} handler - The handler function to process incoming messages.
+         * @param {Object} handler.pair - The message data object.
+         * @param {Object} handler.pair.key - The optional key of the message (in JSON format).
+         * @param {Object} handler.pair.value - The value of the message (in JSON format).
+         * 
+         * @returns {Promise<void>} A promise indicating the completion of the listener setup.
+         * 
+         * @example
+         * listenMessage('test', (data) => {
+         *     console.log(data); // Process the message here
+         * });
+         */
+        listenMessage: redisTransporter.listenMessage,
+
+        /**
+         * Sends a message to the specified  stream.
+         * 
+         * @param {string} eventName - The event to send the message to.
+         * @param {Object} pair - The message data.
+         * @param {Object} pair.key - The optional key of the message (in JSON format).
+         * @param {Object} pair.value - The value of the message (in JSON format).
+         * 
+         * @returns {Promise<void>} A promise indicating the completion of the message send operation.
+         * 
+         * @example
+         * sendMessage('test', { key: keyData, value: valueData });
+         */
+        sendMessage: redisTransporter.sendMessage,
+
+        /**
+         * Sends multiple binary data (Buffer) messages.
+         * The producer instance is reused for multiple sends.
+         * 
+         * @param {string} eventName - The event to which the messages will be sent.
+         * @param {Array<{ key: Object, value: Object }>} messages - An array of message data objects.
+         * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
+         * 
+         * @example
+         * const eventName = "test";
+         * const messages = [
+         *  { key: { id: 1 }, value: { content: "Message 1" } },
+         *  { key: { id: 2 }, value: { content: "Message 2" } },
+         *  { key: { id: 3 }, value: { content: "Message 3" } },
+         * ];
+         * 
+         * sendMessages(eventName, messages);
+         * 
+         */
+        //sendMessages: redisTransporter.sendMessages
     }
 };
