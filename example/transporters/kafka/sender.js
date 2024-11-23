@@ -20,9 +20,9 @@ const { v4: uuidv4 } = require('uuid');
 function createPair() {
   const pair = {
     event: eventName,
-    key: { id: uuidv4() },  // Use a UUID for key to avoid relying on counter
+    key: { id: messagesProcessed },  // Use a UUID for key to avoid relying on counter
     value: { content: "Message" },
-    headers: { correlationId: uuidv4() }
+    headers: { correlationId: uuidv4().toString() }
   };
 
   return pair;
@@ -88,7 +88,7 @@ async function sendMessage(eventName, pair) {
         {
           key: JSON.stringify(pair.key),
           value: JSON.stringify(pair.value),
-          headers: JSON.stringify(pair.headers)
+          headers: pair.headers
         }
       ],
     });

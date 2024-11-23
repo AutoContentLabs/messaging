@@ -58,6 +58,7 @@ async function handler({ event, key, value, headers }) {
     console.log("event", event)
     console.log("key", key)
     console.log("value", value)
+    console.log("headers", headers)
 }
 
 async function listenMessage(eventName, callback) {
@@ -71,7 +72,9 @@ async function listenMessage(eventName, callback) {
                 try {
                     const value = JSON.parse(message.value.toString());
                     const key = JSON.parse(message.key.toString());
-                    const headers = message.headers;
+                    const headers = {
+                        correlationId: message.headers.correlationId.toString(),
+                    }
 
                     callback({ event: topic, key, value, headers });
                 } catch (err) {
