@@ -18,8 +18,8 @@ function getTransporter(transporterName) {
     return transporters[transporterName];
 }
 
-// Dynamically get the transporter (e.g., Kafka)
-const transporter = getTransporter("kafka");
+// Dynamically get the transporter (e.g., kafka, rabbitmq, redis )
+const transporter = getTransporter("redis");
 const transporter_name = transporter.Name;
 
 /**

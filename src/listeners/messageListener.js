@@ -15,7 +15,7 @@ function getTransporter(transporterName) {
     return transporters[transporterName];
 }
 
-const transporter = getTransporter("kafka");
+const transporter = getTransporter("redis");
 const transporter_name = transporter.Name;
 
 
