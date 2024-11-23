@@ -1,88 +1,87 @@
-const amqp = require('amqplib/callback_api');
+const amqp = require('amqplib');
 
-// Event name (RabbitMQ queue name)
-const eventName = "test";
+const queue = 'test';
+const consumerGroup = 'group.test'; // no
+const consumerName = `consumer-${Math.floor(Math.random() * 1000)}`;
+const testLimit = 1000000;
+const processLimit = 1000;
 
-let testLimit = 100000; // Limit to stop after consuming a certain number of messages
-let pairCount = 0; // Counter for consumed messages
-const startTime = new Date(); // Track when the process starts
+console.log(`listener queue: ${queue} consumerGroup: ${consumerGroup} consumerName: ${consumerName}`);
 
-// Function to simulate listening to the AMQP queue, similar to the Redis version
-async function listenMessage(queueName, callback) {
-    return new Promise((resolve, reject) => {
-        // Connect to RabbitMQ server
-        amqp.connect('amqp://admin:admin@127.0.0.1:5672', (error0, connection) => {
-            if (error0) {
-                reject("Error connecting to AMQP: " + error0);
-                return;
-            }
+function formatTime(seconds) {
+    const days = Math.floor(seconds / (24 * 60 * 60));
+    const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
 
-            // Create a channel
-            connection.createChannel((error1, channel) => {
-                if (error1) {
-                    reject("Error creating AMQP channel: " + error1);
-                    return;
-                }
+    let timeString = '';
+    if (days > 0) timeString += `${days} day(s) `;
+    if (hours > 0) timeString += `${hours} hour(s) `;
+    if (minutes > 0) timeString += `${minutes} minute(s) `;
+    if (secs > 0) timeString += `${secs} second(s)`;
 
-                // Assert a queue (create it if it doesn't exist)
-                channel.assertQueue(queueName, {
-                    durable: false,
-                });
-
-                console.log(`Waiting for messages in queue: ${queueName}`);
-
-                // Consume messages from the queue
-                channel.consume(queueName, (msg) => {
-                    // Parse the incoming message (assuming it's in JSON format)
-                    const message = msg.content.toString();
-                    const parsedMessage = {
-                        key: { id: pairCount + 1 },
-                        value: { content: message },
-                        headers: {}
-                    };
-
-                    // Call the provided callback with the message content
-                    callback(parsedMessage);
-                }, {
-                    noAck: true, // Automatically acknowledge the message after processing
-                });
-
-                resolve();
-            });
-        });
-    });
+    return timeString.trim();
 }
 
-// Function to start listening and processing messages
 async function listen() {
-    console.log("Start test", startTime);
+    const connection = await amqp.connect('amqp://admin:admin@127.0.0.1:5672');
+    const channel = await connection.createChannel();
 
-    // Call listenMessage to start listening to the RabbitMQ queue
-    await listenMessage(eventName, ({ key, value, headers }) => {
-        pairCount++;
+    await channel.assertQueue(queue, { durable: true });
 
-        // Log progress every 10,000 pairs consumed
-        if (pairCount % 10000 === 0) {
-            const elapsedTime = (new Date() - startTime) / 1000;
-            console.log(`Consumed ${pairCount} pairs in ${elapsedTime} seconds`);
+    channel.prefetch(1);
+
+    let messagesProcessed = 0;
+    const startTime = new Date();
+
+    let totalProcessingTime = 0;
+
+    console.log(`[${consumerName}] is waiting for messages...`);
+
+    channel.consume(queue, async (msg) => {
+        const startLoopTime = new Date();
+        if (msg !== null) {
+            const message = JSON.parse(msg.content.toString());
+
+            const { key, value, headers } = message
+            
+            channel.ack(msg);
+            messagesProcessed++;
+
+
+            const loopTime = (new Date() - startLoopTime) / 1000;
+            totalProcessingTime += loopTime;
+
+
+            if (messagesProcessed % processLimit === 0) {
+                const elapsedTime = (new Date() - startTime) / 1000;
+                console.log(`[${consumerName}] Processed ${messagesProcessed} messages in ${elapsedTime} seconds`);
+
+
+                const averageProcessingTime = totalProcessingTime / messagesProcessed;
+
+
+                const remainingMessages = testLimit - messagesProcessed;
+                const estimatedRemainingTime = averageProcessingTime * remainingMessages; // in seconds
+
+                const formattedRemainingTime = formatTime(estimatedRemainingTime);
+
+                console.log(`[${consumerName}] Estimated remaining time: ${formattedRemainingTime}`);
+            }
         }
 
-        // If the test limit is reached, exit the process
-        if (pairCount >= testLimit) {
-            console.log(`Done. Consumed ${pairCount} pairs in ${(new Date() - startTime) / 1000} seconds.`);
-            process.exit(0); // Exit after reaching the limit
+        if (messagesProcessed >= testLimit) {
+            console.log(`[${consumerName}] Reached test limit, shutting down...`);
+            await channel.close();
+            await connection.close();
+            process.exit(0);
         }
     });
 }
 
-// Start the listener and handle errors
-listen().catch((error) => {
-    console.error("Error in listener:", error);
-    process.exit(1); // Exit with an error code if the listener fails
-});
+listen().catch(console.error);
 
-// Graceful shutdown on SIGINT (Ctrl+C)
-process.on('SIGINT', () => {
-    console.log("Gracefully shutting down...");
-    process.exit(0); // Exit cleanly on Ctrl+C
+process.on('SIGINT', async () => {
+    console.log('Gracefully shutting down...');
+    process.exit(0);
 });
