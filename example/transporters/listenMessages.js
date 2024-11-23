@@ -1,6 +1,7 @@
+process.env.APP_LOG_LEVEL = "error"
 const { listenMessage } = require("../../src")
 
-// Topic = channel = event
+// topic = channel = event
 const eventName = "test";
 
 let testLimit = 100000;
@@ -11,9 +12,9 @@ async function listen() {
     console.log("Start test", startTime);
 
     // Handle listening to the Kafka topic or other messaging service
-    await listenMessage(eventName, async ({ key, value }) => {
+    await listenMessage(eventName, async ({ key, value, headers }) => {
         pairCount++;
-        console.log(key)
+
         // Log progress every 10,000 pairs consumed
         if (pairCount % 10000 === 0) {
             const elapsedTime = (new Date() - startTime) / 1000;

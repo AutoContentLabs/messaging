@@ -1,4 +1,4 @@
-process.env.APP_LOG_LEVEL="warning"
+process.env.APP_LOG_LEVEL = "error"
 const { sendMessage, sendMessages } = require("../../src");
 
 const startTime = Date.now();
@@ -7,7 +7,11 @@ const testLimit = 100000;
 // Topic = channel = event
 const eventName = "test";
 
-const pair = { key: { id: 0 }, value: { content: "Message" }, headers: { correlationId: new Date().toISOString() } };
+const pair = {
+    key: { id: 0 },
+    value: { content: "Message" },
+    headers: { correlationId: new Date().toISOString() }
+};
 
 async function sendTest() {
     const startTime = new Date()
