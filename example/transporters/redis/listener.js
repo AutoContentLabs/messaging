@@ -20,7 +20,7 @@ async function createConsumerGroupIfNeeded() {
     }
 }
 
-const testLimit = 10000; // Stop after sending a certain number of messages
+const testLimit = 1000000; // Stop after sending a certain number of messages
 const processLimit = 1000; // Show measure after every 1,000 messages
 
 // Function to convert seconds into a readable format (days, hours, minutes, seconds)
