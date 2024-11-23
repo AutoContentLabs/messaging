@@ -1,4 +1,3 @@
-// sender.js
 const Redis = require('ioredis');
 
 // Create a new Redis instance
@@ -24,12 +23,29 @@ async function sendMessage(streamName, pair) {
     await redis.xadd(streamName, '*', 'key', JSON.stringify(pair.key), 'value', JSON.stringify(pair.value), 'headers', JSON.stringify(pair.headers));
 }
 
+// Function to convert seconds into a readable format (days, hours, minutes, seconds)
+function formatTime(seconds) {
+    const days = Math.floor(seconds / (24 * 60 * 60));
+    const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    let timeString = '';
+    if (days > 0) timeString += `${days} day(s) `;
+    if (hours > 0) timeString += `${hours} hour(s) `;
+    if (minutes > 0) timeString += `${minutes} minute(s) `;
+    if (secs > 0) timeString += `${secs} second(s)`;
+
+    return timeString.trim();
+}
+
 // Function to send messages at intervals
 async function sendTest() {
     let pairsCount = 0;
-    const testLimit = 10000; // Stop after sending a certain number of messages
+    const testLimit = 1000000; // Stop after sending a certain number of messages
     const processLimit = 1000; // Show all measure
     const startTime = new Date();
+    let previousTime = startTime;
 
     console.log("Start sending messages", startTime);
 
@@ -41,8 +57,20 @@ async function sendTest() {
 
             // Log progress every 1,000 messages
             if (pairsCount % processLimit === 0) {
-                const elapsedTime = (new Date() - startTime) / 1000;
+                const elapsedTime = (new Date() - startTime) / 1000; // elapsed time in seconds
                 console.log(`Sent ${pairsCount} messages in ${elapsedTime} seconds`);
+
+                // Calculate average time per message
+                const averageTimePerMessage = elapsedTime / pairsCount; // in seconds
+
+                // Calculate remaining time based on average time
+                const remainingMessages = testLimit - pairsCount;
+                const estimatedRemainingTime = averageTimePerMessage * remainingMessages; // in seconds
+
+                // Format the remaining time in days, hours, minutes, seconds
+                const formattedRemainingTime = formatTime(estimatedRemainingTime);
+
+                console.log(`Estimated remaining time: ${formattedRemainingTime}`);
             }
 
             if (pairsCount >= testLimit) {
