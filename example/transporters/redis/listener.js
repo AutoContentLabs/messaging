@@ -49,7 +49,17 @@ function calculateProcessing() {
 
 // Setup Redis connection
 const Redis = require('ioredis');
-const redis = new Redis();
+// Create a new Redis instance
+const redis = new Redis({
+    // Optional configuration for better control over connection
+    host: '127.0.0.1', // or 'localhost'
+    port: 6379,         // default Redis port
+    retryStrategy: (times) => Math.min(times * 50, 2000), // retry connection
+    reconnectOnError: (err) => {
+        console.log('Reconnecting to Redis...');
+        return true; // Reconnect on error
+    }
+});
 
 redis.on('error', (error) => {
     console.error('Redis connection error:', error);

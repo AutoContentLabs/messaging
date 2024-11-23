@@ -1,29 +1,33 @@
-const Redis = require('ioredis');
+// redis/sender.js
 
-// Create a new Redis instance
-const redis = new Redis();
+// topic = channel = event = queue
+const eventName = `test`;
+const clientId = `sender.${Math.floor(Math.random() * 1000)}`;
+const groupId = `group.test`;
 
-// Stream name
-const streamName = 'test';
-console.log(`sender streamName: ${streamName}`);
+console.log(`sender client: ${clientId} group: ${groupId} event: ${eventName}`);
+
+let testLimit = 1000000; // Limit to stop after consuming a certain number of messages
+let processLimit = 1000; // Show measure after every 1,000 messages
+let messagesProcessed = 0; // Track number of messages processed
+let startTime = new Date(); // Track when the process starts
+let totalProcessingTime = 0; // Track the total processing time for messages
+let intervalMs = 3000; // Send a message every ms 
+
+const { v4: uuidv4 } = require('uuid');
 
 // The message structure
-const pair = {
-    key: { id: 0 },
-    value: {
-        content: "Message"
-    },
-    headers: {
-        correlationId: new Date().toISOString()
-    }
-};
-
-// Function to simulate sending a single message
-async function sendMessage(streamName, pair) {
-    await redis.xadd(streamName, '*', 'key', JSON.stringify(pair.key), 'value', JSON.stringify(pair.value), 'headers', JSON.stringify(pair.headers));
+function createPair(id) {
+    const pair = {
+        event: eventName,
+        key: { id: id },  // Use a UUID for key to avoid relying on counter
+        value: { content: "Message" },
+        headers: { correlationId: uuidv4().toString() }
+    };
+    return pair;
 }
 
-// Function to convert seconds into a readable format (days, hours, minutes, seconds)
+// Helper function to convert seconds into a readable format (days, hours, minutes, seconds)
 function formatTime(seconds) {
     const days = Math.floor(seconds / (24 * 60 * 60));
     const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
@@ -39,59 +43,109 @@ function formatTime(seconds) {
     return timeString.trim();
 }
 
-// Function to send messages at intervals
-async function sendTest() {
-    let pairsCount = 0;
-    const testLimit = 1000000; // Stop after sending a certain number of messages
-    const processLimit = 1000; // Show all measure
-    const startTime = new Date();
-    let previousTime = startTime;
+// Calculate processing time for this batch of messages
+function calculateProcessing() {
+    if (messagesProcessed % processLimit === 0) {
+        const elapsedTime = (new Date() - startTime) / 1000; // Total elapsed time in seconds
 
+        // Calculate average processing time per message
+        const averageProcessingTime = totalProcessingTime / messagesProcessed;
+
+        // Estimate the remaining time
+        const remainingMessages = testLimit - messagesProcessed;
+        const estimatedRemainingTime = averageProcessingTime * remainingMessages; // in seconds
+
+        // Format the remaining time in days, hours, minutes, seconds
+        const formattedRemainingTime = formatTime(estimatedRemainingTime);
+
+        console.log(`[${new Date().toISOString()}] Processed ${messagesProcessed} messages, elapsedTime: ${elapsedTime}s, remaining: ${formattedRemainingTime}`);
+    }
+}
+
+// Setup
+const Redis = require('ioredis');
+
+// Create a new Redis instance
+const redis = new Redis({
+    // Optional configuration for better control over connection
+    host: '127.0.0.1', // or 'localhost'
+    port: 6379,         // default Redis port
+    retryStrategy: (times) => Math.min(times * 50, 2000), // retry connection
+    reconnectOnError: (err) => {
+        console.log('Reconnecting to Redis...');
+        return true; // Reconnect on error
+    }
+});
+
+// Function to simulate sending a single message
+async function sendMessage(eventName, pair) {
+    const streamName = eventName;
+
+    try {
+        // Sending the message to the Redis stream
+        const status = await redis.xadd(streamName, '*', 'key', JSON.stringify(pair.key), 'value', JSON.stringify(pair.value), 'headers', JSON.stringify(pair.headers));
+        return status;
+    } catch (error) {
+        console.error("Error in sendMessage:", error);
+        return null;
+    }
+}
+
+// Main function to send messages
+async function send() {
     console.log("Start sending messages", startTime);
 
     const interval = setInterval(async () => {
         try {
-            await sendMessage(streamName, pair);
-            pairsCount++;
-            pair.key.id = pairsCount;
+            messagesProcessed++;
 
-            // Log progress every 1,000 messages
-            if (pairsCount % processLimit === 0) {
-                const elapsedTime = (new Date() - startTime) / 1000; // elapsed time in seconds
-                console.log(`Sent ${pairsCount} messages in ${elapsedTime} seconds`);
+            const pair = createPair(messagesProcessed);
 
-                // Calculate average time per message
-                const averageTimePerMessage = elapsedTime / pairsCount; // in seconds
+            const messageStatus = await sendMessage(eventName, pair);
 
-                // Calculate remaining time based on average time
-                const remainingMessages = testLimit - pairsCount;
-                const estimatedRemainingTime = averageTimePerMessage * remainingMessages; // in seconds
-
-                // Format the remaining time in days, hours, minutes, seconds
-                const formattedRemainingTime = formatTime(estimatedRemainingTime);
-
-                console.log(`Estimated remaining time: ${formattedRemainingTime}`);
+            if (messageStatus) {
+                // Calculate processing stats
+                calculateProcessing();
+            } else {
+                console.log("Failed to send message:", pair.key.id);
             }
 
-            if (pairsCount >= testLimit) {
-                clearInterval(interval); // Stop the interval after reaching the limit
-                const elapsedTime = (new Date() - startTime) / 1000;
-                console.log(`Sent ${pairsCount} messages in ${elapsedTime} seconds`);
+            if (messagesProcessed >= testLimit) {
+                clearInterval(interval);
+                console.log(`[${new Date().toISOString()}] Done processing ${messagesProcessed} messages in ${formatTime((new Date() - startTime) / 1000)}.`);
                 await redis.quit();
                 process.exit(0);
             }
         } catch (error) {
             console.error("Error sending message:", error);
         }
-    }, 10); // Send a message every 10ms
+    }, intervalMs); // ms
 }
 
-// Start sending messages
-sendTest().catch(console.error);
+// Start sending
+send().catch((error) => {
+    console.error("Error in sender:", error);
+    process.exit(1);
+});
 
-// Graceful shutdown on SIGINT (Ctrl+C)
+// Graceful shutdown on SIGINT
 process.on('SIGINT', async () => {
     console.log("Gracefully shutting down...");
-    await redis.quit();
-    process.exit(0);
+    try {
+        await redis.quit();
+    } catch (error) {
+        console.error("Error during shutdown:", error);
+    }
+    process.exit(0); // Exit cleanly on Ctrl+C
+});
+
+// Graceful shutdown on SIGTERM
+process.on('SIGTERM', async () => {
+    console.log("Gracefully shutting down due to SIGTERM...");
+    try {
+        await redis.quit();
+    } catch (error) {
+        console.error("Error during shutdown:", error);
+    }
+    process.exit(0); // Exit cleanly on termination signal
 });
