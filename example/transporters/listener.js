@@ -1,7 +1,6 @@
-const { Kafka } = require('kafkajs');
-const { v4: uuidv4 } = require('uuid');
+// listenMessage.js
 
-// Kafka configuration
+// listener configuration
 const eventName = `test`;
 const clientId = `listener.${Math.floor(Math.random() * 1000)}`;
 const groupId = `group.test`;
@@ -42,16 +41,9 @@ function calculateProcessing() {
     }
 }
 
-// Setup
-const kafka = new Kafka({
-    clientId: clientId,
-    brokers: [connectionURL],
-    logLevel: 0,
-});
-
-const consumer = kafka.consumer({ groupId: groupId, allowAutoTopicCreation: true });
-
-consumer.connect();
+// setup
+process.env.APP_LOG_LEVEL = "error"
+const { listenMessage } = require("../../src")
 
 async function handler({ event, key, value, headers }) {
     // Process the message here
@@ -62,35 +54,20 @@ async function handler({ event, key, value, headers }) {
 }
 
 async function listener(eventName, callback) {
+    // Handle listening to the Kafka topic or other messaging service
+    await listenMessage(eventName, async ({ key, value, headers }) => {
 
-    await consumer.subscribe({ topic: eventName, fromBeginning: true });
+        const startLoopTime = new Date();
 
-    await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            const startLoopTime = new Date();
-            if (topic === eventName) {
-                try {
-                    const value = JSON.parse(message.value.toString());
-                    const key = JSON.parse(message.key.toString());
-                    const headers = {
-                        correlationId: message.headers.correlationId.toString(),
-                    }
+        callback({ event: eventName, key, value, headers });
 
-                    callback({ event: topic, key, value, headers });
-                } catch (err) {
-                    console.error("Error parsing message:", err);
-                    return;
-                }
-            }
-
-            const loopTime = (new Date() - startLoopTime) / 1000;
-            totalProcessingTime += loopTime;
-        },
+        const loopTime = (new Date() - startLoopTime) / 1000;
+        totalProcessingTime += loopTime;
     });
 }
-
 async function listen() {
     console.log("Starting the listener process...");
+
     await listener(eventName, async ({ event, key, value, headers }) => {
         messagesProcessed++;
         await handler({ event, key, value, headers });
@@ -101,6 +78,7 @@ async function listen() {
             process.exit(0);
         }
     });
+
 }
 
 listen().catch((error) => {
@@ -110,12 +88,10 @@ listen().catch((error) => {
 
 process.on('SIGINT', async () => {
     console.log("Gracefully shutting down...");
-    await consumer.disconnect();
     process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
     console.log("Gracefully shutting down due to SIGTERM...");
-    await consumer.disconnect();
     process.exit(0);
 });

@@ -100,7 +100,8 @@ async function sendMessage(eventName, pair) {
 }
 
 // Function to send messages at regular intervals
-async function sendTest() {
+async function send() {
+
   console.log("Start sending messages", startTime);
 
   // Connect the producer to Kafka (this happens once before sending messages)
@@ -136,10 +137,12 @@ async function sendTest() {
   }
 }
 
-// Start sending messages
-sendTest().catch(console.error);
+send().catch((error) => {
+  console.error("Error in sender:", error);
+  process.exit(1);
+});
 
-// Graceful shutdown on SIGINT (Ctrl+C)
+// Graceful shutdown on SIGINT
 process.on('SIGINT', async () => {
   console.log("Gracefully shutting down...");
   try {
@@ -149,4 +152,16 @@ process.on('SIGINT', async () => {
   }
   process.exit(0); // Exit cleanly on Ctrl+C
 });
+
+// Graceful shutdown on SIGTERM
+process.on('SIGTERM', async () => {
+  console.log("Gracefully shutting down due to SIGTERM...");
+  try {
+    await producer.disconnect(); // Disconnect the Kafka producer
+  } catch (error) {
+    console.error("Error during shutdown:", error);
+  }
+  process.exit(0); // Exit cleanly on termination signal
+});
+
 

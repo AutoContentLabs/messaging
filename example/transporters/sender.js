@@ -1,4 +1,3 @@
-// redis/sender.js
 
 // topic = channel = event = queue
 const eventName = `test`;
@@ -17,13 +16,14 @@ let intervalMs = 3000; // Send a message every ms
 const { v4: uuidv4 } = require('uuid');
 
 // The message structure
-function createPair(id) {
+function createPair() {
     const pair = {
         event: eventName,
-        key: { id: id },  // Use a UUID for key to avoid relying on counter
+        key: { id: messagesProcessed },  // Use a UUID for key to avoid relying on counter
         value: { content: "Message" },
         headers: { correlationId: uuidv4().toString() }
     };
+
     return pair;
 }
 
@@ -58,71 +58,59 @@ function calculateProcessing() {
         // Format the remaining time in days, hours, minutes, seconds
         const formattedRemainingTime = formatTime(estimatedRemainingTime);
 
-        console.log(`[${new Date().toISOString()}] Processed ${messagesProcessed} messages, elapsedTime: ${elapsedTime}s, remaining: ${formattedRemainingTime}`);
+        console.log(`[${new Date().toISOString()}] Processed ${messagesProcessed} elapsedTime: ${elapsedTime}s remaining:${formattedRemainingTime}`);
     }
 }
 
-// Setup
-const Redis = require('ioredis');
+// setup
+process.env.APP_LOG_LEVEL = "error"
+const { sendMessage, sendMessages } = require("../../src");
 
-// Create a new Redis instance
-const redis = new Redis({
-    // Optional configuration for better control over connection
-    host: '127.0.0.1', // or 'localhost'
-    port: 6379,         // default Redis port
-    retryStrategy: (times) => Math.min(times * 50, 2000), // retry connection
-    reconnectOnError: (err) => {
-        console.log('Reconnecting to Redis...');
-        return true; // Reconnect on error
-    }
-});
-
-// Function to simulate sending a single message
 async function sender(eventName, pair) {
-    const streamName = eventName;
-
     try {
-        // Sending the message to the Redis stream
-        const status = await redis.xadd(streamName, '*', 'key', JSON.stringify(pair.key), 'value', JSON.stringify(pair.value), 'headers', JSON.stringify(pair.headers));
-        return status;
+        // Send individual messages
+        let status = await sendMessage(eventName, pair);
+        return status
     } catch (error) {
-        console.error("Error in sendMessage:", error);
-        return null;
+        console.error("Error sending message:", error);
     }
 }
 
-// Main function to send messages
 async function send() {
+
     console.log("Start sending messages", startTime);
 
-    const interval = setInterval(async () => {
+    // Use a while loop for sending messages at regular intervals
+    while (messagesProcessed < testLimit) {
         try {
+            // Pause between sending each message
+            await new Promise(resolve => setTimeout(resolve, intervalMs));
             messagesProcessed++;
 
-            const pair = createPair(messagesProcessed);
+            const pair = createPair();
 
+            // Send individual message
             const messageStatus = await sender(eventName, pair);
 
-            if (messageStatus) {
-                // Calculate processing stats
-                calculateProcessing();
-            } else {
-                console.log("Failed to send message:", pair.key.id);
-            }
+            // Calculate processing stats
+            calculateProcessing();
 
+            // If the test limit is reached, stop sending messages
             if (messagesProcessed >= testLimit) {
-                clearInterval(interval);
-                console.log(`[${new Date().toISOString()}] Done processing ${messagesProcessed} messages in ${formatTime((new Date() - startTime) / 1000)}.`);
-                await redis.quit();
-                process.exit(0);
+                const elapsedTime = (new Date() - startTime) / 1000; // Elapsed time in seconds
+                console.log(`[${new Date().toISOString()}] Done. ${messagesProcessed} messages in ${formatTime(elapsedTime)}.`);
+
+                await producer.disconnect(); // Gracefully disconnect the Kafka producer
+                process.exit(0); // Exit gracefully after reaching the limit
             }
         } catch (error) {
-            console.error("Error sending message:", error);
+            console.error("Error in sending message:", error);
+            break; // Exit the loop on error
         }
-    }, intervalMs); // ms
+    }
 }
 
-// Start sending
+
 send().catch((error) => {
     console.error("Error in sender:", error);
     process.exit(1);
@@ -132,7 +120,7 @@ send().catch((error) => {
 process.on('SIGINT', async () => {
     console.log("Gracefully shutting down...");
     try {
-        await redis.quit();
+        
     } catch (error) {
         console.error("Error during shutdown:", error);
     }
@@ -143,7 +131,7 @@ process.on('SIGINT', async () => {
 process.on('SIGTERM', async () => {
     console.log("Gracefully shutting down due to SIGTERM...");
     try {
-        await redis.quit();
+        
     } catch (error) {
         console.error("Error during shutdown:", error);
     }

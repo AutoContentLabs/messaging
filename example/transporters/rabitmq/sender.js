@@ -92,6 +92,41 @@ async function sendMessage(eventName, pair) {
     }
 }
 
+async function sender() {
+
+    console.log("Start sending messages", startTime);
+
+    // Use a while loop for sending messages at regular intervals
+    while (messagesProcessed < testLimit) {
+        try {
+            // Pause between sending each message
+            await new Promise(resolve => setTimeout(resolve, intervalMs));
+            messagesProcessed++;
+
+            const pair = createPair();
+
+            // Send individual message
+            const messageStatus = await sendMessage(eventName, pair);
+
+            // Calculate processing stats
+            calculateProcessing();
+
+            // If the test limit is reached, stop sending messages
+            if (messagesProcessed >= testLimit) {
+                const elapsedTime = (new Date() - startTime) / 1000; // Elapsed time in seconds
+                console.log(`[${new Date().toISOString()}] Done. ${messagesProcessed} messages in ${formatTime(elapsedTime)}.`);
+
+                await channel.close();
+                await connection.close();
+                process.exit(0); // Exit gracefully after reaching the limit
+            }
+        } catch (error) {
+            console.error("Error in sending message:", error);
+            break; // Exit the loop on error
+        }
+    }
+}
+
 async function send() {
     console.log("Start sending messages", startTime);
 
@@ -101,7 +136,7 @@ async function send() {
 
             const pair = createPair(messagesProcessed);
 
-            const messageStatus = await sendMessage(eventName, pair);
+            const messageStatus = await sender(eventName, pair);
 
             // Calculate processing stats
             calculateProcessing();
@@ -109,8 +144,7 @@ async function send() {
             if (messagesProcessed >= testLimit) {
                 clearInterval(interval);
                 console.log(`[${new Date().toISOString()}] Done processing ${messagesProcessed} messages in ${formatTime((new Date() - startTime) / 1000)}.`);
-                await channel.close();
-                await connection.close();
+              
                 process.exit(0);
             }
         } catch (error) {

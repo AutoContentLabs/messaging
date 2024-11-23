@@ -88,7 +88,7 @@ async function handler({ event, key, value, headers }) {
 }
 
 // Simulate the 'listenMessage'
-async function listenMessage(eventName, callback) {
+async function listener(eventName, callback) {
     await createConsumerGroupIfNeeded();
 
     while (messagesProcessed < testLimit) {
@@ -134,7 +134,7 @@ async function listenMessage(eventName, callback) {
 
 async function listen() {
     console.log("Starting the listener process...");
-    await listenMessage(eventName, async ({ event, key, value, headers }) => {
+    await listener(eventName, async ({ event, key, value, headers }) => {
         messagesProcessed++;
         await handler({ event, key, value, headers });
         await calculateProcessing();
