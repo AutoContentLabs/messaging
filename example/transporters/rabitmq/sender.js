@@ -94,8 +94,6 @@ async function sendMessage(eventName, pair) {
 
 async function sender() {
 
-    console.log("Start sending messages", startTime);
-
     // Use a while loop for sending messages at regular intervals
     while (messagesProcessed < testLimit) {
         try {
@@ -103,7 +101,7 @@ async function sender() {
             await new Promise(resolve => setTimeout(resolve, intervalMs));
             messagesProcessed++;
 
-            const pair = createPair();
+            const pair = createPair(messagesProcessed);
 
             // Send individual message
             const messageStatus = await sendMessage(eventName, pair);

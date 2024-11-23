@@ -42,7 +42,7 @@ function calculateProcessing() {
 }
 
 // setup
-process.env.APP_LOG_LEVEL = "error"
+process.env.APP_LOG_LEVEL = "debug"
 const { listenMessage } = require("../../src")
 
 async function handler({ event, key, value, headers }) {
@@ -56,7 +56,7 @@ async function handler({ event, key, value, headers }) {
 async function listener(eventName, callback) {
     // Handle listening to the Kafka topic or other messaging service
     await listenMessage(eventName, async ({ key, value, headers }) => {
-
+console.log("a")
         const startLoopTime = new Date();
 
         callback({ event: eventName, key, value, headers });

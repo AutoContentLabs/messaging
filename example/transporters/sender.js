@@ -64,7 +64,7 @@ function calculateProcessing() {
 
 // setup
 process.env.APP_LOG_LEVEL = "error"
-const { sendMessage, sendMessages } = require("../../src");
+const { sendMessage } = require("../../src");
 
 async function sender(eventName, pair) {
     try {
