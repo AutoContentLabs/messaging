@@ -2,13 +2,16 @@ const { Kafka } = require('kafkajs');
 
 // Create a new Kafka instance
 const kafka = new Kafka({
-    clientId: 'listener.test',  // Kafka client ID
-    brokers: ['localhost:9092'],  // Kafka brokers (adjust if necessary),
-    logLevel:0
+    clientId: "listener.test",  // Kafka client ID
+    brokers: ["localhost:9092"],  // Kafka brokers (adjust if necessary),
+    logLevel: 0
 });
 
 // Create a Kafka consumer
-const consumer = kafka.consumer({ groupId: 'group.test' });
+const consumer = kafka.consumer({
+    groupId: 'group.test',
+    allowAutoTopicCreation: true
+});
 
 // Topic = channel = event
 const eventName = 'test';

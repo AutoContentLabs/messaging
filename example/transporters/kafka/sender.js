@@ -2,8 +2,8 @@ const { Kafka } = require('kafkajs');
 
 // Create a new Kafka instance
 const kafka = new Kafka({
-  clientId: 'sender.test',  // Kafka client ID
-  brokers: ['localhost:9092'],  // Kafka brokers (adjust if necessary)
+  clientId: "sender.test",  // Kafka client ID
+  brokers: ["localhost:9092"],  // Kafka brokers (adjust if necessary),
   logLevel: 0
 });
 
