@@ -112,6 +112,12 @@ let KAFKA_LINGER_MS = getIntEnvironmentVariable("KAFKA_LINGER_MS", 100); // 100m
 let KAFKA_KEY_SERIALIZER = getStringEnvironmentVariable("KAFKA_KEY_SERIALIZER", 'org.apache.kafka.common.serialization.StringSerializer');
 let KAFKA_VALUE_SERIALIZER = getStringEnvironmentVariable("KAFKA_VALUE_SERIALIZER", 'org.apache.kafka.common.serialization.StringSerializer');
 
+// Redis
+let REDIS_HOST_ADDRESS = getStringEnvironmentVariable("REDIS_HOST_ADDRESS", '127.0.0.1');
+let REDIS_HOST_PORT = getIntEnvironmentVariable("REDIS_HOST_PORT", 6379);
+let REDIS_CLIENT_ID = getStringEnvironmentVariable("REDIS_CLIENT_ID", getUniqueId('client'));
+let REDIS_GROUP_ID = getStringEnvironmentVariable("REDIS_GROUP_ID", getUniqueId('group'));
+
 /**
  * Validates the Kafka log level environment variable.
  * If the value is invalid, it will default to log level 0 (INFO).
@@ -149,5 +155,10 @@ module.exports = {
     KAFKA_BATCH_SIZE,
     KAFKA_LINGER_MS,
     KAFKA_KEY_SERIALIZER,
-    KAFKA_VALUE_SERIALIZER
+    KAFKA_VALUE_SERIALIZER,
+    // REDIS
+    REDIS_HOST_ADDRESS,
+    REDIS_HOST_PORT,
+    REDIS_CLIENT_ID,
+    REDIS_GROUP_ID
 };

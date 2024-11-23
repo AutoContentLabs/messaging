@@ -1,18 +1,18 @@
 // redis/RedisSender.js
-
+const config = require("../config")
 const { v4: uuidv4 } = require('uuid');
 const Redis = require('ioredis');
 
 class RedisSender {
-    constructor({ eventName = 'test', groupId = 'group.test' }) {
+    constructor({ eventName = 'test' }) {
         this.eventName = eventName;
-        this.clientId = `sender.${Math.floor(Math.random() * 1000)}`;
-        this.groupId = groupId;
+        this.clientId = config.REDIS_CLIENT_ID;
+        this.groupId = config.REDIS_GROUP_ID;
 
         // Redis client configuration
         this.redis = new Redis({
-            host: '127.0.0.1',
-            port: 6379,
+            host: config.REDIS_HOST_ADDRESS,
+            port: config.REDIS_HOST_PORT,
             retryStrategy: (times) => Math.min(times * 50, 2000),
             reconnectOnError: (err) => {
                 console.log('Reconnecting to Redis...');
