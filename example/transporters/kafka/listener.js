@@ -51,7 +51,7 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: groupId, allowAutoTopicCreation: true });
 
-await consumer.connect();
+consumer.connect();
 
 async function listenMessage(eventName, callback) {
 
