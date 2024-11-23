@@ -23,11 +23,29 @@ async function createConsumerGroupIfNeeded() {
 const testLimit = 10000; // Stop after sending a certain number of messages
 const processLimit = 1000; // Show measure after every 1,000 messages
 
+// Function to convert seconds into a readable format (days, hours, minutes, seconds)
+function formatTime(seconds) {
+    const days = Math.floor(seconds / (24 * 60 * 60));
+    const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    let timeString = '';
+    if (days > 0) timeString += `${days} day(s) `;
+    if (hours > 0) timeString += `${hours} hour(s) `;
+    if (minutes > 0) timeString += `${minutes} minute(s) `;
+    if (secs > 0) timeString += `${secs} second(s)`;
+
+    return timeString.trim();
+}
+
 async function processMessages() {
     await createConsumerGroupIfNeeded();
 
     let messagesProcessed = 0; // Track number of messages processed
     const startTime = new Date(); // Track start time
+
+    let totalProcessingTime = 0; // Track the total processing time for messages
 
     while (true) {
         const startLoopTime = new Date(); // Track the time taken to process each loop iteration
@@ -50,14 +68,26 @@ async function processMessages() {
             }
         }
 
-        // Log the time taken for each loop iteration (message processing)
+        // Calculate processing time for this batch of messages
         const loopTime = (new Date() - startLoopTime) / 1000; // Time in seconds
-        //console.log(`Processed ${messagesProcessed} messages in this loop (Time taken: ${loopTime} seconds)`);
+        totalProcessingTime += loopTime;
 
         // Log total time taken every 1,000 messages
         if (messagesProcessed % processLimit === 0) {
             const elapsedTime = (new Date() - startTime) / 1000; // Total elapsed time in seconds
             console.log(`Processed ${messagesProcessed} messages in total in ${elapsedTime} seconds`);
+
+            // Calculate average processing time per message
+            const averageProcessingTime = totalProcessingTime / messagesProcessed;
+
+            // Estimate the remaining time
+            const remainingMessages = testLimit - messagesProcessed;
+            const estimatedRemainingTime = averageProcessingTime * remainingMessages; // in seconds
+
+            // Format the remaining time in days, hours, minutes, seconds
+            const formattedRemainingTime = formatTime(estimatedRemainingTime);
+
+            console.log(`Estimated remaining time: ${formattedRemainingTime}`);
         }
 
         if (messagesProcessed >= testLimit) {
