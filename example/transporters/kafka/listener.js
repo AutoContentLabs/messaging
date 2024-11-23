@@ -53,6 +53,14 @@ const consumer = kafka.consumer({ groupId: groupId, allowAutoTopicCreation: true
 
 consumer.connect();
 
+async function handler({ event, key, value, headers }) {
+    // Process the message here
+    console.log("event", event)
+    console.log("key", key)
+    console.log("value", value)
+    console.log("headers", headers)
+}
+
 async function listenMessage(eventName, callback) {
 
     await consumer.subscribe({ topic: eventName, fromBeginning: true });
@@ -77,10 +85,6 @@ async function listenMessage(eventName, callback) {
             totalProcessingTime += loopTime;
         },
     });
-}
-
-async function handler({ event, key, value, headers }) {
-    // Your processing logic for each message here
 }
 
 async function listen() {

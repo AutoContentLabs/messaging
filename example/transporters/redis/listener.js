@@ -69,6 +69,14 @@ async function createConsumerGroupIfNeeded() {
     }
 }
 
+async function handler({ event, key, value, headers }) {
+    // Process the message here
+    console.log("event", event)
+    console.log("key", key)
+    console.log("value", value)
+    console.log("headers", headers)
+}
+
 // Simulate the 'listenMessage'
 async function listenMessage(eventName, callback) {
     await createConsumerGroupIfNeeded();
@@ -112,14 +120,6 @@ async function listenMessage(eventName, callback) {
             continue; // Skip this iteration in case of error, but keep trying to consume more messages
         }
     }
-}
-
-async function handler({ event, key, value, headers }) {
-    // Process the message here
-    // console.log("event:", event);
-    // console.log("key:", key);
-    // console.log("value:", value);
-    // console.log("headers:", headers);
 }
 
 async function listen() {

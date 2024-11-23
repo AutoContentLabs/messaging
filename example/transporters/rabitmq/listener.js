@@ -50,14 +50,28 @@ function calculateProcessing() {
 
 // Setup
 const connectionURL = `amqp://admin:admin@127.0.0.1:5672`;
-const connection = await amqp.connect(connectionURL);
-const channel = await connection.createChannel();
+let connection = null;
+let channel = null;
+
+async function createConnection() {
+    connection = await amqp.connect(connectionURL);
+    channel = await connection.createChannel();
+}
+
+async function handler({ event, key, value, headers }) {
+    // Process the message here
+    console.log("event", event)
+    console.log("key", key)
+    console.log("value", value)
+    console.log("headers", headers)
+}
 
 // Simulate the 'listenMessage'
 async function listenMessage(eventName, callback) {
     const queue = eventName;
 
     try {
+        await createConnection();
         await channel.assertQueue(queue, { durable: true });
         channel.prefetch(1);
     } catch (error) {
@@ -89,11 +103,6 @@ async function listenMessage(eventName, callback) {
         const loopTime = (new Date() - startLoopTime) / 1000; // Time in seconds
         totalProcessingTime += loopTime;
     });
-}
-
-async function handler({ event, key, value, headers }) {
-    // Process the message here
-    // For example: console.log("event", event, "key", key, "value", value, "headers", headers);
 }
 
 async function listen() {

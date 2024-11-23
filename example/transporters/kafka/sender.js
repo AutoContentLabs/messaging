@@ -63,11 +63,10 @@ function calculateProcessing() {
   }
 }
 
-////////////////////
-// Kafka-related code
+// setup
+const connectionURL = `localhost:9092`;
 const { Kafka } = require('kafkajs');
 
-const connectionURL = `localhost:9092`;
 console.log("Start sending messages to Kafka", connectionURL);
 
 // Create a new Kafka instance
@@ -80,8 +79,17 @@ const kafka = new Kafka({
 // Create a Kafka producer
 const producer = kafka.producer();
 
+async function handler({ event, key, value, headers, status }) {
+  // Your processing logic for each message here
+  console.log("event", event)
+  console.log("key", key)
+  console.log("value", value)
+  console.log("headers", headers)
+  console.log("status", status)
+}
+
 // Function to simulate sending a single message to Kafka
-async function sendMessage(eventName, pair) {
+async function sendMessage(eventName, pair, callback) {
   try {
     await producer.send({
       topic: eventName,
@@ -93,6 +101,7 @@ async function sendMessage(eventName, pair) {
         }
       ],
     });
+    callback({ ...pair, status: true })
   } catch (error) {
     console.error("Error sending message:", error);
   }
@@ -105,15 +114,17 @@ async function sendTest() {
   // Connect the producer to Kafka (this happens once before sending messages)
   await producer.connect();
 
-  // Use setInterval to send messages at regular intervals
-  const interval = setInterval(async () => {
+  // Use a while loop for sending messages at regular intervals
+  while (messagesProcessed < testLimit) {
     try {
+      // Pause between sending each message
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
       messagesProcessed++;
 
       const pair = createPair();
 
       // Send individual message
-      await sendMessage(eventName, pair);
+      await sendMessage(eventName, pair, handler);
 
       // Process time and logging
       // console.log(`Sent message with key: ${pair.key.id}`);
@@ -123,7 +134,6 @@ async function sendTest() {
 
       // If the test limit is reached, stop sending messages
       if (messagesProcessed >= testLimit) {
-        clearInterval(interval);
         const elapsedTime = (new Date() - startTime) / 1000; // Elapsed time in seconds
         console.log(`[${new Date().toISOString()}] Done. ${messagesProcessed} messages in ${formatTime(elapsedTime)}.`);
 
@@ -131,10 +141,10 @@ async function sendTest() {
         process.exit(0); // Exit gracefully after reaching the limit
       }
     } catch (error) {
-      console.error("Error in sending interval:", error);
-      clearInterval(interval); // Clear the interval in case of error
+      console.error("Error in sending message:", error);
+      break; // Exit the loop on error
     }
-  }, intervalMs);
+  }
 }
 
 // Start sending messages
@@ -143,6 +153,11 @@ sendTest().catch(console.error);
 // Graceful shutdown on SIGINT (Ctrl+C)
 process.on('SIGINT', async () => {
   console.log("Gracefully shutting down...");
-  await producer.disconnect(); // Disconnect the Kafka producer
+  try {
+    await producer.disconnect(); // Disconnect the Kafka producer
+  } catch (error) {
+    console.error("Error during shutdown:", error);
+  }
   process.exit(0); // Exit cleanly on Ctrl+C
 });
+
