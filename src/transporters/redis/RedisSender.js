@@ -62,13 +62,13 @@ class RedisSender {
 
     // Graceful shutdown
     async shutdown() {
-        console.log("Gracefully shutting down...");
+
         try {
             await this.redis.quit();
         } catch (error) {
             console.error("Error during shutdown:", error);
         }
-        process.exit(0); // Exit cleanly
+
     }
 }
 
