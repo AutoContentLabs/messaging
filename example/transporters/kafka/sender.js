@@ -1,28 +1,84 @@
+// kafka/sender.js
+
+// topic = channel = event = queue
+const eventName = `test`;
+const clientId = `sender.${Math.floor(Math.random() * 1000)}`;
+const groupId = `group.test`;
+
+console.log(`sender client: ${clientId} group: ${groupId} event: ${eventName}`);
+
+let testLimit = 1000000; // Limit to stop after consuming a certain number of messages
+let processLimit = 1000; // Show measure after every 1,000 messages
+let messagesProcessed = 0; // Track number of messages processed
+let startTime = new Date(); // Track when the process starts
+let totalProcessingTime = 0; // Track the total processing time for messages
+let intervalMs = 10; // Send a message every ms 
+
+const { v4: uuidv4 } = require('uuid');
+
+// The message structure
+function createPair() {
+  const pair = {
+    event: eventName,
+    key: { id: uuidv4() },  // Use a UUID for key to avoid relying on counter
+    value: { content: "Message" },
+    headers: { correlationId: uuidv4() }
+  };
+
+  return pair;
+}
+
+// Helper function to convert seconds into a readable format (days, hours, minutes, seconds)
+function formatTime(seconds) {
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  let timeString = '';
+  if (days > 0) timeString += `${days} day(s) `;
+  if (hours > 0) timeString += `${hours} hour(s) `;
+  if (minutes > 0) timeString += `${minutes} minute(s) `;
+  if (secs > 0) timeString += `${secs} second(s)`;
+
+  return timeString.trim();
+}
+
+// Calculate processing time for this batch of messages
+function calculateProcessing() {
+  if (messagesProcessed % processLimit === 0) {
+    const elapsedTime = (new Date() - startTime) / 1000; // Total elapsed time in seconds
+
+    // Calculate average processing time per message
+    const averageProcessingTime = totalProcessingTime / messagesProcessed;
+
+    // Estimate the remaining time
+    const remainingMessages = testLimit - messagesProcessed;
+    const estimatedRemainingTime = averageProcessingTime * remainingMessages; // in seconds
+
+    // Format the remaining time in days, hours, minutes, seconds
+    const formattedRemainingTime = formatTime(estimatedRemainingTime);
+
+    console.log(`[${new Date().toISOString()}] Processed ${messagesProcessed} elapsedTime: ${elapsedTime}s remaining:${formattedRemainingTime}`);
+  }
+}
+
+////////////////////
+// Kafka-related code
 const { Kafka } = require('kafkajs');
+
+const connectionURL = `localhost:9092`;
+console.log("Start sending messages to Kafka", connectionURL);
 
 // Create a new Kafka instance
 const kafka = new Kafka({
-  clientId: "sender.test",  // Kafka client ID
-  brokers: ["localhost:9092"],  // Kafka brokers (adjust if necessary),
+  clientId: clientId,
+  brokers: [connectionURL],
   logLevel: 0
 });
 
 // Create a Kafka producer
 const producer = kafka.producer();
-
-// Topic = channel = event
-const eventName = 'test';
-
-let pairsCount = 0;  // Counter for messages sent
-const testLimit = 100000;  // Limit to stop after sending a certain number of messages
-const startTime = new Date();  // Track when the process starts
-
-// The message structure (similar to your pair in the second example)
-const pair = {
-  key: { id: 0 },
-  value: { content: "Message" },
-  headers: { correlationId: new Date().toISOString() }
-};
 
 // Function to simulate sending a single message to Kafka
 async function sendMessage(eventName, pair) {
@@ -34,7 +90,7 @@ async function sendMessage(eventName, pair) {
           key: JSON.stringify(pair.key),
           value: JSON.stringify(pair.value),
           headers: JSON.stringify(pair.headers)
-        }  // Send the pair as a JSON string
+        }
       ],
     });
   } catch (error) {
@@ -42,58 +98,43 @@ async function sendMessage(eventName, pair) {
   }
 }
 
-// Function to send messages in intervals (like `sendTest` in the second example)
+// Function to send messages at regular intervals
 async function sendTest() {
-  console.log("Start test", startTime);
+  console.log("Start sending messages", startTime);
 
   // Connect the producer to Kafka (this happens once before sending messages)
   await producer.connect();
 
-  // Use setInterval to send messages at regular intervals (every 10ms)
+  // Use setInterval to send messages at regular intervals
   const interval = setInterval(async () => {
     try {
+      messagesProcessed++;
+
+      const pair = createPair();
+
       // Send individual message
       await sendMessage(eventName, pair);
-      pairsCount++;
 
-      // Log progress every 10,000 messages
-      if (pairsCount % 10000 === 0) {
-        const elapsedTime = (new Date() - startTime) / 1000; // Elapsed time in seconds
-        console.log(`Sent ${pairsCount} messages in ${elapsedTime} seconds`);
-      }
+      // Process time and logging
+      // console.log(`Sent message with key: ${pair.key.id}`);
 
-      // If the test limit is reached, stop sending
-      if (pairsCount >= testLimit) {
+      // Calculate processing stats
+      calculateProcessing();
+
+      // If the test limit is reached, stop sending messages
+      if (messagesProcessed >= testLimit) {
         clearInterval(interval);
         const elapsedTime = (new Date() - startTime) / 1000; // Elapsed time in seconds
-        console.log(`Sent ${pairsCount} messages in ${elapsedTime} seconds`);
-        await producer.disconnect();  // Gracefully disconnect the Kafka producer
+        console.log(`[${new Date().toISOString()}] Done. ${messagesProcessed} messages in ${formatTime(elapsedTime)}.`);
+
+        await producer.disconnect(); // Gracefully disconnect the Kafka producer
         process.exit(0); // Exit gracefully after reaching the limit
       }
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Error in sending interval:", error);
+      clearInterval(interval); // Clear the interval in case of error
     }
-  }, 10);  // Send a message every 10ms (adjust interval as necessary)
-}
-
-// Function to send a batch of messages (like `sendBatchTest` in the second example)
-async function sendBatchTest() {
-  const batchSize = 1000;
-  const pairs = Array(batchSize).fill(pair);  // Generate a batch of identical messages
-
-  try {
-    await producer.send({
-      topic: eventName,
-      messages: pairs.map(pair => ({
-        key: JSON.stringify(pair.key),
-        value: JSON.stringify(pair.value),
-        headers: JSON.stringify(pair.headers)
-      }))
-    });
-    console.log(`Sent a batch of ${pairs.length} messages`);
-  } catch (error) {
-    console.error("Error sending batch of messages:", error);
-  }
+  }, intervalMs);
 }
 
 // Start sending messages
@@ -102,6 +143,6 @@ sendTest().catch(console.error);
 // Graceful shutdown on SIGINT (Ctrl+C)
 process.on('SIGINT', async () => {
   console.log("Gracefully shutting down...");
-  await producer.disconnect();  // Disconnect the Kafka producer
-  process.exit(0);  // Exit cleanly on Ctrl+C
+  await producer.disconnect(); // Disconnect the Kafka producer
+  process.exit(0); // Exit cleanly on Ctrl+C
 });
