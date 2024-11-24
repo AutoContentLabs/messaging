@@ -1,8 +1,8 @@
 /**
  * src\eventHub.js
  */
-const EventEmitter = require("events");
+// const EventEmitter = require("events");
 
-const eventHub = new EventEmitter();
+// const eventHub = new EventEmitter();
 
-module.exports = eventHub;
+// module.exports = eventHub;
