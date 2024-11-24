@@ -4,7 +4,7 @@
 
 const logger = require("../utils/logger");
 const { validateData } = require("../utils/validator");
-const eventHub = require("../eventHub")
+// const eventHub = require("../eventHub")
 /**
  * Handles an incoming data pair (key-value).
  * 
@@ -42,7 +42,7 @@ async function handleMessage({ key, value, timestamp, headers } = pair) {
         logger.info(`[handleMessage] Successfully processed`, processedData);
 
         // All events
-        eventHub.emit(schemaType, processedData)
+        // eventHub.emit(schemaType, processedData)
 
         return processedData;
     } catch (error) {

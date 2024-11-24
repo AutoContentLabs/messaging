@@ -8,10 +8,10 @@ const utils = require("../src/utils")
 const handlers = require("./handlers");
 const senders = require("./senders");
 const listeners = require("./listeners");
-const eventHub = require("./eventHub");
+// const eventHub = require("./eventHub");
 
 module.exports = {
-    eventHub,
+    // eventHub,
     events: topics,
     ...constants,
     ...utils,
