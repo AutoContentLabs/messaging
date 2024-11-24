@@ -37,14 +37,18 @@ async function retryWithBackoff(action, maxRetries = 3, initialDelay = 500) {
             return await action();
         } catch (error) {
             attempt++;
-            if (attempt >= maxRetries) throw error;
+            if (attempt >= maxRetries) {
+                logger.error(`[Retry] Action failed after ${attempt} attempts`, error);
+                throw error;
+            }
 
-            const delayTime = initialDelay * Math.pow(2, attempt - 1); // Delay doubles each retry
+            const delayTime = initialDelay * Math.pow(2, attempt - 1); // Exponential backoff
             logger.warning(`[Retry] Attempt ${attempt} failed. Retrying in ${delayTime}ms...`);
             await delay(delayTime);
         }
     }
 }
+
 
 /**
  * Executes the provided async action with a timeout.
@@ -69,11 +73,21 @@ async function withTimeout(action, timeoutMs) {
  * @param {number} totalMessages - Total number of messages to process.
  * @returns {number} - Batch size.
  */
-function calculateBatchSize(totalMessages) {
-    if (totalMessages <= 50) return 10; // Small groups
-    if (totalMessages <= 200) return 20; // Medium groups
-    return 50; // Large groups
+function calculateBatchSize(totalMessages, serverLoad = 50, avgResponseTime = 200) {
+
+    const baseBatchSize = totalMessages <= 50 ? 10 : totalMessages <= 200 ? 20 : 50;
+
+    if (avgResponseTime > 500) {
+        return Math.max(baseBatchSize - 5, 10);
+    }
+
+    if (serverLoad > 80) {
+        return Math.max(baseBatchSize - 5, 10);
+    }
+
+    return baseBatchSize;
 }
+
 
 /**
  * Sends a message to the specified topic using the configured transport system.
@@ -136,24 +150,25 @@ async function sendMessage(eventName, pair) {
  * 
  */
 async function sendMessages(eventName, pairs) {
+    const batchSize = calculateBatchSize(pairs.length);
+    const totalBatches = Math.ceil(pairs.length / batchSize);
+    const batches = [];
+
+    for (let i = 0; i < totalBatches; i++) {
+        const batch = pairs.slice(i * batchSize, (i + 1) * batchSize);
+        batches.push(
+            retryWithBackoff(() => withTimeout(() => transporter.sendMessages(eventName, batch), 10000))
+        );
+    }
+
     try {
-        logger.info(`[messageSender] [sendMessages] [info] Preparing to send ${pairs.length} messages to ${eventName}.`, pairs);
-
-        const batchSize = calculateBatchSize(pairs.length);
-        for (let i = 0; i < pairs.length; i += batchSize) {
-            const batch = pairs.slice(i, i + batchSize);
-
-            logger.debug(`[messageSender] [sendMessages] [debug] Sending batch of ${batch.length} messages to ${eventName}.`, batch);
-            await retryWithBackoff(
-                () => withTimeout(() => transporter.sendMessages(eventName, batch), 10000), // 10s timeout
-            );
-
-            logger.info(`[messageSender] [sendMessages] [info] Successfully sent batch of ${batch.length} messages to ${eventName}.`);
-        }
+        await Promise.all(batches);
+        logger.info(`[messageSender] Successfully sent all batches`);
     } catch (error) {
-        logger.error(`[messageSender] [sendMessages] [error] Failed to send messages to ${eventName}. Error: ${error.message}`, pairs);
-        throw error; // Notify higher-level systems
+        logger.error(`[messageSender] Failed to send some batches`, error);
+        throw error;
     }
 }
+
 
 module.exports = { sendMessage, sendMessages };

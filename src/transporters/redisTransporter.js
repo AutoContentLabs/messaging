@@ -29,6 +29,15 @@ const sendMessage = async (eventName, pair) => {
   }
 };
 
+const sendMessages = async (eventName, pairs) => {
+  try {
+    const redisSender = createRedisSender(eventName);
+    await redisSender.sender(pairs);
+  } catch (error) {
+    console.error(`Error sending message on ${eventName}:`, error);
+  }
+};
+
 const listenMessage = async (eventName, handler) => {
   try {
     const redisListener = createRedisListener(eventName);
@@ -41,5 +50,6 @@ const listenMessage = async (eventName, handler) => {
 module.exports = {
   Name: 'Redis',
   sendMessage,
+  sendMessages,
   listenMessage,
 };

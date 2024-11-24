@@ -214,6 +214,6 @@ module.exports = {
          * sendMessages(eventName, messages);
          * 
          */
-        //sendMessages: redisTransporter.sendMessages
+        sendMessages: redisTransporter.sendMessages
     }
 };
