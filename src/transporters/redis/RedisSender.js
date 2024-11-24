@@ -62,7 +62,7 @@ class RedisSender {
 
     try {
       const result = await pipeline.exec(); // Batch işlemi
-      console.log(`Successfully sent ${pairs.length} messages`);
+      // console.log(`Successfully sent ${pairs.length} messages`);
       return result;
     } catch (error) {
       console.error("Error sending messages:", error);
