@@ -1,5 +1,5 @@
 const RabbitMQSender = require("./rabbitmq/RabbitMQSender");
-const RabbitMQListener = require("./rabbitMQListener");
+const RabbitMQListener = require("./rabbitmq/RabbitMQListener");
 
 const rabbitMQSenderInstance = {};
 const rabbitMQListenerInstance = {};
