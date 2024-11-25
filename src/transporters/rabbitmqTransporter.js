@@ -1,23 +1,21 @@
-// src/transporters/rabbitmqTransporter.js
-
 const RabbitMQSender = require("./rabbitmq/RabbitMQSender");
-const RabbitMQListener = require("./rabbitmq/RabbitMQListener");
+const RabbitMQListener = require("./rabbitMQListener");
 
-let rabbitMQSenderInstance = null;
-let rabbitMQListenerInstance = null;
+const rabbitMQSenderInstance = {};
+const rabbitMQListenerInstance = {};
 
 const createRabbitMQSender = (eventName) => {
-  if (!rabbitMQSenderInstance) {
-    rabbitMQSenderInstance = new RabbitMQSender(eventName);
+  if (!rabbitMQSenderInstance[eventName]) {
+    rabbitMQSenderInstance[eventName] = new RabbitMQSender({ eventName });
   }
-  return rabbitMQSenderInstance;
+  return rabbitMQSenderInstance[eventName];
 };
 
 const createRabbitMQListener = (eventName) => {
-  if (!rabbitMQListenerInstance) {
-    rabbitMQListenerInstance = new RabbitMQListener(eventName);
+  if (!rabbitMQListenerInstance[eventName]) {
+    rabbitMQListenerInstance[eventName] = new RabbitMQListener({ eventName });
   }
-  return rabbitMQListenerInstance;
+  return rabbitMQListenerInstance[eventName];
 };
 
 const sendMessage = async (eventName, pair) => {
@@ -34,7 +32,7 @@ const sendMessages = async (eventName, pairs) => {
     const rabbitMQSender = createRabbitMQSender(eventName);
     await rabbitMQSender.sendMessages(pairs);
   } catch (error) {
-    console.error(`Error sending message on ${eventName}:`, error);
+    console.error(`Error sending messages on ${eventName}:`, error);
   }
 };
 
