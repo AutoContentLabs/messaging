@@ -86,6 +86,7 @@ const getUniqueId = (prefix) => {
 };
 
 let APP_LOG_LEVEL = getStringEnvironmentVariable("APP_LOG_LEVEL", "info")
+let MESSAGE_SYSTEM = getStringEnvironmentVariable("MESSAGE_SYSTEM", "redis")
 // Kafka-related environment variables
 let KAFKA_BROKERS = getArrayEnvironmentVariable("KAFKA_BROKERS", 'localhost:9092');
 let KAFKA_CLIENT_ID = getStringEnvironmentVariable("KAFKA_CLIENT_ID", getUniqueId('client'));
@@ -118,6 +119,14 @@ let REDIS_HOST_PORT = getIntEnvironmentVariable("REDIS_HOST_PORT", 6379);
 let REDIS_CLIENT_ID = getStringEnvironmentVariable("REDIS_CLIENT_ID", getUniqueId('client'));
 let REDIS_GROUP_ID = getStringEnvironmentVariable("REDIS_GROUP_ID", getUniqueId('group'));
 
+// Redis
+let RABBITMQ_HOST_ADDRESS = getStringEnvironmentVariable("RABBITMQ_HOST_ADDRESS", '127.0.0.1');
+let RABBITMQ_HOST_PORT = getIntEnvironmentVariable("RABBITMQ_HOST_PORT", 5672);
+let RABBITMQ_DEAULT_USER = getStringEnvironmentVariable("RABBITMQ_DEAULT_USER", 'guest');
+let RABBITMQ_DEFAULT_PASSWORD = getStringEnvironmentVariable("RABBITMQ_DEFAULT_PASSWORD", 'guest');
+let RABBITMQ_CLIENT_ID = getStringEnvironmentVariable("RABBITMQ_CLIENT_ID", getUniqueId('client'));
+let RABBITMQ_GROUP_ID = getStringEnvironmentVariable("RABBITMQ_GROUP_ID", getUniqueId('group'));
+
 /**
  * Validates the Kafka log level environment variable.
  * If the value is invalid, it will default to log level 0 (INFO).
@@ -131,6 +140,7 @@ if (isNaN(KAFKA_LOG_LEVEL) || KAFKA_LOG_LEVEL < 0 || KAFKA_LOG_LEVEL > 7) {
 module.exports = {
     // APP
     APP_LOG_LEVEL,
+    MESSAGE_SYSTEM,
     // KAFKA
     KAFKA_BROKERS,
     KAFKA_CLIENT_ID,
@@ -160,5 +170,12 @@ module.exports = {
     REDIS_HOST_ADDRESS,
     REDIS_HOST_PORT,
     REDIS_CLIENT_ID,
-    REDIS_GROUP_ID
+    REDIS_GROUP_ID,
+    // RabbitMQ
+    RABBITMQ_HOST_ADDRESS,
+    RABBITMQ_HOST_PORT,
+    RABBITMQ_DEAULT_USER,
+    RABBITMQ_DEFAULT_PASSWORD,
+    RABBITMQ_CLIENT_ID,
+    RABBITMQ_GROUP_ID
 };

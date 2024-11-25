@@ -1,5 +1,6 @@
 const logger = require("../utils/logger");
 const transporters = require("../transporters");
+const config = require("../transporters/config")
 
 // Helper functions
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -19,7 +20,7 @@ function getTransporter(transporterName) {
 }
 
 // Dynamically get the transporter (e.g., kafka, rabbitmq, redis )
-const transporter = getTransporter("redis");
+const transporter = getTransporter(config.MESSAGE_SYSTEM);
 const transporter_name = transporter.Name;
 
 /**

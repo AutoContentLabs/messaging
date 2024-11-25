@@ -3,6 +3,6 @@
  */
 
 const { listenMessage } = require("../../src")
-listenMessage("event", (pair) => {
-    console.log("pair", pair)
+listenMessage("test", (pair) => {
+    console.log(pair.event, pair)
 })

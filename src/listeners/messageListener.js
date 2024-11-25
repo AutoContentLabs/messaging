@@ -7,6 +7,7 @@ const { retryWithBackoff } = require("../utils/retry");
 
 const logger = require("../utils/logger");
 const transporters = require("../transporters");
+const config = require("../transporters/config");
 
 function getTransporter(transporterName) {
     if (!transporterName || !transporters[transporterName]) {
@@ -15,9 +16,8 @@ function getTransporter(transporterName) {
     return transporters[transporterName];
 }
 
-const transporter = getTransporter("redis");
+const transporter = getTransporter(config.MESSAGE_SYSTEM);
 const transporter_name = transporter.Name;
-
 
 /**
  * @param {string} eventName 
