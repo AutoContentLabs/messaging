@@ -16,14 +16,12 @@ class RabbitMQSender {
 
     // Create the connection and channel to RabbitMQ
     async createConnection() {
-        console.log("create")
         if (!this.connection || !this.channel) {
             const connectionURL = `amqp://${config.RABBITMQ_DEAULT_USER}:${config.RABBITMQ_DEFAULT_PASSWORD}@${config.RABBITMQ_HOST_ADDRESS}:${config.RABBITMQ_HOST_PORT}`;
             this.connection = await amqp.connect(connectionURL);
             this.channel = await this.connection.createChannel();
             console.log("Connected to RabbitMQ and channel created.");
         }
-        console.log("create done ")
     }
 
     // Send a message to the queue
@@ -39,15 +37,17 @@ class RabbitMQSender {
         } catch (error) {
             console.error("Error sending message:", error);
             return false;
-        } finally {
-            this.shutdown()
         }
     }
 
+    // Send multiple messages to the queue
     async sendMessages(pairs) {
-        pairs.forEach((pair) => {
-            sendMessage(pair)
-        });
+        for (let pair of pairs) {
+            const status = await this.sendMessage(pair);  // Ensure messages are sent sequentially
+            if (!status) {
+                console.error("Failed to send message:", pair);
+            }
+        }
     }
 
     // Graceful shutdown on SIGINT (Ctrl+C) and SIGTERM
