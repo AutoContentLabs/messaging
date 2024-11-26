@@ -14,7 +14,7 @@ const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');
 const serviceName = `${config.CLIENT_ID}-${config.MESSAGE_SYSTEM}`;
 const exporter = new ZipkinExporter({
   serviceName: serviceName,
-  url: 'http://localhost:9411/api/v2/spans',
+  url: 'http://zipkin:9411/api/v2/spans',
   headers: {},
 });
 
