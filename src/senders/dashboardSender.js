@@ -15,12 +15,13 @@ const sender = createModel(schemaName, eventName);
 /**
  * Sends a dashboard to the specified topic.
  * @param {Object} model - The dashboard request model.
+ * @param {String} correlationId - The correlationId used for tracking the request.
  * @throws Will throw an error if sending fails.
  */
-async function sendDashboardRequest(model) {
+async function sendDashboardRequest(model, correlationId) {
   try {
     logger.debug(`[dashboardSender] Validating and sending request...`);
-    await sender.send(model);
+    await sender.send(model, correlationId);
     logger.info(`[dashboardSender] Request sent successfully.`);
   } catch (error) {
     logger.error(`[dashboardSender] Failed to send request: ${error.message}`);

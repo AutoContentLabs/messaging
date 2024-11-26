@@ -15,12 +15,13 @@ const sender = createModel(schemaName, eventName);
 /**
  * Sends a metric to the specified topic.
  * @param {Object} model - The metric request model.
+ * @param {String} correlationId - The correlationId used for tracking the request.
  * @throws Will throw an error if sending fails.
  */
-async function sendMetricRequest(model) {
+async function sendMetricRequest(model, correlationId) {
   try {
     logger.debug(`[metricSender] Validating and sending request...`);
-    await sender.send(model);
+    await sender.send(model, correlationId);
     logger.info(`[metricSender] Request sent successfully.`);
   } catch (error) {
     logger.error(`[metricSender] Failed to send request: ${error.message}`);

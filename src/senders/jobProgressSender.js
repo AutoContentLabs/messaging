@@ -15,12 +15,13 @@ const sender = createModel(schemaName, eventName);
 /**
  * Sends a jobProgress to the specified topic.
  * @param {Object} model - The jobProgress request model.
+ * @param {String} correlationId - The correlationId used for tracking the request.
  * @throws Will throw an error if sending fails.
  */
-async function sendJobProgressRequest(model) {
+async function sendJobProgressRequest(model, correlationId) {
   try {
     logger.debug(`[jobProgressSender] Validating and sending request...`);
-    await sender.send(model);
+    await sender.send(model, correlationId);
     logger.info(`[jobProgressSender] Request sent successfully.`);
   } catch (error) {
     logger.error(`[jobProgressSender] Failed to send request: ${error.message}`);

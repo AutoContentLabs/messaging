@@ -1,10 +1,11 @@
 // src/utils/helper.js
 const { v4: uuidv4 } = require('uuid');
+const config = require("../transporters/config")
 
-function generateHeaders(schemaType) {
+function generateHeaders(schemaType, correlationId) {
     return {
-        correlationId: uuidv4().toString(),
-        traceId: uuidv4().toString(),
+        correlationId: correlationId || uuidv4().toString(),
+        traceId: config.CLIENT_ID,
         type: schemaType.toString()
     };
 }

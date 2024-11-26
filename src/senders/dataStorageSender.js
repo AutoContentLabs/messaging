@@ -15,12 +15,13 @@ const sender = createModel(schemaName, eventName);
 /**
  * Sends a dataStorage to the specified topic.
  * @param {Object} model - The dataStorage request model.
+ * @param {String} correlationId - The correlationId used for tracking the request.
  * @throws Will throw an error if sending fails.
  */
-async function sendDataStorageRequest(model) {
+async function sendDataStorageRequest(model, correlationId) {
   try {
     logger.debug(`[dataStorageSender] Validating and sending request...`);
-    await sender.send(model);
+    await sender.send(model, correlationId);
     logger.info(`[dataStorageSender] Request sent successfully.`);
   } catch (error) {
     logger.error(`[dataStorageSender] Failed to send request: ${error.message}`);

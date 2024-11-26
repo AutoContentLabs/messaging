@@ -15,12 +15,13 @@ const sender = createModel(schemaName, eventName);
 /**
  * Sends a dataProcessingStart to the specified topic.
  * @param {Object} model - The dataProcessingStart request model.
+ * @param {String} correlationId - The correlationId used for tracking the request.
  * @throws Will throw an error if sending fails.
  */
-async function sendDataProcessingStartRequest(model) {
+async function sendDataProcessingStartRequest(model, correlationId) {
   try {
     logger.debug(`[dataProcessingStartSender] Validating and sending request...`);
-    await sender.send(model);
+    await sender.send(model, correlationId);
     logger.info(`[dataProcessingStartSender] Request sent successfully.`);
   } catch (error) {
     logger.error(`[dataProcessingStartSender] Failed to send request: ${error.message}`);

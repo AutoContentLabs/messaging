@@ -87,10 +87,13 @@ const getUniqueId = (prefix) => {
 
 let APP_LOG_LEVEL = getStringEnvironmentVariable("APP_LOG_LEVEL", "info")
 let MESSAGE_SYSTEM = getStringEnvironmentVariable("MESSAGE_SYSTEM", "redis")
+let CLIENT_ID = getStringEnvironmentVariable("CLIENT_ID", getUniqueId('client'));
+let GROUP_ID = getStringEnvironmentVariable("GROUP_ID", getUniqueId('group'));
+
 // Kafka-related environment variables
 let KAFKA_BROKERS = getArrayEnvironmentVariable("KAFKA_BROKERS", 'localhost:9092');
-let KAFKA_CLIENT_ID = getStringEnvironmentVariable("KAFKA_CLIENT_ID", getUniqueId('client'));
-let KAFKA_GROUP_ID = getStringEnvironmentVariable("KAFKA_GROUP_ID", getUniqueId('group'));
+let KAFKA_CLIENT_ID = getStringEnvironmentVariable("KAFKA_CLIENT_ID", CLIENT_ID);
+let KAFKA_GROUP_ID = getStringEnvironmentVariable("KAFKA_GROUP_ID", GROUP_ID);
 let KAFKA_LOG_LEVEL = getStringEnvironmentVariable("KAFKA_LOG_LEVEL", '0'); // INFO level
 let KAFKA_HEARTBEAT_INTERVAL = getIntEnvironmentVariable("KAFKA_HEARTBEAT_INTERVAL", 1000); // 1000ms
 let KAFKA_SESSION_TIMEOUT = getIntEnvironmentVariable("KAFKA_SESSION_TIMEOUT", 3000); // 3000ms
@@ -116,16 +119,16 @@ let KAFKA_VALUE_SERIALIZER = getStringEnvironmentVariable("KAFKA_VALUE_SERIALIZE
 // Redis
 let REDIS_HOST_ADDRESS = getStringEnvironmentVariable("REDIS_HOST_ADDRESS", '127.0.0.1');
 let REDIS_HOST_PORT = getIntEnvironmentVariable("REDIS_HOST_PORT", 6379);
-let REDIS_CLIENT_ID = getStringEnvironmentVariable("REDIS_CLIENT_ID", getUniqueId('client'));
-let REDIS_GROUP_ID = getStringEnvironmentVariable("REDIS_GROUP_ID", getUniqueId('group'));
+let REDIS_CLIENT_ID = getStringEnvironmentVariable("REDIS_CLIENT_ID", CLIENT_ID);
+let REDIS_GROUP_ID = getStringEnvironmentVariable("REDIS_GROUP_ID", GROUP_ID);
 
 // Redis
 let RABBITMQ_HOST_ADDRESS = getStringEnvironmentVariable("RABBITMQ_HOST_ADDRESS", '127.0.0.1');
 let RABBITMQ_HOST_PORT = getIntEnvironmentVariable("RABBITMQ_HOST_PORT", 5672);
 let RABBITMQ_DEAULT_USER = getStringEnvironmentVariable("RABBITMQ_DEAULT_USER", 'guest');
 let RABBITMQ_DEFAULT_PASSWORD = getStringEnvironmentVariable("RABBITMQ_DEFAULT_PASSWORD", 'guest');
-let RABBITMQ_CLIENT_ID = getStringEnvironmentVariable("RABBITMQ_CLIENT_ID", getUniqueId('client'));
-let RABBITMQ_GROUP_ID = getStringEnvironmentVariable("RABBITMQ_GROUP_ID", getUniqueId('group'));
+let RABBITMQ_CLIENT_ID = getStringEnvironmentVariable("RABBITMQ_CLIENT_ID", CLIENT_ID);
+let RABBITMQ_GROUP_ID = getStringEnvironmentVariable("RABBITMQ_GROUP_ID", GROUP_ID);
 
 /**
  * Validates the Kafka log level environment variable.
@@ -141,6 +144,8 @@ module.exports = {
     // APP
     APP_LOG_LEVEL,
     MESSAGE_SYSTEM,
+    CLIENT_ID,
+    GROUP_ID,
     // KAFKA
     KAFKA_BROKERS,
     KAFKA_CLIENT_ID,

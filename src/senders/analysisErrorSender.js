@@ -15,12 +15,13 @@ const sender = createModel(schemaName, eventName);
 /**
  * Sends a analysisError to the specified topic.
  * @param {Object} model - The analysisError request model.
+ * @param {String} correlationId - The correlationId used for tracking the request.
  * @throws Will throw an error if sending fails.
  */
-async function sendAnalysisErrorRequest(model) {
+async function sendAnalysisErrorRequest(model, correlationId) {
   try {
     logger.debug(`[analysisErrorSender] Validating and sending request...`);
-    await sender.send(model);
+    await sender.send(model, correlationId);
     logger.info(`[analysisErrorSender] Request sent successfully.`);
   } catch (error) {
     logger.error(`[analysisErrorSender] Failed to send request: ${error.message}`);
