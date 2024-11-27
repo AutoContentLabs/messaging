@@ -1,6 +1,8 @@
 const logger = require("../utils/logger");
 const transporters = require("../transporters");
-const config = require("../transporters/config")
+const config = require("../transporters/config");
+const telemetry = require("../utils/telemetry");
+tracer = telemetry.getTracer();
 
 // Helper functions
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -117,10 +119,27 @@ async function sendMessage(eventName, pair) {
     try {
         logger.debug(`[messageSender] [sendMessage] [debug] Starting to send message to ${eventName}, transport: ${transporter_name}`, pair);
 
+        // Start Trace (Span)
+        const span = tracer.startSpan('send', {
+            attributes: {
+                'correlationId': pair.headers.correlationId,
+                'traceId': pair.headers.traceId,
+                'serviceId': config.GROUP_ID,
+                'type': pair.headers.type,
+                'eventName': eventName,
+                'messageSystem': config.MESSAGE_SYSTEM,
+                'model': JSON.stringify(pair.value)
+            },
+        });
+
         // Send message with retry logic
         await retryWithBackoff(
             () => withTimeout(() => transporter.sendMessage(eventName, pair), 5000), // 5s timeout
         );
+
+        // End Trace (Span)
+        span.end();
+
         logger.info(`[messageSender] [sendMessage] ${eventName}`, pair);
     } catch (error) {
         logger.error(`[messageSender] [sendMessage] [error] Failed to send message to ${eventName}, error: ${error.message}, transport: ${transporter_name}`, pair);

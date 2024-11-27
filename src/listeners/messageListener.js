@@ -8,6 +8,8 @@ const { retryWithBackoff } = require("../utils/retry");
 const logger = require("../utils/logger");
 const transporters = require("../transporters");
 const config = require("../transporters/config");
+const telemetry = require("../utils/telemetry");
+tracer = telemetry.getTracer();
 
 function getTransporter(transporterName) {
     if (!transporterName || !transporters[transporterName]) {
@@ -27,10 +29,27 @@ async function registerListenerWithHandler(eventName, handler) {
     // transport
     const topic = eventName
     await transporter.listenMessage(topic, async (pair) => {
+
         try {
+            // Start Trace (Span)
+            const span = tracer.startSpan('listen', {
+                attributes: {
+                    'correlationId': pair.headers.correlationId,
+                    'traceId': pair.headers.traceId,
+                    'serviceId': config.GROUP_ID,
+                    'type': pair.headers.type,
+                    'eventName': eventName,
+                    'messageSystem': config.MESSAGE_SYSTEM,
+                    'model': JSON.stringify(pair.value)
+                },
+            });
             logger.debug(`[messageListener] [register] [debug] Received message from event: ${eventName}`, pair);
             //
             await handler(pair);
+
+            // End Trace (Span)
+            span.end();
+
         } catch (handlerError) {
             // logger.error(`[messageListener] [register] [error] Error processing message for event: ${eventName}, error: ${handlerError.message}`, pair);
         }
