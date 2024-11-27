@@ -40,7 +40,7 @@ async function registerListenerWithHandler(eventName, handler) {
                     'type': pair.headers.type,
                     'eventName': eventName,
                     'messageSystem': config.MESSAGE_SYSTEM,
-                    ...telemetry.convertModelToTags(model)
+                    ...telemetry.convertModelToTags(pair.value)
                 },
             });
             logger.debug(`[messageListener] [register] [debug] Received message from event: ${eventName}`, pair);
