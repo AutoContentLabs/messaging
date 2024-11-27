@@ -27,6 +27,30 @@ class Telemetry {
   getTracer() {
     return this.tracer;
   }
+
+  /**
+ * Converts a model object to Zipkin-compatible tags dynamically.
+ * @param {Object} model - The model object containing dynamic data.
+ * @returns {Object} - A set of tags that can be added to the Zipkin span.
+ */
+  convertModelToTags(model) {
+    const tags = {};
+
+    // Loop through each key-value pair in the model and add it as a tag
+    for (const [key, value] of Object.entries(model)) {
+      if (typeof value === 'object' && value !== null) {
+        // If the value is an object, we can flatten it
+        for (const [subKey, subValue] of Object.entries(value)) {
+          tags[`model.${key}.${subKey}`] = subValue;
+        }
+      } else {
+        // Otherwise, add it as a direct tag
+        tags[`model.${key}`] = value;
+      }
+    }
+
+    return tags;
+  }
 }
 
 module.exports = new Telemetry();

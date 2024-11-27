@@ -128,7 +128,7 @@ async function sendMessage(eventName, pair) {
                 'type': pair.headers.type,
                 'eventName': eventName,
                 'messageSystem': config.MESSAGE_SYSTEM,
-                'model': JSON.stringify(pair.value)
+                ...telemetry.convertModelToTags(model)
             },
         });
 
