@@ -8,7 +8,7 @@ const { retryWithBackoff } = require("../utils/retry");
 const logger = require("../utils/logger");
 const transporters = require("../transporters");
 const config = require("../transporters/config");
-const telemetry = require("../utils/telemetry");
+const telemetry = require("../utils/Telemetry");
 tracer = telemetry.getTracer();
 
 function getTransporter(transporterName) {
