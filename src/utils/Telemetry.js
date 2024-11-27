@@ -19,14 +19,9 @@ class Telemetry {
       url: `http://${config.ZIPKIN_HOST_ADDRESS}:${config.ZIPKIN_HOST_PORT}/api/v2/spans`,  // Zipkin HTTP endpoint
     });
 
-    // OTLP Exporter for Jaeger
-    // 4318	HTTP	/v1/traces
-    // 9412	HTTP	/api/v1/spans
-    // 9412	HTT	/api/v2/spans
-    // 14268	HTTP	/api/traces
-    // 5778	HTTP	/sampling
-    this.otlpExporter = new OTLPTraceExporter({
-      url: `http://${config.JAEGER_HOST_ADDRESS}:${config.JAEGER_HOST_PORT}/v1/traces`,
+    // Jaeger Exporter
+    this.jeagerExporter = new JaegerExporter({
+      endpoint: `http://${config.JAEGER_HOST_ADDRESS}:${config.JAEGER_HTTP_PORT}/api/traces`,  // Zipkin HTTP endpoint
     });
 
     // Tracer Provider
@@ -44,7 +39,7 @@ class Telemetry {
     this.provider
       // @deprecated
       // please use TracerConfig spanProcessors property Adds a new SpanProcessor to this tracer
-      .addSpanProcessor(new SimpleSpanProcessor(this.otlpExporter));  // For Jaeger
+      .addSpanProcessor(new SimpleSpanProcessor(this.jeagerExporter));  // For Jaeger
 
     // Register the provider
     this.provider.register();
