@@ -130,6 +130,20 @@ let RABBITMQ_DEFAULT_PASSWORD = getStringEnvironmentVariable("RABBITMQ_DEFAULT_P
 let RABBITMQ_CLIENT_ID = getStringEnvironmentVariable("RABBITMQ_CLIENT_ID", CLIENT_ID);
 let RABBITMQ_GROUP_ID = getStringEnvironmentVariable("RABBITMQ_GROUP_ID", GROUP_ID);
 
+// telemetry's
+// Zipkin Configuration
+let ZIPKIN_HOST_ADDRESS = getStringEnvironmentVariable("ZIPKIN_HOST_ADDRESS", 'localhost');
+let ZIPKIN_HOST_PORT = getIntEnvironmentVariable("ZIPKIN_HOST_PORT", 9411);
+// Jaeger Configuration
+let JAEGER_HOST_ADDRESS = getStringEnvironmentVariable("JAEGER_HOST_ADDRESS", 'localhost');
+let JAEGER_OTLP_GRPC_PORT = getIntEnvironmentVariable("JAEGER_OTLP_GRPC_PORT", 4317);
+let JAEGER_OTLP_HTTP_PORT = getIntEnvironmentVariable("JAEGER_OTLP_HTTP_PORT", 4318);
+let JAEGER_AGENT_PORT = getIntEnvironmentVariable("JAEGER_AGENT_PORT", 5778);
+let JAEGER_ZIPKIN_PORT = getIntEnvironmentVariable("JAEGER_ZIPKIN_PORT", 9412);
+let JAEGER_HOST_PORT = getIntEnvironmentVariable("JAEGER_HOST_PORT", 14250);
+let JAEGER_HTTP_PORT = getIntEnvironmentVariable("JAEGER_HTTP_PORT", 14268);
+let JAEGER_UI_PORT = getIntEnvironmentVariable("JAEGER_UI_PORT", 16686);
+
 /**
  * Validates the Kafka log level environment variable.
  * If the value is invalid, it will default to log level 0 (INFO).
@@ -182,5 +196,18 @@ module.exports = {
     RABBITMQ_DEAULT_USER,
     RABBITMQ_DEFAULT_PASSWORD,
     RABBITMQ_CLIENT_ID,
-    RABBITMQ_GROUP_ID
+    RABBITMQ_GROUP_ID,
+    // Telemetrys
+    // Zipkin Configuration
+    ZIPKIN_HOST_ADDRESS,
+    ZIPKIN_HOST_PORT,
+    // Jaeger Configuration
+    JAEGER_HOST_ADDRESS,
+    JAEGER_OTLP_GRPC_PORT,
+    JAEGER_OTLP_HTTP_PORT,
+    JAEGER_AGENT_PORT,
+    JAEGER_ZIPKIN_PORT,
+    JAEGER_HOST_PORT,
+    JAEGER_HTTP_PORT,
+    JAEGER_UI_PORT
 };
