@@ -1,13 +1,9 @@
-// src\utils\Telemetry.js
 const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node');
 const { Resource } = require('@opentelemetry/resources');
 const { SimpleSpanProcessor } = require('@opentelemetry/sdk-trace-base');
-
-const { OTLPTraceExporter } = require('@opentelemetry/exporter-otlp-http'); // OTLP Exporter
-const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');  // Zipkin Exporter
-const { JaegerExporter } = require('@opentelemetry/exporter-jaeger'); // @deprecated
-
-const { trace, context, SpanKind, SpanOptions } = require('@opentelemetry/api');
+const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');
+const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
+const { trace, context, SpanKind } = require('@opentelemetry/api');
 const config = require('../transporters/config');
 
 class Telemetry {
@@ -16,12 +12,12 @@ class Telemetry {
 
     // Zipkin Exporter
     this.zipkinExporter = new ZipkinExporter({
-      url: `http://${config.ZIPKIN_HOST_ADDRESS}:${config.ZIPKIN_HOST_PORT}/api/v2/spans`,  // Zipkin HTTP endpoint
+      url: `http://${config.ZIPKIN_HOST_ADDRESS}:${config.ZIPKIN_HOST_PORT}/api/v2/spans`, 
     });
 
     // Jaeger Exporter
     this.jeagerExporter = new JaegerExporter({
-      endpoint: `http://${config.JAEGER_HOST_ADDRESS}:${config.JAEGER_HTTP_PORT}/api/traces`,  // Zipkin HTTP endpoint
+      endpoint: `http://${config.JAEGER_HOST_ADDRESS}:${config.JAEGER_HTTP_PORT}/api/traces`, 
     });
 
     // Tracer Provider
@@ -31,15 +27,9 @@ class Telemetry {
       }),
     });
 
-    // Add OTLP and Zipkin span processors
-    this.provider
-      // @deprecated
-      // please use TracerConfig spanProcessors property Adds a new SpanProcessor to this tracer.
-      .addSpanProcessor(new SimpleSpanProcessor(this.zipkinExporter));  // For Zipkin
-    this.provider
-      // @deprecated
-      // please use TracerConfig spanProcessors property Adds a new SpanProcessor to this tracer
-      .addSpanProcessor(new SimpleSpanProcessor(this.jeagerExporter));  // For Jaeger
+    // Add Zipkin and Jaeger span processors
+    this.provider.addSpanProcessor(new SimpleSpanProcessor(this.zipkinExporter))
+    this.provider.addSpanProcessor(new SimpleSpanProcessor(this.jeagerExporter));
 
     // Register the provider
     this.provider.register();
@@ -53,20 +43,17 @@ class Telemetry {
   }
 
   startSpan(name, options, context) {
-
-    return this.tracer.startSpan(name, options, context)
+    return this.tracer.startSpan(name, options, context);
   }
 
   start(spanName, eventName, pair) {
     const spanContext = {
-      // Use the traceId from the pair headers
-      traceId: pair.headers.traceId, // 16-byte string hex (from your custom ID generator)
-      spanId: pair.key.recordId,     // 8-byte string hex (from your custom ID generator)
-      traceFlags: 1,                 // default trace flags (can be adjusted)
-      parentId: undefined,           // Set to `undefined` for a root span (can be set if there's a parent span)
+      traceId: pair.headers.traceId,  // Your custom traceId (16 bytes)
+      spanId: pair.key.recordId,      // Your custom spanId (8 bytes)
+      traceFlags: 1,                  // Trace flags (default 'sampled')
+      parentId: undefined,            // No parent span for root span
     };
 
-    console.log("myContext", spanContext)
     const options = {
       kind: SpanKind.INTERNAL,
       attributes: {
@@ -78,20 +65,18 @@ class Telemetry {
       }
     };
 
-    console.log("myOptions", options)
+    const currentContext = context.active() || context.setSpan(context.active(), spanContext);
 
-    // Use the active context or create a new one with the spanContext.
-    const currentContext = context.active() || context.setSpan(context.active(), spanContext); // Ensure valid context
-
-    // Start the span with the provided context.
+    // Start span with the custom context containing your traceId and spanId
     const span = this.startSpan(spanName, options, currentContext);
 
-    // Explicitly set the traceId and spanId to ensure they are correctly included in the span
+    // Explicitly set traceId and spanId as attributes
     span.setAttribute('traceId', spanContext.traceId);
     span.setAttribute('spanId', spanContext.spanId);
 
     return span;
   }
+
   convertModelToTags(model) {
     const tags = {};
     for (const [key, value] of Object.entries(model)) {
