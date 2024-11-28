@@ -1,18 +1,21 @@
 // src/utils/helper.js
-const { v4: uuidv4 } = require('uuid');
-const config = require("../transporters/config")
+const crypto = require('crypto');
 
-function generateHeaders(schemaType, correlationId) {
+function generateId(size) {
+    return crypto.randomBytes(16).toString('hex');
+}
+
+function generateHeaders(schemaType, correlationId, traceId) {
     return {
-        correlationId: correlationId || uuidv4().toString(),
-        traceId: config.CLIENT_ID,
-        type: schemaType.toString()
+        correlationId: correlationId || generateId(16),
+        traceId: traceId || generateId(16),
+        type: `${schemaType}` || "" // no schema
     };
 }
 
 function generateKey() {
     return {
-        recordId: uuidv4().toString()
+        recordId: generateId(8)
     };
 }
 
@@ -24,4 +27,4 @@ function getCurrentTimestamp() {
     return new Date().toISOString();
 }
 
-module.exports = { generateKey, generateHeaders, getCurrentTimestamp };
+module.exports = { generateKey, generateHeaders, getCurrentTimestamp ,generateId};

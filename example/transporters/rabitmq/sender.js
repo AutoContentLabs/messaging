@@ -14,7 +14,8 @@ let startTime = new Date(); // Track when the process starts
 let totalProcessingTime = 0; // Track the total processing time for messages
 let intervalMs = 3000; // Send a message every ms 
 
-const { v4: uuidv4 } = require('uuid');
+// setup helper
+const { helper } = require("../../../src");
 
 // The message structure
 function createPair(id) {
@@ -22,7 +23,7 @@ function createPair(id) {
         event: eventName,
         key: { id: id },  // Use a UUID for key to avoid relying on counter
         value: { content: "Message" },
-        headers: { correlationId: uuidv4().toString() }
+        headers: helper.generateHeaders()
     };
 
     return pair;
@@ -142,7 +143,7 @@ async function send() {
             if (messagesProcessed >= testLimit) {
                 clearInterval(interval);
                 console.log(`[${new Date().toISOString()}] Done processing ${messagesProcessed} messages in ${formatTime((new Date() - startTime) / 1000)}.`);
-              
+
                 process.exit(0);
             }
         } catch (error) {

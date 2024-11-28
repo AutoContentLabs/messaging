@@ -9,7 +9,6 @@ const logger = require("../utils/logger");
 const transporters = require("../transporters");
 const config = require("../transporters/config");
 const telemetry = require("../utils/Telemetry");
-tracer = telemetry.getTracer();
 
 function getTransporter(transporterName) {
     if (!transporterName || !transporters[transporterName]) {
@@ -31,18 +30,9 @@ async function registerListenerWithHandler(eventName, handler) {
     await transporter.listenMessage(topic, async (pair) => {
 
         try {
-            // Start Trace (Span)
-            const span = tracer.startSpan('listen', {
-                attributes: {
-                    'correlationId': pair.headers.correlationId,
-                    'traceId': pair.headers.traceId,
-                    'serviceId': config.GROUP_ID,
-                    'type': pair.headers.type,
-                    'eventName': eventName,
-                    'messageSystem': config.MESSAGE_SYSTEM,
-                    ...telemetry.convertModelToTags(pair.value)
-                },
-            });
+            // start telemetry
+            const span = telemetry.start("listen", eventName, pair)
+
             logger.debug(`[messageListener] [register] [debug] Received message from event: ${eventName}`, pair);
             //
             await handler(pair);

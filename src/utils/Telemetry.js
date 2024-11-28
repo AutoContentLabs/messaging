@@ -7,7 +7,7 @@ const { OTLPTraceExporter } = require('@opentelemetry/exporter-otlp-http'); // O
 const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');  // Zipkin Exporter
 const { JaegerExporter } = require('@opentelemetry/exporter-jaeger'); // @deprecated
 
-const { trace } = require('@opentelemetry/api');
+const { trace, context, SpanKind, SpanOptions } = require('@opentelemetry/api');
 const config = require('../transporters/config');
 
 class Telemetry {
@@ -50,6 +50,42 @@ class Telemetry {
 
   getTracer() {
     return this.tracer;
+  }
+
+  startSpan(name, options, context) {
+
+    return this.tracer.startSpan(name, options, context)
+  }
+
+  start(spanName, eventName, pair) {
+
+    const spanContext = {
+
+      // ? : we need to reorganize this part architecturally.
+      // We also create a unique traceId (pair.headers.traceId) each time.
+      // We do not carry the traceId.
+      // traceId: pair.headers.traceId // ids are 16 byte string hex
+
+      // We moved the first created object with correlationId.
+      traceId: pair.headers.correlationId, // ids are 16 byte string hex
+      spanId: pair.key.recordId, // ids are 8 byte string hex
+      traceFlags: 1,
+    };
+
+    const options = {
+      kind: SpanKind.INTERNAL,
+      attributes: {
+        'messageSystem': config.MESSAGE_SYSTEM,
+        'groupId': config.GROUP_ID,
+        'clientId': config.CLIENT_ID,
+        'eventName': eventName,
+        ...this.convertModelToTags(pair)
+      }
+    };
+
+    const content = trace.setSpan(context.active(), spanContext)
+
+    return this.startSpan(spanName, options, content)
   }
 
   convertModelToTags(model) {
