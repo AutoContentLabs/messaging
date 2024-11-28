@@ -8,10 +8,12 @@ process.env.JAEGER_HTTP_PORT = "3000"
 const { telemetry, helper } = require("../../src");
 
 const eventName = "test";
-const id = helper.generateId(8); // Özel spanId oluşturuyoruz
+const id = helper.generateId(8); //  spanId
 const model = {
-    content: "Critical system failure detected.",
-    level: "emerg",
+    id: "test-1",
+    source: "test",
+    params: { url: "example.com" },
+    priority: "high",
     timestamp: new Date().toISOString()
 };
 

@@ -12,12 +12,12 @@ class Telemetry {
 
     // Zipkin Exporter
     this.zipkinExporter = new ZipkinExporter({
-      url: `http://${config.ZIPKIN_HOST_ADDRESS}:${config.ZIPKIN_HOST_PORT}/api/v2/spans`, 
+      url: `http://${config.ZIPKIN_HOST_ADDRESS}:${config.ZIPKIN_HOST_PORT}/api/v2/spans`,
     });
 
     // Jaeger Exporter
     this.jeagerExporter = new JaegerExporter({
-      endpoint: `http://${config.JAEGER_HOST_ADDRESS}:${config.JAEGER_HTTP_PORT}/api/traces`, 
+      endpoint: `http://${config.JAEGER_HOST_ADDRESS}:${config.JAEGER_HTTP_PORT}/api/traces`,
     });
 
     // Tracer Provider
@@ -77,17 +77,27 @@ class Telemetry {
     return span;
   }
 
-  convertModelToTags(model) {
+  convertModelToTags(pair) {
     const tags = {};
-    for (const [key, value] of Object.entries(model)) {
-      if (typeof value === 'object' && value !== null) {
-        for (const [subKey, subValue] of Object.entries(value)) {
-          tags[`model.${key}.${subKey}`] = subValue;
+
+    function flatten(obj, prefix = '') {
+      // If obj is an object and not null, we iterate over its keys
+      if (obj && typeof obj === 'object') {
+        for (const [key, value] of Object.entries(obj)) {
+          // Create a new prefix for nested keys
+          const newKey = prefix ? `${prefix}.${key}` : key;
+          // Recursively handle nested objects
+          flatten(value, newKey);
         }
       } else {
-        tags[`model.${key}`] = value;
+        // If it's not an object, it's a leaf value. Add it to the tags
+        tags[prefix] = obj;
       }
     }
+
+    // Start the flattening process with the top-level object
+    flatten(pair);
+
     return tags;
   }
 }
