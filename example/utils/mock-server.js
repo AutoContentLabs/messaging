@@ -10,12 +10,14 @@ app.use(bodyParser.json());
 // Endpoint to receive Zipkin data
 app.post('/api/v2/spans', (req, res) => {
   console.log('Received Zipkin data:');
+  console.log('Headers:', req.headers); // Log headers
   console.log(JSON.stringify(req.body, null, 2)); // Log the received Zipkin trace data
   res.status(200).send('OK');
 });
 
 // Endpoint to receive Jaeger data
 app.post('/api/traces', (req, res) => {
+  console.log('Headers:', req.headers); // Log headers
   console.log('Received Jaeger data:');
   console.log(JSON.stringify(req.body, null, 2)); // Log the received Jaeger trace data
   res.status(200).send('OK');
