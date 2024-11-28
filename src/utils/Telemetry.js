@@ -59,17 +59,14 @@ class Telemetry {
 
   start(spanName, eventName, pair) {
     const spanContext = {
-      // ? : we need to reorganize this part architecturally.
-      // We also create a unique traceId (pair.headers.traceId) each time.
-      // We do not carry the traceId.
-      correlationId: pair.headers.correlationId, // ids are 16 byte string hex
-
-      // We moved the first created object with correlationId.
-      traceId: pair.headers.traceId, // 16-byte string hex
-      spanId: pair.key.recordId, // 8-byte string hex
-      traceFlags: 1, // default trace flags
+      // Use the traceId from the pair headers
+      traceId: pair.headers.traceId, // 16-byte string hex (from your custom ID generator)
+      spanId: pair.key.recordId,     // 8-byte string hex (from your custom ID generator)
+      traceFlags: 1,                 // default trace flags (can be adjusted)
+      parentId: undefined,           // Set to `undefined` for a root span (can be set if there's a parent span)
     };
 
+    console.log("myContext", spanContext)
     const options = {
       kind: SpanKind.INTERNAL,
       attributes: {
@@ -81,13 +78,20 @@ class Telemetry {
       }
     };
 
-    // Get the current active context (this is important to avoid passing null)
+    console.log("myOptions", options)
+
+    // Use the active context or create a new one with the spanContext.
     const currentContext = context.active() || context.setSpan(context.active(), spanContext); // Ensure valid context
 
-    return this.startSpan(spanName, options, currentContext); // Pass the valid context to startSpan
+    // Start the span with the provided context.
+    const span = this.startSpan(spanName, options, currentContext);
+
+    // Explicitly set the traceId and spanId to ensure they are correctly included in the span
+    span.setAttribute('traceId', spanContext.traceId);
+    span.setAttribute('spanId', spanContext.spanId);
+
+    return span;
   }
-
-
   convertModelToTags(model) {
     const tags = {};
     for (const [key, value] of Object.entries(model)) {

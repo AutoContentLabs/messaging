@@ -1,3 +1,4 @@
+// example telemetry
 const { telemetry, helper } = require("../../src")
 
 const eventName = "test"
@@ -10,7 +11,7 @@ const model = {
 function createPair(eventName, id, model) {
     const pair = {
         event: eventName,
-        key: { id: id },
+        key: { recordId: id },
         value: model,
         headers: helper.generateHeaders("")
     };
@@ -18,5 +19,5 @@ function createPair(eventName, id, model) {
     return pair;
 }
 const spanName = "test-span"
-const span = telemetry.start(spanName,eventName, createPair(eventName,id,model))
+const span = telemetry.start(spanName, eventName, createPair(eventName, id, model))
 span.end();
