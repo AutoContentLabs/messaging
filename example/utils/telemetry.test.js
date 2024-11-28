@@ -1,3 +1,10 @@
+// mock
+process.env.ZIPKIN_HOST_ADDRESS = "localhost"
+process.env.ZIPKIN_HOST_PORT = "3000"
+
+process.env.JAEGER_HOST_ADDRESS = "localhost"
+process.env.JAEGER_HTTP_PORT = "3000"
+
 const { telemetry, helper } = require("../../src");
 
 const eventName = "test";
