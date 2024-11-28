@@ -2,15 +2,19 @@
 const crypto = require('crypto');
 
 function generateId(size) {
-    return crypto.randomBytes(16).toString('hex');
+    return crypto.randomBytes(size).toString('hex');
 }
 
 function generateHeaders(schemaType, correlationId, traceId) {
-    return {
+    const headers =
+    {
         correlationId: correlationId || generateId(16),
         traceId: traceId || generateId(16),
         type: `${schemaType}` || "" // no schema
     };
+    // temporary assign
+    headers.traceId = headers.correlationId
+    return headers;
 }
 
 function generateKey() {
@@ -27,4 +31,4 @@ function getCurrentTimestamp() {
     return new Date().toISOString();
 }
 
-module.exports = { generateKey, generateHeaders, getCurrentTimestamp ,generateId};
+module.exports = { generateKey, generateHeaders, getCurrentTimestamp, generateId };

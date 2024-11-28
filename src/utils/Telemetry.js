@@ -58,18 +58,16 @@ class Telemetry {
   }
 
   start(spanName, eventName, pair) {
-
     const spanContext = {
-
       // ? : we need to reorganize this part architecturally.
       // We also create a unique traceId (pair.headers.traceId) each time.
       // We do not carry the traceId.
-      // traceId: pair.headers.traceId // ids are 16 byte string hex
+      correlationId: pair.headers.correlationId, // ids are 16 byte string hex
 
       // We moved the first created object with correlationId.
-      traceId: pair.headers.correlationId, // ids are 16 byte string hex
-      spanId: pair.key.recordId, // ids are 8 byte string hex
-      traceFlags: 1,
+      traceId: pair.headers.traceId, // 16-byte string hex
+      spanId: pair.key.recordId, // 8-byte string hex
+      traceFlags: 1, // default trace flags
     };
 
     const options = {
@@ -83,10 +81,12 @@ class Telemetry {
       }
     };
 
-    const content = trace.setSpan(context.active(), spanContext)
+    // Get the current active context (this is important to avoid passing null)
+    const currentContext = context.active() || context.setSpan(context.active(), spanContext); // Ensure valid context
 
-    return this.startSpan(spanName, options, content)
+    return this.startSpan(spanName, options, currentContext); // Pass the valid context to startSpan
   }
+
 
   convertModelToTags(model) {
     const tags = {};
