@@ -157,7 +157,7 @@ async function handleDataCollectRequest(pair) {
         model.parameters = await handleDBServiceParameters(parameters);
         break;
       case 5: // MQ service
-        processedData = await handleMQServiceParameters(parameters);
+        model.parameters = await handleMQServiceParameters(parameters);
         break;
       case 6: // Stream service
         model.parameters = await handleStreamServiceParameters(parameters);
@@ -171,7 +171,7 @@ async function handleDataCollectRequest(pair) {
     }
 
     // Processed data can be logged or returned depending on your application logic
-    logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}`, processedData);
+    logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}`, model);
     return model
 
   } catch (error) {
