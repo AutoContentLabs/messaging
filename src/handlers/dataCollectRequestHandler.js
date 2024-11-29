@@ -141,29 +141,29 @@ async function handleDataCollectRequest(pair) {
     const { service_id, status_type_id, service_type_id, access_type_id, data_format_id, parameters } = service;
 
     // Determine the service type and handle parameters accordingly
-    let processedData = null;
+    let model = { id, service, parameters }
 
     switch (service_type_id) {
       case 1: // Web service
-        processedData = await handleWebServiceParameters(parameters);
+        model.parameters = await handleWebServiceParameters(parameters);
         break;
       case 2: // API service
-        processedData = await handleAPIServiceParameters(parameters);
+        model.parameters = await handleAPIServiceParameters(parameters);
         break;
       case 3: // FTP service
-        processedData = await handleFTPServiceParameters(parameters);
+        model.parameters = await handleFTPServiceParameters(parameters);
         break;
       case 4: // DB service
-        processedData = await handleDBServiceParameters(parameters);
+        model.parameters = await handleDBServiceParameters(parameters);
         break;
       case 5: // MQ service
         processedData = await handleMQServiceParameters(parameters);
         break;
       case 6: // Stream service
-        processedData = await handleStreamServiceParameters(parameters);
+        model.parameters = await handleStreamServiceParameters(parameters);
         break;
       case 7: // Batch service
-        processedData = await handleBatchServiceParameters(parameters);
+        model.parameters = await handleBatchServiceParameters(parameters);
         break;
       default:
         logger.warn(`[dataCollectResponseHandler] Unknown service type: ${service_type_id}`);
@@ -172,11 +172,11 @@ async function handleDataCollectRequest(pair) {
 
     // Processed data can be logged or returned depending on your application logic
     logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}`, processedData);
-    return processedData
+    return model
 
   } catch (error) {
     logger.error(`[dataCollectResponseHandler] Error processing request: ${error.message}`);
-    return null
+    return model
   }
 
 }
@@ -200,15 +200,8 @@ async function handleAPIServiceParameters(parameters) {
 
   // Log or return the processed data
   return {
-    url,
-    method: request_method,
-    retryCount: retry_count,
-    maxConnections: max_connections,
-    authentication: {
-      required: authentication_required,
-      type: authentication_details?.type,
-      location: authentication_details?.location
-    }
+    ...parameters,
+    url
   };
 }
 
@@ -218,12 +211,12 @@ async function handleDBServiceParameters(parameters) {
   const { username, password, database_name, host, port, schema } = parameters;
 
   // Example: Construct the DB connection string
-  const dbConnectionString = `mysql://${username}:${password}@${host}:${port}/${database_name}`;
+  const connectionString = `mysql://${username}:${password}@${host}:${port}/${database_name}`;
 
   // Return the processed DB data
   return {
-    connectionString: dbConnectionString,
-    schema
+    ...parameters,
+    connectionString
   };
 }
 
@@ -232,13 +225,12 @@ async function handleFTPServiceParameters(parameters) {
   const { protocol, domain, port, path, rate_limit, retry_count } = parameters;
 
   // Process FTP service parameters
-  const ftpDetails = {
-    url: `${protocol}://${domain}:${port}${path}`,
-    rateLimit: rate_limit,
-    retryCount: retry_count
-  };
+  const url = `${protocol}://${domain}:${port}${path}`
 
-  return ftpDetails;
+  return {
+    ...parameters,
+    url
+  };
 }
 
 module.exports = { handleDataCollectRequest };
