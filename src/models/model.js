@@ -16,12 +16,12 @@ class Model {
    * @throws Will throw an error if sending fails or validation fails.
    */
   async send(pair) {
-    const { key, value, headers } = pair;
-    const { correlationId, traceId } = headers;
 
-    logger.debug(`[Model] [send] Raw ${JSON.stringify(value)}`);
+    logger.debug(`[Model] [send] Raw ${JSON.stringify(pair)}`);
 
     try {
+      const { key, value, headers } = pair;
+
       // Validate the model
       if (!value || typeof value !== "object") {
         throw new Error("No valid data provided for sending.");
@@ -32,19 +32,16 @@ class Model {
         throw new Error(`Validation failed: ${JSON.stringify(validationErrors)}`);
       }
 
-      // Use the provided key or generate a new one if not present
       const finalKey = key || generateKey();  // Use the provided key, or generate one if missing
-
-      // Generate headers (you can dynamically modify headers here if needed)
-      const eventHeaders = generateHeaders(this.schemaType, correlationId, traceId);
-
-      logger.info(`[Model] Sending model to event "${this.eventName}".`, { finalKey, value });
+      const finalHeaders = headers || generateHeaders(this.schemaType);
 
       // Construct the pair object to send
-      const pairToSend = { key: finalKey, value, headers: eventHeaders };
+      const finalPair = { key: finalKey, value, headers: finalHeaders };
+
+      logger.info(`[Model] Sending model to event... "${this.eventName}".`, finalPair);
 
       // Send the message to the event
-      await sendMessage(this.eventName, pairToSend);
+      await sendMessage(this.eventName, finalPair);
 
       logger.info(`[Model] Successfully sent model to event "${this.eventName}".`);
 

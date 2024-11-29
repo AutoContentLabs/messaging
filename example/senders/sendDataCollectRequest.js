@@ -1,7 +1,14 @@
 // example/senders/sendDataCollectRequest.js
 
-const { sendDataCollectRequestRequest } = require("../../src/senders/dataCollectRequestSender");
-const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = require("../../src/constants/enum");
+const {
+    StatusType,
+    ServiceType,
+    AccessType,
+    DataFormat,
+    AccessMethod,
+    sendDataCollectRequest
+} = require("../../src/");
+
 
 (async () => {
     try {
@@ -50,7 +57,7 @@ const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = requir
         }
         const pair = { value }
         // 
-        await sendDataCollectRequestRequest(pair);
+        await sendDataCollectRequest(pair);
     } catch (error) {
         console.error("Failed:", error.message);
     }
