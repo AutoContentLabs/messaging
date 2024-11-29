@@ -1,20 +1,16 @@
 /**
  * src/schemas/index.js
  */
+
+const fs = require('fs');
+const path = require('path');
+
+const dataCollectRequestSchema = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'data_collect_request_schema.json'), 'utf-8')
+);
+
 const schemas = {
-  DATA_COLLECT_REQUEST: {
-    type: "object",
-    properties: {
-      id: { type: "string" },
-      source: { type: "string" },
-      params: { type: "object" },
-      priority: { type: "string", enum: ["low", "medium", "high"], default: "medium" },
-      timestamp: { type: "string", format: "date-time" },
-      total: { type: "number" }
-    },
-    required: ["id", "source"],
-    additionalProperties: false,
-  },
+  DATA_COLLECT_REQUEST: dataCollectRequestSchema,
 
   DATA_COLLECT_STATUS: {
     type: "object",
