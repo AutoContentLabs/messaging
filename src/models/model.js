@@ -24,7 +24,7 @@ class Model {
 
       // Validate the model
       if (!value || typeof value !== "object") {
-        throw new Error("No valid data provided for sending.");
+        throw new Error(`No valid data provided for sending. ${this.schemaType}`);
       }
 
       const validationErrors = validateData(this.schemaType, value);
@@ -46,7 +46,7 @@ class Model {
       logger.info(`[Model] Successfully sent model to event "${this.eventName}".`);
 
     } catch (error) {
-      logger.error(`[Model] Failed to send model: ${error.message}`);
+      logger.error(`[Model] Failed to send model. schema: ${this.schemaType} - ${error.message}`);
       throw error;
     }
   }
