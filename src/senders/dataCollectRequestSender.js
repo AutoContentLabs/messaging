@@ -3,7 +3,7 @@
  * src/senders/dataCollectRequestSender.js
  */
 
-const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = require("../../src");
+const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = require("../constants/enum");
 const { createModel } = require("../models/createModel");
 const logger = require("../utils/logger");
 
@@ -179,7 +179,7 @@ const sender = createModel(schemaName, eventName);
 * @throws Will throw an error if sending fails.
  */
 async function sendDataCollectRequest(pair) {
-  
+
   try {
     logger.debug(`[dataCollectRequestSender] Validating and sending request...`);
     await sender.send(pair);
