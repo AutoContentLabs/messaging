@@ -70,14 +70,14 @@
                   "description": "The port number to connect to the service (e.g., 80 for HTTP, 443 for HTTPS)."
                 },
                 "path": {
-                  "type": "string",
+                  "type": ["string", "null"],
                   "description": "The path to the resource on the service (e.g., /api/v1/data)."
                 },
                 "query_parameters": {
                   "type": "object",
                   "properties": {
                     "geo": {
-                      "type": "string",
+                      "type": ["string", "null"],
                       "description": "Geographical filter for the data. E.g., 'US' for United States."
                     }
                   }
@@ -152,14 +152,7 @@
                   }
                 }
               },
-              "required": [
-                "protocol",
-                "domain",
-                "port",
-                "path",
-                "query_parameters",
-                "request_method"
-              ],
+              "required": ["protocol", "domain", "port", "request_method"],
               "additionalProperties": false,
               "description": "API Service specific parameters"
             },

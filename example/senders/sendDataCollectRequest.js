@@ -30,9 +30,9 @@ const {
                     protocol: "https",  // 
                     domain: "trends.google.com",  // 
                     port: 443,  //
-                    path: "/trending/rss",  // 
+                    path: null ,// "/trending/rss",  // 
                     query_parameters: {
-                        geo: "US"  // 
+                        geo: null // "US"  // 
                     },
                     request_method: "GET",  // 
                     rate_limit: 100,  // 
