@@ -141,29 +141,29 @@ async function handleDataCollectRequest(pair) {
     const { service_id, status_type_id, service_type_id, access_type_id, data_format_id, parameters } = service;
 
     // Determine the service type and handle parameters accordingly
-    let model = { id, service, parameters }
+    let model = { id, service }
 
     switch (service_type_id) {
       case 1: // Web service
-        model.parameters = await handleWebServiceParameters(parameters);
+        model.service.parameters = await handleWebServiceParameters(parameters);
         break;
       case 2: // API service
-        model.parameters = await handleAPIServiceParameters(parameters);
+        model.service.parameters = await handleAPIServiceParameters(parameters);
         break;
       case 3: // FTP service
-        model.parameters = await handleFTPServiceParameters(parameters);
+        model.service.parameters = await handleFTPServiceParameters(parameters);
         break;
       case 4: // DB service
-        model.parameters = await handleDBServiceParameters(parameters);
+        model.service.parameters = await handleDBServiceParameters(parameters);
         break;
       case 5: // MQ service
-        model.parameters = await handleMQServiceParameters(parameters);
+        model.service.parameters = await handleMQServiceParameters(parameters);
         break;
       case 6: // Stream service
-        model.parameters = await handleStreamServiceParameters(parameters);
+        model.service.parameters = await handleStreamServiceParameters(parameters);
         break;
       case 7: // Batch service
-        model.parameters = await handleBatchServiceParameters(parameters);
+        model.service.parameters = await handleBatchServiceParameters(parameters);
         break;
       default:
         logger.warn(`[dataCollectResponseHandler] Unknown service type: ${service_type_id}`);
