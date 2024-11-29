@@ -6,7 +6,16 @@ const Ajv = require('ajv');
 const validator = new Ajv({ allErrors: true });
 const schemas = require("../schemas")
 const addFormats = require("ajv-formats");
+
+//
 addFormats(validator)
+
+/**
+ * 
+ * @param {*} schemaType 
+ * @param {*} data 
+ * @returns 
+ */
 function validateData(schemaType, data) {
   const schema = schemas[schemaType];
 
@@ -23,9 +32,11 @@ function validateData(schemaType, data) {
 
       // Include the field path in the error message
       if (error.keyword === 'required') {
-        return `${fieldPath}: Required field missing`;
+        return `${fieldPath}: The field is required but is missing in the provided data.`;
       } else if (error.keyword === 'additionalProperties') {
-        return `${fieldPath}: Unexpected field`;
+        return `${fieldPath}: Unexpected field. The field "${error.params.additionalProperty}" is not allowed.`;
+      } else if (error.keyword === 'type') {
+        return `${fieldPath}: Invalid type. Expected type "${error.schema}" but received "${typeof data[fieldPath]}"`;
       } else {
         return `${fieldPath}: ${error.message}`;
       }
@@ -35,12 +46,11 @@ function validateData(schemaType, data) {
       console.error(`- ${error}`);
     });
 
-    throw new Error("Validation failed with the following errors"); // Throws errors as JSON for debugging purposes
+    throw new Error(`Validation failed with the following errors for ${schemaType}: \n` + formattedErrors.join('\n')); // More detailed error output
   }
 
   // If no errors, return null indicating validation passed
   return null;
 }
-
 
 module.exports = { validateData };
