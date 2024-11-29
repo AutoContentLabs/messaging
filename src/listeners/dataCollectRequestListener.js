@@ -6,7 +6,7 @@ const logger = require("../utils/logger")
 const { listenMessage } = require("./messageListener")
 
 const { topics } = require("../topics")
-const { handleDataCollectRequestRequest } = require("../handlers/dataCollectRequestHandler")
+const { handleDataCollectRequest } = require("../handlers/dataCollectRequestHandler")
 
 /**
  * Starts listening for messages on a specific topic.
@@ -17,7 +17,7 @@ async function listenDataCollectRequest() {
     const topic = topics.dataCollectRequest
     try {
         // we must use base listener
-        listenMessage(topic, handleDataCollectRequestRequest)
+        listenMessage(topic, handleDataCollectRequest)
 
         logger.debug(`[Listener] [listenDataCollectRequest] [debug] listener start`);
     } catch (error) {

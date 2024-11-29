@@ -1,7 +1,7 @@
 // handlers
 const { handleMessage } = require("./messageHandler") // global handler
 
-const { handleDataCollectRequestRequest } = require("./dataCollectRequestHandler")
+const { handleDataCollectRequest } = require("./dataCollectRequestHandler")
 const { handleDataCollectStatusRequest } = require("./dataCollectStatusHandler")
 const { handleDataCollectResponseRequest } = require("./dataCollectResponseHandler")
 const { handleDataCollectErrorRequest } = require("./dataCollectErrorHandler")
@@ -32,7 +32,7 @@ const { handleDashboardRequest } = require("./dashboardHandler")
 module.exports = {
     handleMessage,// messageHandler.js // global handler
 
-    handleDataCollectRequestRequest, // dataCollectRequestHandler.js
+    handleDataCollectRequest, // dataCollectRequestHandler.js
     handleDataCollectStatusRequest,
     handleDataCollectResponseRequest,
     handleDataCollectErrorRequest,

@@ -1,12 +1,11 @@
-// example/senders/sendDataCollectRequestRequest.js
+// example/senders/sendDataCollectRequest.js
 
 const { sendDataCollectRequestRequest } = require("../../src/senders/dataCollectRequestSender");
 const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = require("../../src/constants/enum");
 
 (async () => {
     try {
-        // 
-        await sendDataCollectRequestRequest({
+        const value = {
             id: "test-1",  // Unique request ID
             service: {
                 service_id: 1,  // Unique identifier for each service
@@ -48,7 +47,10 @@ const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = requir
                     }
                 }
             }
-        });
+        }
+        const pair = { value }
+        // 
+        await sendDataCollectRequestRequest(pair);
     } catch (error) {
         console.error("Failed:", error.message);
     }

@@ -1,4 +1,4 @@
-require("./sendDataCollectRequestRequest")
+require("./sendDataCollectRequest")
 require("./sendDataCollectStatusRequest")
 require("./sendDataCollectResponseRequest")
 require("./sendDataCollectErrorRequest")

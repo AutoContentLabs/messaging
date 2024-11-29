@@ -3,7 +3,7 @@
  * src/senders/dataCollectRequestSender.js
  */
 
-const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = require("../constants/enum");
+const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = require("../../src");
 const { createModel } = require("../models/createModel");
 const logger = require("../utils/logger");
 
@@ -68,6 +68,24 @@ const sender = createModel(schemaName, eventName);
  */
 
 /**
+ * @typedef {Object} WebServiceParameters
+ * @property {string} protocol - The protocol used (e.g., HTTP, HTTPS).
+ * @property {string} domain - The domain or hostname.
+ * @property {number} port - The port number to connect to.
+ * @property {string} path - The path to be used in the request (e.g., "/api/v1/data").
+ * @property {QueryParameters} query_parameters - Query parameters for the request.
+ * @property {string} request_method - The HTTP request method (e.g., GET, POST).
+ * @property {number} [rate_limit] - The rate limit for the service (optional).
+ * @property {number} [timeout] - The timeout value for the request in milliseconds.
+ */
+
+/**
+ * @typedef {Object} RSSServiceParameters
+ * @property {string} rss_feed_url - The URL of the RSS feed.
+ * @property {number} refresh_interval - The refresh interval for the RSS feed, in seconds.
+ */
+
+/**
  * @typedef {Object} APIServiceParameters
  * @property {string} protocol - The protocol used to fetch the data (e.g., HTTP, FTP).
  * @property {string} domain - The domain or hostname for the service.
@@ -91,6 +109,15 @@ const sender = createModel(schemaName, eventName);
  */
 
 /**
+ * @typedef {Object} FTPServiceParameters
+ * @property {string} host - The hostname or IP address of the FTP server.
+ * @property {number} port - The port number for FTP connection.
+ * @property {string} username - The username for FTP authentication.
+ * @property {string} password - The password for FTP authentication.
+ * @property {string} directory - The directory to access in the FTP server.
+ */
+
+/**
  * @typedef {Object} DBServiceParameters
  * @property {string} username - The username for database connection.
  * @property {string} password - The password for database connection.
@@ -101,9 +128,28 @@ const sender = createModel(schemaName, eventName);
  */
 
 /**
- * @typedef {Object} RSSServiceParameters
- * @property {string} rss_feed_url - The URL of the RSS feed.
- * @property {number} refresh_interval - The refresh interval for the RSS feed, in seconds.
+ * @typedef {Object} MQServiceParameters
+ * @property {string} queue_name - The name of the message queue.
+ * @property {string} message_format - The format of the message (e.g., JSON, XML).
+ * @property {number} [max_retry] - The number of retry attempts (optional).
+ * @property {number} [retry_interval] - The interval between retries in milliseconds.
+ */
+
+/**
+ * @typedef {Object} StreamServiceParameters
+ * @property {string} stream_url - The URL of the streaming service.
+ * @property {string} stream_type - The type of stream (e.g., audio, video).
+ * @property {number} buffer_size - The buffer size for streaming.
+ * @property {number} [timeout] - The timeout value for the connection in milliseconds.
+ */
+
+/**
+ * @typedef {Object} BatchServiceParameters
+ * @property {string} job_type - The type of batch job (e.g., data_processing, report_generation).
+ * @property {number} batch_size - The number of records to process in a batch.
+ * @property {string} schedule_time - The scheduled time for the batch job to run.
+ * @property {boolean} [retry_enabled] - Whether retries are enabled for the batch job.
+ * @property {number} [max_retries] - The maximum number of retries for the batch job.
  */
 
 /**
@@ -127,14 +173,16 @@ const sender = createModel(schemaName, eventName);
 /**
  * Sends a dataCollectRequest to the specified topic.
  * 
- * @param {DataCollectRequest} model - The dataCollectRequest request model.
- * @param {string} correlationId - The correlationId used for tracking the request.
- * @throws Will throw an error if sending fails.
+ * @param {DataCollectRequest} pair.value - The dataCollectRequest request model.
+ * @param {string} pair.headers.correlationId - The correlationId used for tracking the request.
+ * @param {string} pair.headers.traceId - The traceId used for tracking the request. 
+* @throws Will throw an error if sending fails.
  */
-async function sendDataCollectRequestRequest(model, correlationId) {
+async function sendDataCollectRequest(pair) {
+  
   try {
     logger.debug(`[dataCollectRequestSender] Validating and sending request...`);
-    await sender.send(model, correlationId);
+    await sender.send(pair);
     logger.info(`[dataCollectRequestSender] Request sent successfully.`);
   } catch (error) {
     logger.error(`[dataCollectRequestSender] Failed to send request: ${error.message}`);
@@ -142,4 +190,4 @@ async function sendDataCollectRequestRequest(model, correlationId) {
   }
 }
 
-module.exports = { sendDataCollectRequestRequest };
+module.exports = { sendDataCollectRequest };

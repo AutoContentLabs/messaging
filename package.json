@@ -7,8 +7,8 @@
   "scripts": {
     "start": "dotenvx run -f .env.production -- node example/listeners/dataCollectRequestListener.js",
     "dev": "dotenvx run -f .env.development -- node example/listeners/dataCollectRequestListener.js",
-    "start-sender": "dotenvx run -f .env.production -- node example/senders/sendDataCollectRequestRequest.js",
-    "dev-sender": "dotenvx run -f .env.development -- node example/senders/sendDataCollectRequestRequest.js",
+    "start-sender": "dotenvx run -f .env.production -- node example/senders/sendDataCollectRequest.js",
+    "dev-sender": "dotenvx run -f .env.development -- node example/senders/sendDataCollectRequest.js",
     "test": "dotenvx run -f .env.test -- jest --detectOpenHandles"
   },
   "dependencies": {

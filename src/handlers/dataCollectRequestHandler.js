@@ -128,7 +128,7 @@ const { handleMessage } = require("./messageHandler");
  * @param {Object} pair.headers - Headers of the message.
  * @param {number} pair.timestamp - Timestamp of the message.
  */
-async function handleDataCollectResponseRequest(pair) {
+async function handleDataCollectRequest(pair) {
   try {
     logger.debug(`[dataCollectResponseHandler] Processing request...`, pair);
 
@@ -172,10 +172,13 @@ async function handleDataCollectResponseRequest(pair) {
 
     // Processed data can be logged or returned depending on your application logic
     logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}`, processedData);
+    return processedData
 
   } catch (error) {
     logger.error(`[dataCollectResponseHandler] Error processing request: ${error.message}`);
+    return null
   }
+
 }
 
 // Example handler for API Service
@@ -230,4 +233,4 @@ async function handleFTPServiceParameters(parameters) {
   return ftpDetails;
 }
 
-module.exports = { handleDataCollectResponseRequest };
+module.exports = { handleDataCollectRequest };
