@@ -185,11 +185,25 @@ async function handleDataCollectRequest(pair) {
 async function handleAPIServiceParameters(parameters) {
   const { protocol, domain, port, path, query_parameters, request_method, rate_limit, rate_limit_window, timeout, retry_count, cache_duration, cache_enabled, max_connections, api_key, logging_enabled, allowed_origins, error_handling, authentication_required, authentication_details } = parameters;
 
+  // Destructure geo from query_parameters if present
   const { geo } = query_parameters || {};
-  const { type, location, required } = authentication_details || {};
 
-  // Example: Construct the URL
-  const url = `${protocol}://${domain}:${port}${path}?${new URLSearchParams(query_parameters).toString()}`;
+  // Build the base URL with protocol, domain, and port
+  let url = `${protocol}://${domain}:${port}`;
+
+  // Only append the path if it's not null
+  if (path) {
+    url += path;
+  }
+
+  // If query_parameters exist and geo is not null, append the query string
+  if (query_parameters) {
+    const params = new URLSearchParams(query_parameters);
+    if (geo != null) {
+      params.set('geo', geo);  // Only add geo if it's provided
+    }
+    url += `?${params.toString()}`;
+  }
 
   // Log or return the processed data
   return {
@@ -199,11 +213,12 @@ async function handleAPIServiceParameters(parameters) {
     maxConnections: max_connections,
     authentication: {
       required: authentication_required,
-      type: type,
-      location: location
+      type: authentication_details?.type,
+      location: authentication_details?.location
     }
   };
 }
+
 
 // Example handler for DB Service
 async function handleDBServiceParameters(parameters) {
