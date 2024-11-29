@@ -185,25 +185,18 @@ async function handleDataCollectRequest(pair) {
 async function handleAPIServiceParameters(parameters) {
   const { protocol, domain, port, path, query_parameters, request_method, rate_limit, rate_limit_window, timeout, retry_count, cache_duration, cache_enabled, max_connections, api_key, logging_enabled, allowed_origins, error_handling, authentication_required, authentication_details } = parameters;
 
-  // Destructure geo from query_parameters if present
-  const { geo } = query_parameters || {};
+  // Remove any null or undefined query parameters
+  const filteredQueryParams = Object.fromEntries(
+    Object.entries(query_parameters).filter(([key, value]) => value != null)
+  );
 
-  // Build the base URL with protocol, domain, and port
-  let url = `${protocol}://${domain}:${port}`;
+  // Construct the query string only if there are query parameters
+  const queryString = Object.keys(filteredQueryParams).length > 0
+    ? `?${new URLSearchParams(filteredQueryParams).toString()}`
+    : '';
 
-  // Only append the path if it's not null
-  if (path) {
-    url += path;
-  }
-
-  // If query_parameters exist and geo is not null, append the query string
-  if (query_parameters) {
-    const params = new URLSearchParams(query_parameters);
-    if (geo != null) {
-      params.set('geo', geo);  // Only add geo if it's provided
-    }
-    url += `?${params.toString()}`;
-  }
+  // Construct the final URL without trailing ?
+  const url = `${protocol}://${domain}:${port}${path ? path : ''}${queryString}`;
 
   // Log or return the processed data
   return {
