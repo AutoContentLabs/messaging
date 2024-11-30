@@ -3,6 +3,15 @@
 const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod, sendDataCollectResponseRequest } = require("../../src/");
 (async () => {
     try {
+        const exampleData = {
+            "title": "GitHub · Build and ship software on a single, collaborative platform · GitHubTwitchTikTok",
+            "headings": [
+                "Search code, repositories, users, issues, pull requests...",
+            ],
+            "paragraphs": [
+                "We read every piece of feedback, and take your input very seriously.",
+            ]
+        }
         const value = {
             id: "response-123",  // Unique response ID
             service: {
@@ -56,11 +65,8 @@ const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod, sendDataC
             },
             content: {
                 content_type: "json",
-                content_length: 2,
-                data: [
-                    { id: 1, value: "Sample Metric 1" },
-                    { id: 2, value: "Sample Metric 2" }
-                ]
+                content_length: 1,
+                data: [exampleData]
             },
 
         };
