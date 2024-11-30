@@ -1,3 +1,4 @@
+// src\schemas\dataCollectRequest.js
 const service = require("./service")
 module.exports = {
     "type": "object",

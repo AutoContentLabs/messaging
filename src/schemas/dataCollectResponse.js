@@ -1,6 +1,8 @@
+// src\schemas\dataCollectResponse.js
 const service = require("./service")
 const content = require("./content")
-const measurement = require("./measurement")
+const serviceMeasurement = require("./content")
+
 module.exports = {
     "type": "object",
     "properties": {
@@ -9,9 +11,8 @@ module.exports = {
             "description": "Unique identifier for the data collect request."
         },
         "service": service,
-        "content": content,
-        "measurement": measurement
+        "content": content
     },
-    "required": ["id", "service", "content", "measurement"],
+    "required": ["id", "service", "content"],
     "additionalProperties": false
 }

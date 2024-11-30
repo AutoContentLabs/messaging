@@ -3,7 +3,7 @@ module.exports =
     "type": "object",
     "properties": {
         "data": {
-            "type": "object",
+            "type": "array",
             "description": "The actual collected data, this could be a JSON object or any other structure based on the content type."
         },
         "content_type": {

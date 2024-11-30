@@ -1,6 +1,9 @@
+// src\schemas\service.js
+
 const apiServiceParameters = require("./apiServiceParameters");
 const dbServiceParameters = require("./dbServiceParameters");
 const rssServiceParameters = require("./rssServiceParameters");
+const serviceMeasurement = require("./serviceMeasurement")
 
 module.exports =
 {
@@ -57,7 +60,8 @@ module.exports =
                 dbServiceParameters,
                 rssServiceParameters
             ]
-        }
+        },
+        "measurements": serviceMeasurement
     },
     "required": ["service_id", "service_type_id"],
     "additionalProperties": false
