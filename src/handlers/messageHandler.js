@@ -1,10 +1,6 @@
-/**
- * 
- */
-
 const logger = require("../utils/logger");
 const { validateData } = require("../utils/validator");
-// const eventHub = require("../eventHub")
+
 /**
  * Handles an incoming data pair (key-value).
  * 
@@ -16,13 +12,15 @@ const { validateData } = require("../utils/validator");
  * 
  * @returns {Object|null} The processed pair data, or null if an error occurs.
  */
-async function handleMessage({ key, value, timestamp, headers } = pair) {
-    logger.debug(`[handleMessage] Received data`, { key, value, timestamp, headers });
-
+async function handleMessage(pair = {}) {
+    const { key, value, timestamp, headers } = pair;
     const safeTimestamp = timestamp || Date.now();
     const safeHeaders = headers || {};
 
+    logger.debug(`[handleMessage] Received data`, { key, value, timestamp, headers });
+
     try {
+        // Check if value is valid
         if (!value || typeof value !== "object") {
             throw new Error("Invalid value in the received message.");
         }
@@ -32,6 +30,7 @@ async function handleMessage({ key, value, timestamp, headers } = pair) {
             throw new Error("Message type is missing in headers.");
         }
 
+        // Validate data based on schemaType
         const validationErrors = validateData(schemaType, value);
         if (validationErrors) {
             logger.warning(`[handleMessage] Validation errors detected`, { errors: validationErrors });
@@ -41,8 +40,6 @@ async function handleMessage({ key, value, timestamp, headers } = pair) {
         const processedData = { key, value, timestamp: safeTimestamp, headers: safeHeaders };
         logger.info(`[handleMessage] Successfully processed`, processedData);
 
-        // All events
-        // eventHub.emit(schemaType, processedData)
 
         return processedData;
     } catch (error) {

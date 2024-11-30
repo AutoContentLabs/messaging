@@ -134,15 +134,19 @@ async function handleDataCollectRequest(pair) {
 
     // Base message handling, including validation
     const handleMessageData = await handleMessage(pair);
+    if (!handleMessageData) {
+        logger.error('[handleDataCollectRequest] handleMessage failed');
+        return null;  // If handleMessage fails, return null and stop further processing.
+    }
 
     // Schema properties destructuring, handleMessageData.value is expected to be of type DataCollectRequest
-    /** @type {DataCollectRequest} */
     const { id, service } = handleMessageData.value;
     const { service_id, status_type_id, service_type_id, access_type_id, data_format_id, parameters } = service;
 
-    // Determine the service type and handle parameters accordingly
-    let model = { id, service }
+    // Prepare the model object
+    let model = { id, service };
 
+    // Determine the service type and handle parameters accordingly
     switch (service_type_id) {
       case 1: // Web service
         model.service.parameters = await handleWebServiceParameters(parameters);
@@ -166,18 +170,17 @@ async function handleDataCollectRequest(pair) {
         model.service.parameters = await handleBatchServiceParameters(parameters);
         break;
       default:
-        logger.warn(`[dataCollectResponseHandler] Unknown service type: ${service_type_id}`);
+        logger.warning(`[handleDataCollectRequest] Unknown service type: ${service_type_id}`);
         break;
     }
 
     // Processed data can be logged or returned depending on your application logic
     logger.info(`[handleDataCollectRequest] Processed request successfully: ${id}`, model);
-    return model
+    return model;
   } catch (error) {
     logger.error(`[handleDataCollectRequest] Error processing request: ${error.message}`);
-    return null
+    return null;
   }
-
 }
 
 // Example handler for API Service
@@ -197,13 +200,11 @@ async function handleAPIServiceParameters(parameters) {
   // Construct the final URL without trailing ?
   const url = `${protocol}://${domain}:${port}${path ? path : ''}${queryString}`;
 
-  // Log or return the processed data
   return {
     ...parameters,
     url
   };
 }
-
 
 // Example handler for DB Service
 async function handleDBServiceParameters(parameters) {
@@ -224,7 +225,7 @@ async function handleFTPServiceParameters(parameters) {
   const { protocol, domain, port, path, rate_limit, retry_count } = parameters;
 
   // Process FTP service parameters
-  const url = `${protocol}://${domain}:${port}${path}`
+  const url = `${protocol}://${domain}:${port}${path}`;
 
   return {
     ...parameters,
