@@ -8,7 +8,7 @@ module.exports =
         },
         "content_type": {
             "type": "string",
-            "enum": ["json", "xml", "csv", "other"],
+            "enum": ["json", "xml", "csv", "html", "yaml"],
             "description": "The type of content being collected."
         },
         "content_length": {
