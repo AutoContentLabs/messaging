@@ -130,7 +130,7 @@ const { handleMessage } = require("./messageHandler");
  */
 async function handleDataCollectRequest(pair) {
   try {
-    logger.debug(`[dataCollectResponseHandler] Processing request...`, pair);
+    logger.debug(`[handleDataCollectRequest] Processing request...`, pair);
 
     // Base message handling, including validation
     const handleMessageData = await handleMessage(pair);
@@ -171,10 +171,10 @@ async function handleDataCollectRequest(pair) {
     }
 
     // Processed data can be logged or returned depending on your application logic
-    logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}`, model);
+    logger.info(`[handleDataCollectRequest] Processed request successfully: ${id}`, model);
     return model
   } catch (error) {
-    logger.error(`[dataCollectResponseHandler] Error processing request: ${error.message}`);
+    logger.error(`[handleDataCollectRequest] Error processing request: ${error.message}`);
     return null
   }
 
