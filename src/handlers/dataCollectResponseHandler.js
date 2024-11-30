@@ -22,13 +22,19 @@ async function handleDataCollectResponseRequest(pair) {
     // Base message handling, including validation
     const handleMessageData = await handleMessage(pair);
 
-    // Schema properties destructuring
-    const { id, data, timestamp, summary } = handleMessageData.value;
-    const { source, itemCount, dataFormat, processingTime } = summary
+    // Schema properties destructuring, handleMessageData.value is expected to be of type DataCollectRequest
+    /** @type {DataCollectRequest} */
+    const { id, service, content } = handleMessageData.value;
+    const { service_id, status_type_id, service_type_id, access_type_id, data_format_id, parameters } = service;
 
-    logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}, ${timestamp}, ${source}`, handleMessageData.value);
+    // Determine the service type and handle parameters accordingly
+    let model = { id, service, content }
+
+    logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}`, model);
+    return model
   } catch (error) {
     logger.error(`[dataCollectResponseHandler] Error processing request: ${error.message}`);
+    return null
   }
 }
 

@@ -173,10 +173,9 @@ async function handleDataCollectRequest(pair) {
     // Processed data can be logged or returned depending on your application logic
     logger.info(`[handleDataCollectResponse] Processed request successfully: ${id}`, model);
     return model
-
   } catch (error) {
     logger.error(`[dataCollectResponseHandler] Error processing request: ${error.message}`);
-    return model
+    return null
   }
 
 }
