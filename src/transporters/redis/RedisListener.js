@@ -49,22 +49,25 @@ class RedisListener {
 
                 if (result && result.length > 0) {
                     for (const [stream, messages] of result) {
-                        for (const [id, fields] of messages) {
-                            try {
-                                const message = {
-                                    key: JSON.parse(fields[1]),  // JSON key
-                                    value: JSON.parse(fields[3]),  // JSON value
-                                    headers: JSON.parse(fields[5])  // JSON headers
-                                };
+                        if (this.eventName === stream) {
+                            for (const [id, fields] of messages) {
+                                try {
+                                    const message = {
+                                        key: JSON.parse(fields[1]),  // JSON key
+                                        value: JSON.parse(fields[3]),  // JSON value
+                                        headers: JSON.parse(fields[5])  // JSON headers
+                                    };
 
-                                await callback({ event: this.eventName, key: message.key, value: message.value, headers: message.headers });
-                                await this.redis.xack(this.eventName, this.groupId, id);
+                                    await callback({ event: this.eventName, key: message.key, value: message.value, headers: message.headers });
+                                    await this.redis.xack(this.eventName, this.groupId, id);
 
-                            } catch (err) {
-                                console.error("Error processing message:", err);
-                                continue;
+                                } catch (err) {
+                                    console.error("Error processing message:", err);
+                                    continue;
+                                }
                             }
                         }
+
                     }
                 }
 

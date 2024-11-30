@@ -22,9 +22,9 @@ const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod, sendDataC
                     protocol: "https",  // Protocol used (e.g., https)
                     domain: "example.com",  // Domain for the service
                     port: 443,  // Port number
-                    path: "/data",  // Path for the service
+                    path: null, //"/data",  // Path for the service
                     query_parameters: {
-                        geo: "US"  // Query parameters (e.g., geo=US)
+                        geo: null //"US"  // Query parameters (e.g., geo=US)
                     },
                     request_method: "GET",  // Request method (e.g., GET, POST)
                     rate_limit: 100,  // Rate limit for the service
