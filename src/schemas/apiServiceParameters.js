@@ -94,6 +94,10 @@ module.exports =
                     "description": "Indicates if authentication is required for this service."
                 }
             }
+        },
+        "url": {
+            "type": "string",
+            "description": "final URL without trailing"
         }
     },
     "required": ["protocol", "domain", "port", "request_method"],

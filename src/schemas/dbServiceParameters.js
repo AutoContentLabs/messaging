@@ -24,6 +24,10 @@ module.exports =
         "schema": {
             "type": "string",
             "description": "The schema to use within the database."
+        },
+        "connectionString": {
+            "type": "string",
+            "description": "Construct the DB connection string"
         }
     },
     "required": [
