@@ -8,14 +8,14 @@ let redisListenerInstance = null;
 
 const createRedisSender = (eventName) => {
   if (!redisSenderInstance) {
-    redisSenderInstance = new RedisSender(eventName);
+    redisSenderInstance = new RedisSender({ eventName });
   }
   return redisSenderInstance;
 };
 
 const createRedisListener = (eventName) => {
   if (!redisListenerInstance) {
-    redisListenerInstance = new RedisListener(eventName);
+    redisListenerInstance = new RedisListener({ eventName });
   }
   return redisListenerInstance;
 };

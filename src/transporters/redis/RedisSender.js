@@ -3,7 +3,7 @@ const config = require("../config");
 const Redis = require("ioredis");
 
 class RedisSender {
-  constructor({ eventName = "test" }) {
+  constructor({ eventName  }) {
     this.eventName = eventName;
     this.clientId = config.REDIS_CLIENT_ID;
     this.groupId = config.REDIS_GROUP_ID;
