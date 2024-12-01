@@ -158,7 +158,7 @@ async function sendMessage(topic, { key, value, headers } = {}, format = MESSAGE
         await kafkaSender.sendPairs(topic, pairs);
 
         logger.info(`[sendMessage] Sent message to topic: ${topic}`);
-        logger.notice(`[sendMessage] correlationId: ${pair.headers.correlationId}`)
+        //logger.notice(`[sendMessage] correlationId: ${pair.headers.correlationId}`)
 
     } catch (error) {
         logger.error(`[sendMessage] Failed to send message: ${error.message}`);

@@ -21,12 +21,12 @@ class RabbitMQSender {
             const connectionURL = `amqp://${config.RABBITMQ_DEAULT_USER}:${config.RABBITMQ_DEFAULT_PASSWORD}@${config.RABBITMQ_HOST_ADDRESS}:${config.RABBITMQ_HOST_PORT}`;
             this.connection = await amqp.connect(connectionURL);
             this.channel = await this.connection.createChannel();
-            console.log("Connected to RabbitMQ and channel created.");
+            //console.log("Connected to RabbitMQ and channel created.");
 
             // Ensure queue is created once
             this.queue = this.eventName;  // The event name represents the queue
             await this.channel.assertQueue(this.queue, { durable: true });
-            console.log(`Queue "${this.queue}" is ensured to exist.`);
+            //console.log(`Queue "${this.queue}" is ensured to exist.`);
         }
     }
 
