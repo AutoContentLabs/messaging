@@ -5,15 +5,20 @@ function generateId(size) {
     return crypto.randomBytes(size).toString('hex');
 }
 
-function generateHeaders(schemaType, correlationId, traceId) {
-    const headers =
-    {
-        correlationId: correlationId || generateId(16),
-        traceId: traceId || generateId(16),
-        type: `${schemaType}` || "" // no schema
+function generateHeaders(schemaType, correlationId, traceId, providedHeaders = {}) {
+
+    const headers = {
+        ...providedHeaders,
+        correlationId: providedHeaders.correlationId || correlationId || generateId(16),
+        traceId: providedHeaders.traceId || traceId || generateId(16),
+        type: providedHeaders.type || `${schemaType}` // type, schemaType'e eşit olmalı, değiştirilmemeli
     };
-    // temporary assign
-    headers.traceId = headers.correlationId
+
+
+    if (!headers.type) {
+        throw new Error('Message type is missing in headers.');
+    }
+
     return headers;
 }
 

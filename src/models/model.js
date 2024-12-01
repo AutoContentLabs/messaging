@@ -32,8 +32,9 @@ class Model {
         throw new Error(`Validation failed: ${JSON.stringify(validationErrors)}`);
       }
 
+      // Validate headers and ensure type is not changed
       const finalKey = key || generateKey();  // Use the provided key, or generate one if missing
-      const finalHeaders = headers || generateHeaders(this.schemaType);
+      const finalHeaders = generateHeaders(this.schemaType, headers?.correlationId, headers?.traceId, headers);
 
       // Construct the pair object to send
       const finalPair = { key: finalKey, value, headers: finalHeaders };
@@ -51,5 +52,4 @@ class Model {
     }
   }
 }
-
 module.exports = Model;
