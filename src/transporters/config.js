@@ -68,7 +68,8 @@ const getBoolEnvironmentVariable = (key, defaultValue) => {
  */
 const getArrayEnvironmentVariable = (key, defaultValue) => {
     const value = getStringEnvironmentVariable(key, defaultValue);
-    return value.split(",").map((v) => v.trim());
+    // const result = value.split(",").map((v) => v.trim());
+    return value
 }
 
 /**
@@ -86,7 +87,7 @@ const getUniqueId = (prefix) => {
 };
 
 let APP_LOG_LEVEL = getStringEnvironmentVariable("APP_LOG_LEVEL", "info")
-let MESSAGE_SYSTEM = getStringEnvironmentVariable("MESSAGE_SYSTEM", "redis")
+let MESSAGE_SYSTEM = getStringEnvironmentVariable("MESSAGE_SYSTEM", "kafka")
 let CLIENT_ID = getStringEnvironmentVariable("CLIENT_ID", getUniqueId('client'));
 let GROUP_ID = getStringEnvironmentVariable("GROUP_ID", getUniqueId('group'));
 
