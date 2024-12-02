@@ -50,7 +50,7 @@ class KafkaConsumer {
     try {
       // Initialize Kafka client
       this.kafka = new Kafka({
-        brokers: config.kafkaConfig.brokers,
+        brokers: [config.kafkaConfig.brokers],
         clientId: config.consumerConfig.clientId,
         logLevel: config.kafkaConfig.logLevel || 0, // Dynamic log level
       });

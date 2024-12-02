@@ -3,7 +3,7 @@ const config = require('../config.js');
 
 // Consolidated Kafka Configuration Object
 const kafkaConfig = {
-    brokers: config.KAFKA_BROKERS || ['localhost:9092'],
+    brokers: config.KAFKA_BROKERS || "127.0.0.1:9092",
     logLevel: config.KAFKA_LOG_LEVEL || 'info',
     connectionTimeout: config.KAFKA_CONNECTION_TIMEOUT || 3000,
     authenticationTimeout: config.KAFKA_AUTHENTICATION_TIMEOUT || 1000,

@@ -26,7 +26,7 @@ class KafkaAdmin {
      */
     constructor() {
         this.kafka = new Kafka({
-            brokers: config.kafkaConfig.brokers,
+            brokers: [config.kafkaConfig.brokers],
             clientId: config.consumerConfig.clientId,
         });
         this.admin = this.kafka.admin();

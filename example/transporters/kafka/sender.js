@@ -12,7 +12,7 @@ let processLimit = 1000; // Show measure after every 1,000 messages
 let messagesProcessed = 0; // Track number of messages processed
 let startTime = new Date(); // Track when the process starts
 let totalProcessingTime = 0; // Track the total processing time for messages
-let intervalMs = 3000; // Send a message every ms 
+let intervalMs = 10; // Send a message every ms 
 
 // setup helper
 const { helper } = require("../../../src");
@@ -64,10 +64,13 @@ function calculateProcessing() {
   }
 }
 
-// setup
-const connectionURL = `localhost:9092`;
-const { Kafka } = require('kafkajs');
 
+
+
+
+// setup
+const { Kafka } = require('kafkajs');
+const connectionURL = `127.0.0.1:9092`;
 console.log("Start sending messages to Kafka", connectionURL);
 
 // Create a new Kafka instance

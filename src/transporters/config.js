@@ -91,7 +91,7 @@ let CLIENT_ID = getStringEnvironmentVariable("CLIENT_ID", getUniqueId('client'))
 let GROUP_ID = getStringEnvironmentVariable("GROUP_ID", getUniqueId('group'));
 
 // Kafka-related environment variables
-let KAFKA_BROKERS = getArrayEnvironmentVariable("KAFKA_BROKERS", 'localhost:9092');
+let KAFKA_BROKERS = getArrayEnvironmentVariable("KAFKA_BROKERS", "127.0.0.1:9092");
 let KAFKA_CLIENT_ID = getStringEnvironmentVariable("KAFKA_CLIENT_ID", CLIENT_ID);
 let KAFKA_GROUP_ID = getStringEnvironmentVariable("KAFKA_GROUP_ID", GROUP_ID);
 let KAFKA_LOG_LEVEL = getStringEnvironmentVariable("KAFKA_LOG_LEVEL", '0'); // INFO level

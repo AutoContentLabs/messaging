@@ -1,11 +1,9 @@
 // /kafka/listener.js
-const { Kafka } = require('kafkajs');
 
 // Kafka configuration
 const eventName = `test`;
 const clientId = `listener.${Math.floor(Math.random() * 1000)}`;
 const groupId = `group.test`;
-const connectionURL = `localhost:9092`;
 
 let testLimit = 1000000; // Limit to stop after consuming a certain number of messages
 let processLimit = 1000; // Show measure after every 1,000 messages
@@ -42,7 +40,11 @@ function calculateProcessing() {
     }
 }
 
-// Setup
+// setup
+const { Kafka } = require('kafkajs');
+const connectionURL = `127.0.0.1:9092`;
+console.log("Start listener", connectionURL);
+
 const kafka = new Kafka({
     clientId: clientId,
     brokers: [connectionURL],
@@ -54,7 +56,10 @@ const consumer = kafka.consumer({ groupId: groupId, allowAutoTopicCreation: true
 consumer.connect();
 
 async function handler({ event, key, value, headers }) {
-    // Process the message here
+    // Simulation
+    await new Promise(resolve => setTimeout(resolve, 60000));
+
+    // 
     console.log("event", event)
     console.log("key", key)
     console.log("value", value)
