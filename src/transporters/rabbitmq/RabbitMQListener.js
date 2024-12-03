@@ -1,9 +1,12 @@
 // rabbitmq/RabbitMQListener.js
-const amqp = require('amqplib');
+
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const config = require("../config");
+const amqp = require('amqplib');
 
 class RabbitMQListener {
-    constructor({ eventName = 'test' }) {
+    constructor({ eventName }) {
         this.eventName = eventName;
         this.clientId = config.RABBITMQ_CLIENT_ID;
         this.groupId = config.RABBITMQ_GROUP_ID;
@@ -29,11 +32,11 @@ class RabbitMQListener {
             await this.channel.assertQueue(queue, { durable: true });
             this.channel.prefetch(1); // Process one message at a time
         } catch (error) {
-            console.error("Error asserting queue:", error);
+            logger.error("[RabbitMQListener] Error asserting queue:", error);
             return; // Skip processing if queue assertion fails
         }
 
-        console.log(`[${this.clientId}] is waiting for messages...`);
+        logger.info(`[RabbitMQListener] [${this.clientId}] is waiting for messages...`);
 
         // Handle messages as they arrive
         this.channel.consume(queue, async (msg) => {
@@ -48,7 +51,7 @@ class RabbitMQListener {
                     // Acknowledge the message after processing
                     this.channel.ack(msg);
                 } catch (err) {
-                    console.error("Error parsing message:", err);
+                    logger.error("[RabbitMQListener] Error parsing message:", err);
                     return; // Skip processing this message if parsing fails
                 }
             }
@@ -58,7 +61,7 @@ class RabbitMQListener {
 
     // Start listening and processing messages
     async start(handler) {
-        console.log("Starting listener...");
+        logger.info("[RabbitMQListener] Starting listener...");
 
         await this.listener(async ({ event, key, value, headers }) => {
             this.messagesProcessed++;
@@ -68,7 +71,7 @@ class RabbitMQListener {
 
     // Graceful shutdown on SIGINT (Ctrl+C) and SIGTERM
     async shutdown() {
-        console.log("Gracefully shutting down...");
+        logger.info("[RabbitMQListener] Gracefully shutting down...");
 
         await this.channel.close();
         await this.connection.close();

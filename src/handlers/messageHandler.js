@@ -1,5 +1,5 @@
-const logger = require("../utils/logger");
-const { validateData } = require("../utils/validator");
+const { logger, validator } = require("@auto-content-labs/messaging-utils");
+const Schemas = require("../schemas")
 
 /**
  * Handles an incoming data pair (key-value).
@@ -31,7 +31,8 @@ async function handleMessage(pair = {}) {
         }
 
         // Validate data based on schemaType
-        const validationErrors = validateData(schemaType, value);
+
+        const validationErrors = validator.validateData(Schemas, schemaType, value);
         if (validationErrors) {
             logger.warning(`[handleMessage] Validation errors detected`, { errors: validationErrors });
             throw new Error(`Validation failed: ${JSON.stringify(validationErrors)}`);

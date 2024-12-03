@@ -3,12 +3,10 @@
  * src/listeners/messageListener.js
  */
 
-const { retryWithBackoff } = require("../utils/retry");
+const { logger, retry, telemetry } = require("@auto-content-labs/messaging-utils");
 
-const logger = require("../utils/logger");
-const transporters = require("../transporters");
 const config = require("../transporters/config");
-const telemetry = require("../utils/Telemetry");
+const transporters = require("../transporters");
 
 function getTransporter(transporterName) {
     if (!transporterName || !transporters[transporterName]) {
@@ -70,7 +68,7 @@ async function listenMessage(eventName, handler) {
     try {
         logger.info(`[messageListener] [listenMessage] [info] Starting: ${eventName}, transporter: ${transporter_name}`, eventName);
 
-        await retryWithBackoff(
+        await retry.retryWithBackoff(
             () => registerListenerWithHandler(eventName, handler),
             5, // Max retry count
             1000 // Initial delay in ms

@@ -4,9 +4,10 @@
  * src/senders/analysisRequestSender.js
  */
 
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const { topics } = require("../topics");
 const { createModel } = require("../models/createModel");
-const logger = require("../utils/logger");
 
 const schemaName = "ANALYSIS_REQUEST";
 const eventName = "ANALYSIS_REQUEST";

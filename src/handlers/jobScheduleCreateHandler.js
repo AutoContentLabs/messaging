@@ -4,7 +4,7 @@
  * src/handlers/jobScheduleCreateHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -24,7 +24,7 @@ async function handleJobScheduleCreateRequest(pair) {
 
     // Schema properties destructuring
     const { jobId, schedule, createdBy, priority } = handleMessageData.value;
-      
+
     logger.info(`[handleJobScheduleCreate] Processed request successfully: ${jobId}, ${schedule}, ${createdBy}, ${priority}`, handleMessageData);
   } catch (error) {
     logger.error(`[jobScheduleCreateHandler] Error processing request: ${error.message}`);

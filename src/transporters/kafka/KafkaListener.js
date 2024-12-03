@@ -1,6 +1,9 @@
-const KafkaConsumer = require("./KafkaConsumer")
-const logger = require("../../utils/logger")
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const config = require("./config")
+
+const KafkaConsumer = require("./KafkaConsumer")
+
 /**
  * KafkaListener class responsible for consuming messages from a Kafka topic.
  * This class allows subscribing to a topic and processing messages with custom handlers.

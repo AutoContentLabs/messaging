@@ -8,11 +8,13 @@
  * @module src/transporters/kafka/KafkaAdmin
  */
 
-const { Kafka } = require("kafkajs");
-const logger = require("../../utils/logger");
+const { logger, retry } = require("@auto-content-labs/messaging-utils");
+
 const config = require("./config");
 const { topics } = require("../../topics");
-const { retryWithBackoff } = require("../../utils/retry");
+
+const { Kafka } = require("kafkajs");
+
 /**
  * Class representing the Kafka Admin Client.
  * 
@@ -43,7 +45,7 @@ class KafkaAdmin {
     async connect() {
         try {
 
-            await retryWithBackoff(this.admin.connect());
+            await retry.retryWithBackoff(this.admin.connect());
             logger.debug("[KafkaAdmin] Admin client connected");
         } catch (error) {
             logger.error(`[KafkaAdmin] Admin connection error: ${error.message}`);
@@ -74,7 +76,7 @@ class KafkaAdmin {
         try {
             const metadata = await this.admin.fetchTopicMetadata({ topics: [topicName] });
             const partitions = metadata.topics[0].partitions;
-            const totalMessages = partitions.reduce((acc, partition) => acc + partition.highWaterMark, 0); 
+            const totalMessages = partitions.reduce((acc, partition) => acc + partition.highWaterMark, 0);
             return { partitions, totalMessages };
         } catch (error) {
             logger.error(`[KafkaAdmin] Failed to fetch metadata for ${topicName}: ${error.message}`);

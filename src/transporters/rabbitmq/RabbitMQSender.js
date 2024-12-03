@@ -1,10 +1,12 @@
 // rabbitmq/RabbitMQSender.js
 
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const amqp = require('amqplib');
 const config = require("../config");
 
 class RabbitMQSender {
-    constructor({ eventName = 'test' }) {
+    constructor({ eventName }) {
         this.eventName = eventName;
         this.clientId = config.RABBITMQ_CLIENT_ID;
         this.groupId = config.RABBITMQ_GROUP_ID;
@@ -21,12 +23,13 @@ class RabbitMQSender {
             const connectionURL = `amqp://${config.RABBITMQ_DEAULT_USER}:${config.RABBITMQ_DEFAULT_PASSWORD}@${config.RABBITMQ_HOST_ADDRESS}:${config.RABBITMQ_HOST_PORT}`;
             this.connection = await amqp.connect(connectionURL);
             this.channel = await this.connection.createChannel();
-            //console.log("Connected to RabbitMQ and channel created.");
+
+            logger.info("[RabbitMQSender] Connected to RabbitMQ and channel created.");
 
             // Ensure queue is created once
             this.queue = this.eventName;  // The event name represents the queue
             await this.channel.assertQueue(this.queue, { durable: true });
-            //console.log(`Queue "${this.queue}" is ensured to exist.`);
+            logger.info(`[RabbitMQSender] Queue "${this.queue}" is ensured to exist.`);
         }
     }
 
@@ -38,7 +41,7 @@ class RabbitMQSender {
             const status = this.channel.sendToQueue(this.queue, Buffer.from(message), { persistent: true });
             return status;
         } catch (error) {
-            console.error("Error sending message:", error);
+            logger.error("[RabbitMQSender] Error sending message:", error);
             return false;
         }
     }
@@ -67,18 +70,18 @@ class RabbitMQSender {
             }
 
         } catch (error) {
-            console.error("Error sending multiple messages:", error);
+            logger.error("[RabbitMQSender] Error sending multiple messages:", error);
         }
     }
 
     // Graceful shutdown on SIGINT (Ctrl+C) and SIGTERM
     async shutdown() {
-        console.log("Gracefully shutting down...");
+        logger.info("[RabbitMQSender] Gracefully shutting down...");
         try {
             await this.channel.close();
             await this.connection.close();
         } catch (error) {
-            console.error("Error during shutdown:", error);
+            logger.error("[RabbitMQSender] Error during shutdown:", error);
         }
 
         process.exit(0); // Exit cleanly on shutdown

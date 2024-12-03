@@ -4,7 +4,7 @@
  * src/handlers/dashboardHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -23,8 +23,8 @@ async function handleDashboardRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { dashboardId, reportId, content, timestamp } =  handleMessageData.value;
-      
+    const { dashboardId, reportId, content, timestamp } = handleMessageData.value;
+
     logger.info(`[handleDashboard] Processed request successfully: ${dashboardId}, ${reportId}, ${content}, ${timestamp}`, handleMessageData);
   } catch (error) {
     logger.error(`[dashboardHandler] Error processing request: ${error.message}`);

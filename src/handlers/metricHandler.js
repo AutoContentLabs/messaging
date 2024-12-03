@@ -4,7 +4,7 @@
  * src/handlers/metricHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -23,8 +23,8 @@ async function handleMetricRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { metricId, value, unit, timestamp } =  handleMessageData.value;
-      
+    const { metricId, value, unit, timestamp } = handleMessageData.value;
+
     logger.info(`[handleMetric] Processed request successfully: ${metricId}, ${value}, ${unit}, ${timestamp}`, handleMessageData);
   } catch (error) {
     logger.error(`[metricHandler] Error processing request: ${error.message}`);

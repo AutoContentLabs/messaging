@@ -4,7 +4,7 @@
  * src/handlers/dataProcessingStartHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -23,8 +23,8 @@ async function handleDataProcessingStartRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { taskId, startTime } =  handleMessageData.value;
-      
+    const { taskId, startTime } = handleMessageData.value;
+
     logger.info(`[handleDataProcessingStart] Processed request successfully: ${taskId}, ${startTime}`, handleMessageData);
   } catch (error) {
     logger.error(`[dataProcessingStartHandler] Error processing request: ${error.message}`);

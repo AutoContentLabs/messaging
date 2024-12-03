@@ -3,7 +3,7 @@
  * src/handlers/dataCollectRequestHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -135,8 +135,8 @@ async function handleDataCollectRequest(pair) {
     // Base message handling, including validation
     const handleMessageData = await handleMessage(pair);
     if (!handleMessageData) {
-        logger.error('[handleDataCollectRequest] handleMessage failed');
-        return null;  // If handleMessage fails, return null and stop further processing.
+      logger.error('[handleDataCollectRequest] handleMessage failed');
+      return null;  // If handleMessage fails, return null and stop further processing.
     }
 
     // Schema properties destructuring, handleMessageData.value is expected to be of type DataCollectRequest

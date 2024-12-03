@@ -1,8 +1,10 @@
-const KafkaProducer = require("./KafkaProducer")
-const logger = require("../../utils/logger")
+const { logger, retry } = require("@auto-content-labs/messaging-utils");
+
 const config = require("./config")
+
+const KafkaProducer = require("./KafkaProducer")
 const { CompressionTypes } = require("kafkajs");
-const { retryWithBackoff } = require("../../utils/retry");
+
 
 /**
  * KafkaSender is responsible for sending a batch of messages to a specified Kafka topic.
@@ -33,7 +35,7 @@ class KafkaSender {
         if (this.KafkaProducer.status != "CONNECTED") {
             // Step 1: Connect the Kafka producer to the Kafka cluster
             logger.debug(`[KafkaSender] [sendPairs] Connecting to Kafka producer...`);
-            await retryWithBackoff(() => this.KafkaProducer.connect())
+            await retry.retryWithBackoff(() => this.KafkaProducer.connect())
         }
     }
 

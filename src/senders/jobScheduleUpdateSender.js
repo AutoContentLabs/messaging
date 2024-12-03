@@ -4,9 +4,10 @@
  * src/senders/jobScheduleUpdateSender.js
  */
 
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const { topics } = require("../topics");
 const { createModel } = require("../models/createModel");
-const logger = require("../utils/logger");
 
 const schemaName = "JOB_SCHEDULE_UPDATE";
 const eventName = "JOB_SCHEDULE_UPDATE";

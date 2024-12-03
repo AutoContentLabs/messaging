@@ -1,4 +1,5 @@
-const logger = require("../../utils/logger")
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const config = require("./config")
 const { Kafka } = require("kafkajs")
 /**

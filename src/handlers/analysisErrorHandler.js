@@ -4,7 +4,7 @@
  * src/handlers/analysisErrorHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -23,8 +23,8 @@ async function handleAnalysisErrorRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { analysisId, errorCode, errorMessage, timestamp } =  handleMessageData.value;
-      
+    const { analysisId, errorCode, errorMessage, timestamp } = handleMessageData.value;
+
     logger.info(`[handleAnalysisError] Processed request successfully: ${analysisId}, ${errorCode}, ${errorMessage}, ${timestamp}`, handleMessageData);
   } catch (error) {
     logger.error(`[analysisErrorHandler] Error processing request: ${error.message}`);

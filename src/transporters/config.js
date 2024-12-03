@@ -9,13 +9,13 @@
  */
 
 // Instance information and network details
-const instanceInfo = require('../utils/instance');
+const { instance } = require("@auto-content-labs/messaging-utils");
 
 // Instance details such as host, IP, and MAC address
-const { hostInfo } = instanceInfo.getInstanceInfo();
-const ipv4Addresses = instanceInfo.getIpAddress('IPv4')
+const { hostInfo } = instance.getInstanceInfo();
+const ipv4Addresses = instance.getIpAddress('IPv4')
 const ipv4Address = ipv4Addresses[0]
-const macAddress = instanceInfo.getMacAddress(ipv4Address)
+const macAddress = instance.getMacAddress(ipv4Address)
 
 /**
  * Fetches an environment variable as a string.

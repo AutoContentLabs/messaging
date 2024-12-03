@@ -4,7 +4,7 @@
  * src/handlers/logHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -23,8 +23,8 @@ async function handleLogRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { logId, message, level, timestamp } =  handleMessageData.value;
-      
+    const { logId, message, level, timestamp } = handleMessageData.value;
+
     logger.info(`[handleLog] Processed request successfully: ${logId}, ${message}, ${level}, ${timestamp}`, handleMessageData);
   } catch (error) {
     logger.error(`[logHandler] Error processing request: ${error.message}`);

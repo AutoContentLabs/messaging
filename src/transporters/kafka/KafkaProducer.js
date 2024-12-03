@@ -1,6 +1,9 @@
-const { Kafka } = require("kafkajs")
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const config = require("./config")
-const logger = require("../../utils/logger")
+
+const { Kafka } = require("kafkajs")
+
 /**
  * KafkaProducer class responsible for sending messages to Kafka topics.
  * Provides functionality to connect, send messages, and manage retries with error handling.

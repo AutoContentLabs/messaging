@@ -12,22 +12,12 @@
     "test": "dotenvx run -f .env.test -- jest --detectOpenHandles"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.26.0",
-    "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/exporter-jaeger": "^1.28.0",
-    "@opentelemetry/exporter-otlp-http": "^0.26.0",
-    "@opentelemetry/exporter-zipkin": "^1.28.0",
-    "@opentelemetry/sdk-trace-base": "^1.28.0",
-    "@opentelemetry/sdk-trace-node": "^1.28.0",
-    "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1",
+    "@auto-content-labs/messaging-utils": "github:AutoContentLabs/messaging-utils",
+    "@dotenvx/dotenvx": "^1.26.2",
     "amqplib": "^0.10.5",
-    "buffer": "^6.0.3",
+    "install": "^0.13.0",
     "ioredis": "^5.4.1",
-    "kafkajs": "^2.2.4",
-    "ping": "^0.4.4",
-    "uuid": "^11.0.3",
-    "winston": "^3.17.0"
+    "kafkajs": "^2.2.4"
   },
   "repository": {
     "type": "git",
@@ -37,8 +27,5 @@
   "license": "MIT",
   "engines": {
     "node": ">=22"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0"
   }
 }

@@ -2,7 +2,7 @@
  * src\listeners\dataAggregationListener.js
  */
 
-const logger = require("../utils/logger")
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { listenMessage } = require("./messageListener")
 
 const { topics } = require("../topics")

@@ -1,7 +1,7 @@
-const logger = require("../utils/logger");
-const { validateData } = require("../utils/validator");
+const { logger, validator, helper } = require("@auto-content-labs/messaging-utils");
+const Schemas = require("../schemas")
+
 const { sendMessage } = require("../senders/messageSender");
-const { generateHeaders, generateKey } = require("../utils/helper");
 
 class Model {
   constructor(schemaType, eventName) {
@@ -27,14 +27,14 @@ class Model {
         throw new Error(`No valid data provided for sending. ${this.schemaType}`);
       }
 
-      const validationErrors = validateData(this.schemaType, value);
+      const validationErrors = validator.validateData(Schemas, this.schemaType, value);
       if (validationErrors) {
         throw new Error(`Validation failed: ${JSON.stringify(validationErrors)}`);
       }
 
       // Validate headers and ensure type is not changed
-      const finalKey = key || generateKey();  // Use the provided key, or generate one if missing
-      const finalHeaders = generateHeaders(this.schemaType, headers?.correlationId, headers?.traceId, headers);
+      const finalKey = key || helper.generateKey();  // Use the provided key, or generate one if missing
+      const finalHeaders = helper.generateHeaders(this.schemaType, headers?.correlationId, headers?.traceId, headers);
 
       // Construct the pair object to send
       const finalPair = { key: finalKey, value, headers: finalHeaders };

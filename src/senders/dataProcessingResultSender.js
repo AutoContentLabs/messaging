@@ -4,9 +4,10 @@
  * src/senders/dataProcessingResultSender.js
  */
 
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const { topics } = require("../topics");
 const { createModel } = require("../models/createModel");
-const logger = require("../utils/logger");
 
 const schemaName = "DATA_PROCESSING_RESULT";
 const eventName = "DATA_PROCESSING_RESULT";

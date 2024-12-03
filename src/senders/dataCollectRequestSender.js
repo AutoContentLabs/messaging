@@ -3,9 +3,10 @@
  * src/senders/dataCollectRequestSender.js
  */
 
+
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { StatusType, ServiceType, AccessType, DataFormat, AccessMethod } = require("../constants/enum");
 const { createModel } = require("../models/createModel");
-const logger = require("../utils/logger");
 
 const schemaName = "DATA_COLLECT_REQUEST";
 const eventName = "DATA_COLLECT_REQUEST";

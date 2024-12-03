@@ -1,4 +1,7 @@
 // redis/RedisListener.js
+
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const config = require("../config")
 const Redis = require('ioredis');
 
@@ -14,7 +17,7 @@ class RedisListener {
             port: config.REDIS_HOST_PORT,
             retryStrategy: (times) => Math.min(times * 50, 2000),
             reconnectOnError: (err) => {
-                console.log('Reconnecting to Redis...');
+                logger.info('[RedisListener] Reconnecting to Redis...');
                 return true;
             }
         });
@@ -31,9 +34,9 @@ class RedisListener {
             await this.redis.xgroup('CREATE', this.eventName, this.groupId, '$', 'MKSTREAM');
         } catch (error) {
             if (error.message.includes('BUSYGROUP')) {
-                console.log(`Consumer group ${this.groupId} already exists`);
+                logger.info(`[RedisListener] Consumer group ${this.groupId} already exists`);
             } else {
-                console.error('Error creating consumer group:', error);
+                logger.info('[RedisListener] Error creating consumer group:', error);
             }
         }
     }
@@ -62,7 +65,7 @@ class RedisListener {
                                     await this.redis.xack(this.eventName, this.groupId, id);
 
                                 } catch (err) {
-                                    console.error("Error processing message:", err);
+                                    logger.error("[RedisListener] Error processing message:", err);
                                     continue;
                                 }
                             }
@@ -72,7 +75,7 @@ class RedisListener {
                 }
 
             } catch (err) {
-                console.error("Error reading from stream:", err);
+                logger.error("[RedisListener] Error reading from stream:", err);
                 continue;
             }
         }
@@ -80,7 +83,7 @@ class RedisListener {
 
     // Start the listener and process messages
     async start(handler) {
-        console.log("Starting the listener process...");
+        logger.info("[RedisListener] Starting the listener process...");
         await this.listener(async ({ event, key, value, headers }) => {
             await handler({ event, key, value, headers });
         });
@@ -88,7 +91,7 @@ class RedisListener {
 
     // Graceful shutdown
     async shutdown() {
-        console.log("Gracefully shutting down...");
+        logger.info("[RedisListener] Gracefully shutting down...");
         await this.redis.quit();
         process.exit(0);
     }

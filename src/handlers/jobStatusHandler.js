@@ -4,7 +4,7 @@
  * src/handlers/jobStatusHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -24,7 +24,7 @@ async function handleJobStatusRequest(pair) {
 
     // Schema properties destructuring
     const { jobId, status, progress, timestamp } = handleMessageData.value;
-      
+
     logger.info(`[handleJobStatus] Processed request successfully: ${jobId}, ${status}, ${progress}, ${timestamp}`, handleMessageData);
   } catch (error) {
     logger.error(`[jobStatusHandler] Error processing request: ${error.message}`);

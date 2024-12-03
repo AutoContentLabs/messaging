@@ -4,7 +4,7 @@
  * src/handlers/jobScheduleUpdateHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -23,8 +23,8 @@ async function handleJobScheduleUpdateRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { jobId, schedule, updatedBy } =  handleMessageData.value;
-      
+    const { jobId, schedule, updatedBy } = handleMessageData.value;
+
     logger.info(`[handleJobScheduleUpdate] Processed request successfully: ${jobId}, ${schedule}, ${updatedBy}`, handleMessageData);
   } catch (error) {
     logger.error(`[jobScheduleUpdateHandler] Error processing request: ${error.message}`);

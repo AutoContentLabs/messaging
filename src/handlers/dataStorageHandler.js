@@ -4,7 +4,7 @@
  * src/handlers/dataStorageHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -23,8 +23,8 @@ async function handleDataStorageRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { storageId, data, timestamp } =  handleMessageData.value;
-      
+    const { storageId, data, timestamp } = handleMessageData.value;
+
     logger.info(`[handleDataStorage] Processed request successfully: ${storageId}, ${data}, ${timestamp}`, handleMessageData);
   } catch (error) {
     logger.error(`[dataStorageHandler] Error processing request: ${error.message}`);

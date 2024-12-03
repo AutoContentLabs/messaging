@@ -1,7 +1,7 @@
-const logger = require("../utils/logger");
-const transporters = require("../transporters");
+const { logger, telemetry } = require("@auto-content-labs/messaging-utils");
+
 const config = require("../transporters/config");
-const telemetry = require("../utils/Telemetry");
+const transporters = require("../transporters");
 
 // Helper functions
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -1,9 +1,12 @@
 // redis/RedisSender.js
+
+const { logger } = require("@auto-content-labs/messaging-utils");
+
 const config = require("../config");
 const Redis = require("ioredis");
 
 class RedisSender {
-  constructor({ eventName  }) {
+  constructor({ eventName }) {
     this.eventName = eventName;
     this.clientId = config.REDIS_CLIENT_ID;
     this.groupId = config.REDIS_GROUP_ID;
@@ -20,7 +23,7 @@ class RedisSender {
         port: config.REDIS_HOST_PORT,
         retryStrategy: (times) => Math.min(times * 50, 2000),
         reconnectOnError: (err) => {
-          console.log("Reconnecting to Redis...");
+          logger.info("[RedisSender] Reconnecting to Redis...");
           return true;
         },
         connectTimeout: 10000, // Connection timeout
@@ -28,7 +31,7 @@ class RedisSender {
       });
 
       this.redis.on("error", (error) => {
-        console.error("Redis connection error:", error);
+        logger.error("[RedisSender] Redis connection error:", error);
         // Here you might want to implement a more advanced retry strategy or alerting
       });
 
@@ -36,10 +39,10 @@ class RedisSender {
       setInterval(() => {
         this.redis.ping()
           .then((response) => {
-            console.log("Redis is alive:", response);
+            logger.info("[RedisSender] Redis is alive:", response);
           })
           .catch((error) => {
-            console.error("Redis ping error:", error);
+            logger.error("[RedisSender] Redis ping error:", error);
           });
       }, 60000); // Ping every 60 seconds
     }
@@ -61,11 +64,11 @@ class RedisSender {
     });
 
     try {
-      const result = await pipeline.exec(); // Batch işlemi
-      // console.log(`Successfully sent ${pairs.length} messages`);
+      const result = await pipeline.exec(); // batch
+      logger.info(`[RedisSender] Successfully sent ${pairs.length} messages`);
       return result;
     } catch (error) {
-      console.error("Error sending messages:", error);
+      logger.error("[RedisSender] Error sending messages:", error);
       return null;
     }
   }
@@ -76,7 +79,7 @@ class RedisSender {
       const messageStatus = await this.sender([pair]);
       return messageStatus;
     } catch (error) {
-      console.error("Error sending message:", error);
+      logger.error("[RedisSender] Error sending message:", error);
       return null;
     }
   }
@@ -85,24 +88,24 @@ class RedisSender {
   async shutdown() {
     try {
       if (this.redis) {
-        console.log("Shutting down Redis connection...");
+        logger.info("[RedisSender] Shutting down Redis connection...");
         await this.redis.quit();
       }
     } catch (error) {
-      console.error("Error during shutdown:", error);
+      logger.error("[RedisSender] Error during shutdown:", error);
     }
   }
 
   // Graceful shutdown on process exit
   handleProcessExit() {
     process.on("SIGINT", async () => {
-      console.log("SIGINT received. Shutting down gracefully...");
+      logger.info("[RedisSender] SIGINT received. Shutting down gracefully...");
       await this.shutdown();
       process.exit(0);
     });
 
     process.on("SIGTERM", async () => {
-      console.log("SIGTERM received. Shutting down gracefully...");
+      logger.info("[RedisSender] SIGTERM received. Shutting down gracefully...");
       await this.shutdown();
       process.exit(0);
     });

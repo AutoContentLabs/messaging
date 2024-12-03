@@ -1,8 +1,9 @@
 /**
  * src/transporters/kafkaTransporter.js
  */
-const { serialize, deserialize, MESSAGE_FORMATS } = require("../utils/transformer");
-const logger = require("../utils/logger");
+
+const { logger, transformer } = require("@auto-content-labs/messaging-utils");
+
 const KafkaListener = require("./kafka/KafkaListener");
 const KafkaAdmin = require("./kafka/KafkaAdmin");
 
@@ -57,7 +58,7 @@ async function StartListener() {
  *     console.log(key, value);  // key is optional, value is required
  * });
  */
-async function listenMessage(topic, handler, format = MESSAGE_FORMATS.JSON) {
+async function listenMessage(topic, handler, format = transformer.MESSAGE_FORMATS.JSON) {
 
     try {
 
@@ -85,8 +86,8 @@ async function listenMessage(topic, handler, format = MESSAGE_FORMATS.JSON) {
 
             // Deserialization transformer
             const startTime = Date.now();
-            const deserializedKey = deserialize(key, format);
-            const deserializedValue = deserialize(value, format);
+            const deserializedKey = transformer.deserialize(key, format);
+            const deserializedValue = transformer.deserialize(value, format);
             logger.info(`[listenMessage] [transformHandler] Deserialization took ${Date.now() - startTime}ms`);
             //
 
@@ -136,7 +137,7 @@ async function listenMessage(topic, handler, format = MESSAGE_FORMATS.JSON) {
  * @param {Object} pair.value - The value of the message in JSON format.
  * @returns {Promise<void>} - A promise indicating the completion of the message send operation.
  */
-async function sendMessage(topic, { key, value, headers } = {}, format = MESSAGE_FORMATS.JSON) {
+async function sendMessage(topic, { key, value, headers } = {}, format = transformer.MESSAGE_FORMATS.JSON) {
     if (!key || !value) {
         logger.error(`[KafkaTransporter] [sendMessage] Invalid message format: missing key or value`);
         return;
@@ -144,8 +145,8 @@ async function sendMessage(topic, { key, value, headers } = {}, format = MESSAGE
 
     try {
 
-        const serializedKey = serialize(key, format);
-        const serializedValue = serialize(value, format);
+        const serializedKey = transformer.serialize(key, format);
+        const serializedValue = transformer.serialize(value, format);
 
         const pair = {
             key: serializedKey,
@@ -184,7 +185,7 @@ async function sendMessage(topic, { key, value, headers } = {}, format = MESSAGE
  * sendMessages(topic, messages);
  * 
  */
-async function sendMessages(topic, messages = [], format = MESSAGE_FORMATS.JSON) {
+async function sendMessages(topic, messages = [], format = transformer.MESSAGE_FORMATS.JSON) {
     if (!Array.isArray(messages) || messages.length === 0) {
         logger.error(`[KafkaTransporter] [sendMessages] Invalid input: 'messages' should be a non-empty array`);
         return;
@@ -198,8 +199,8 @@ async function sendMessages(topic, messages = [], format = MESSAGE_FORMATS.JSON)
                 return null;
             }
 
-            const serializedKey = serialize(key, format);
-            const serializedValue = serialize(value, format);
+            const serializedKey = transformer.serialize(key, format);
+            const serializedValue = transformer.serialize(value, format);
 
             const pair = {
                 key: serializedKey,

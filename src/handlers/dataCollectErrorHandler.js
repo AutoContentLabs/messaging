@@ -4,7 +4,7 @@
  * src/handlers/dataCollectErrorHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -24,7 +24,7 @@ async function handleDataCollectErrorRequest(pair) {
 
     // Schema properties destructuring
     const { id, errorCode, errorMessage, timestamp } = handleMessageData.value;
-      
+
     logger.info(`[handleDataCollectError] Processed request successfully: ${id}, ${errorCode}, ${errorMessage}, ${timestamp}`, handleMessageData);
   } catch (error) {
     logger.error(`[dataCollectErrorHandler] Error processing request: ${error.message}`);

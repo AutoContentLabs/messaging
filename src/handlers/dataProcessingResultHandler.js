@@ -4,7 +4,7 @@
  * src/handlers/dataProcessingResultHandler.js
  */
 
-const logger = require("../utils/logger");
+const { logger } = require("@auto-content-labs/messaging-utils");
 const { handleMessage } = require("./messageHandler");
 
 /**
@@ -23,8 +23,8 @@ async function handleDataProcessingResultRequest(pair) {
     const handleMessageData = await handleMessage(pair);
 
     // Schema properties destructuring
-    const { taskId, result, timestamp } =  handleMessageData.value;
-      
+    const { taskId, result, timestamp } = handleMessageData.value;
+
     logger.info(`[handleDataProcessingResult] Processed request successfully: ${taskId}, ${result}, ${timestamp}`, handleMessageData);
   } catch (error) {
     logger.error(`[dataProcessingResultHandler] Error processing request: ${error.message}`);
