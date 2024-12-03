@@ -19,9 +19,30 @@ class RabbitMQListener {
     // Create the connection and channel to RabbitMQ
     async createConnection() {
         const connectionURL = `amqp://${config.RABBITMQ_DEAULT_USER}:${config.RABBITMQ_DEFAULT_PASSWORD}@${config.RABBITMQ_HOST_ADDRESS}:${config.RABBITMQ_HOST_PORT}`;
-        this.connection = await amqp.connect(connectionURL);
-        this.channel = await this.connection.createChannel();
+        let attempts = 0;
+        const maxRetries = 5;
+
+        while (attempts < maxRetries) {
+            try {
+                this.connection = await amqp.connect(connectionURL);
+                this.channel = await this.connection.createChannel();
+                return;  // Successfully connected, break out of the loop
+            } catch (error) {
+                attempts++;
+                logger.error(`[RabbitMQListener] Error connecting to RabbitMQ (attempt ${attempts}):`, error);
+
+                if (attempts < maxRetries) {
+                    const delay = 1000 * Math.pow(2, attempts); // Exponential backoff
+                    logger.info(`[RabbitMQListener] Retrying in ${delay / 1000} seconds...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                } else {
+                    logger.error("[RabbitMQListener] Max retry attempts reached. Connection failed.");
+                    throw error;  // Rethrow error after max retries
+                }
+            }
+        }
     }
+
 
     // Start listening for messages
     async listener(callback) {
