@@ -154,6 +154,19 @@ if (isNaN(KAFKA_LOG_LEVEL) || KAFKA_LOG_LEVEL < 0 || KAFKA_LOG_LEVEL > 7) {
     KAFKA_LOG_LEVEL = '0';
 }
 
+const SERVICE_NAME = `${GROUP_ID}-${MESSAGE_SYSTEM}`;
+const EXPORTER_CONFIG = {
+    zipkin: {
+        url: `http://${ZIPKIN_HOST_ADDRESS}:${ZIPKIN_HOST_PORT}/api/v2/spans`,
+    },
+    jaeger: {
+        endpoint: `http://${JAEGER_HOST_ADDRESS}:${JAEGER_HTTP_PORT}/api/traces`,
+    },
+    otlp: {
+        url: `http://${OTLP_HOST_ADDRESS}:${OTLP_HOST_PORT}`,
+    },
+};
+
 // Export the Kafka and other environment variables for use in the application
 module.exports = {
     // APP
@@ -161,6 +174,8 @@ module.exports = {
     MESSAGE_SYSTEM,
     CLIENT_ID,
     GROUP_ID,
+    SERVICE_NAME,
+    EXPORTER_CONFIG,
     // KAFKA
     KAFKA_BROKERS,
     KAFKA_CLIENT_ID,

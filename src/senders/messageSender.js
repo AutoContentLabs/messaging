@@ -4,22 +4,8 @@
  */
 
 const config = require("../transporters/config");
-
-const serviceName = `${config.GROUP_ID}-${config.MESSAGE_SYSTEM}`;
-const exporterConfig = {
-    zipkin: {
-        url: `http://${config.ZIPKIN_HOST_ADDRESS}:${config.ZIPKIN_HOST_PORT}/api/v2/spans`,
-    },
-    jaeger: {
-        endpoint: `http://${config.JAEGER_HOST_ADDRESS}:${config.JAEGER_HTTP_PORT}/api/traces`,
-    },
-    otlp: {
-        url: `http://${config.OTLP_HOST_ADDRESS}:${config.OTLP_HOST_PORT}`,
-    },
-};
-
 const { logger, retry, batchSize, Telemetry } = require("@auto-content-labs/messaging-utils");
-const telemetry = new Telemetry(serviceName, exporterConfig);
+const telemetry = new Telemetry(config.SERVICE_NAME, config.EXPORTER_CONFIG);
 const transporters = require("../transporters");
 
 /**
