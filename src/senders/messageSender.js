@@ -1,17 +1,32 @@
-const { logger, telemetry } = require("@auto-content-labs/messaging-utils");
+/**
+ * Message Sender with enhanced telemetry, batch processing, and retry logic.
+ * src/senders/messageSender.js
+ */
 
 const config = require("../transporters/config");
+
+const serviceName = `${config.GROUP_ID}-${config.MESSAGE_SYSTEM}`;
+const exporterConfig = {
+    zipkin: {
+        url: `http://${config.ZIPKIN_HOST_ADDRESS}:${config.ZIPKIN_HOST_PORT}/api/v2/spans`,
+    },
+    jaeger: {
+        endpoint: `http://${config.JAEGER_HOST_ADDRESS}:${config.JAEGER_HTTP_PORT}/api/traces`,
+    },
+    otlp: {
+        url: `http://${config.OTLP_HOST_ADDRESS}:${config.OTLP_HOST_PORT}`,
+    },
+};
+
+const { logger, retry, batchSize, Telemetry } = require("@auto-content-labs/messaging-utils");
+const telemetry = new Telemetry(serviceName, exporterConfig);
 const transporters = require("../transporters");
 
-// Helper functions
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 /**
- * Gets the transporter by name from the transporters module.
- *
- * @param {string} transporterName - Name of the transporter to use.
- * @returns {Object} - Transporter object.
- * @throws Will throw an error if the transporter is not found.
+ * Retrieves the transporter by name from the transporters module.
+ * @param {string} transporterName - Name of the transporter.
+ * @returns {object} - Transporter instance.
+ * @throws {Error} - If the transporter is not found.
  */
 function getTransporter(transporterName) {
     if (!transporterName || !transporters[transporterName]) {
@@ -20,88 +35,15 @@ function getTransporter(transporterName) {
     return transporters[transporterName];
 }
 
-// Dynamically get the transporter (e.g., kafka, rabbitmq, redis )
+// Dynamically load transporter
 const transporter = getTransporter(config.MESSAGE_SYSTEM);
-const transporter_name = transporter.Name;
+const transporterName = transporter.Name;
 
 /**
- * Retries the provided action with exponential backoff.
- *
- * @param {Function} action - The async function to retry.
- * @param {number} [maxRetries=3] - Maximum number of retries.
- * @param {number} [initialDelay=500] - Initial delay in milliseconds.
+ * Sends a single message with retry logic and telemetry.
+ * @param {string} eventName - Topic or channel name.
+ * @param {object} pair - The message key-value pair to send.
  * @returns {Promise<void>}
- */
-async function retryWithBackoff(action, maxRetries = 3, initialDelay = 500) {
-    let attempt = 0;
-    while (attempt < maxRetries) {
-        try {
-            return await action();
-        } catch (error) {
-            attempt++;
-            if (attempt >= maxRetries) {
-                logger.error(`[Retry] Action failed after ${attempt} attempts`, error);
-                throw error;
-            }
-
-            const delayTime = initialDelay * Math.pow(2, attempt - 1); // Exponential backoff
-            logger.warning(`[Retry] Attempt ${attempt} failed. Retrying in ${delayTime}ms...`);
-            await delay(delayTime);
-        }
-    }
-}
-
-
-/**
- * Executes the provided async action with a timeout.
- *
- * @param {Function} action - The async function to execute.
- * @param {number} timeoutMs - Timeout duration in milliseconds.
- * @returns {Promise<any>} - The result of the action.
- * @throws Will throw an error if the operation times out.
- */
-async function withTimeout(action, timeoutMs) {
-    return Promise.race([
-        action(),
-        new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Operation timed out")), timeoutMs)
-        ),
-    ]);
-}
-
-/**
- * Calculates the batch size dynamically based on the total number of messages.
- *
- * @param {number} totalMessages - Total number of messages to process.
- * @returns {number} - Batch size.
- */
-function calculateBatchSize(totalMessages, serverLoad = 50, avgResponseTime = 200) {
-
-    const baseBatchSize = totalMessages <= 50 ? 10 : totalMessages <= 200 ? 20 : 50;
-
-    if (avgResponseTime > 500) {
-        return Math.max(baseBatchSize - 5, 10);
-    }
-
-    if (serverLoad > 80) {
-        return Math.max(baseBatchSize - 5, 10);
-    }
-
-    return baseBatchSize;
-}
-
-
-/**
- * Sends a message to the specified topic using the configured transport system.
- * Implements retry logic for transient errors and enhances performance with batch processing.
- *
- * @param {string} eventName -  The event to send the message to.
- *                              "eventName" or "topicName" or "channelName"
- * @param {Object} pair - The data to send as the message.
- * @param {JSON} pair.key - The key of the message (optional).
- * @param {JSON} pair.value - The value of the message (required).
- * 
- * @returns {Promise<void>} - A promise that resolves when the message is sent.
  * 
  * @example
  * 
@@ -113,36 +55,31 @@ function calculateBatchSize(totalMessages, serverLoad = 50, avgResponseTime = 20
  * 
  * sendMessage(eventName, pair);
  *
- */
+*/
 async function sendMessage(eventName, pair) {
+    const span = telemetry.start("send", eventName, pair);
     try {
-        logger.debug(`[messageSender] [sendMessage] [debug] Starting to send message to ${eventName}, transport: ${transporter_name}`, pair);
+        logger.debug(`[messageSender] Sending message to "${eventName}" via "${transporterName}"`, { pair });
 
-        // start telemetry
-        const span = telemetry.start("send", eventName, pair)
-
-        // Send message with retry logic
-        await retryWithBackoff(
-            () => withTimeout(() => transporter.sendMessage(eventName, pair), 5000), // 5s timeout
+        await retry.retryWithBackoff(
+            () => retry.withTimeout(() => transporter.sendMessage(eventName, pair), 5000),
+            5, // Retry up to 5 times
+            1000 // Initial delay in ms
         );
 
-        // End Trace (Span)
-        span.end();
-
-        logger.info(`[messageSender] [sendMessage] ${eventName}`, pair);
+        logger.info(`[messageSender] Successfully sent message to "${eventName}"`, { pair });
     } catch (error) {
-        logger.error(`[messageSender] [sendMessage] [error] Failed to send message to ${eventName}, error: ${error.message}, transport: ${transporter_name}`, pair);
+        logger.error(`[messageSender] Failed to send message to "${eventName}"`, { error, pair });
         throw new Error(`Failed to send message after retries: ${error.message}`);
+    } finally {
+        span.end();
     }
 }
 
 /**
- * High-level function to send messages to a transport system.
- * This function ensures proper error handling and operational control.
- *
- * @param {string} eventName - The event name or topic name to send messages to.
- * @param {Array<Object>} pairs - List of key-value pairs to send.
- *
+ * Sends multiple messages in batches with telemetry and retry logic.
+ * @param {string} eventName - Topic or channel name.
+ * @param {Array<object>} pairs - Array of message key-value pairs to send.
  * @returns {Promise<void>}
  * 
  * @example
@@ -157,27 +94,42 @@ async function sendMessage(eventName, pair) {
  * 
  * sendMessages(eventName, pairs);
  * 
- */
+*/
 async function sendMessages(eventName, pairs) {
-    const batchSize = calculateBatchSize(pairs.length);
-    const totalBatches = Math.ceil(pairs.length / batchSize);
-    const batches = [];
-
-    for (let i = 0; i < totalBatches; i++) {
-        const batch = pairs.slice(i * batchSize, (i + 1) * batchSize);
-        batches.push(
-            retryWithBackoff(() => withTimeout(() => transporter.sendMessages(eventName, batch), 10000))
-        );
-    }
+    const size = batchSize(pairs.length);
+    const totalBatches = Math.ceil(pairs.length / size);
+    const spans = telemetry.startBatch("sendBatch", eventName, pairs);
 
     try {
-        await Promise.all(batches);
-        logger.info(`[messageSender] Successfully sent all batches`);
+        logger.info(`[messageSender] Starting batch send to "${eventName}", Total Messages: ${pairs.length}, Batch Size: ${size}`);
+
+        for (let i = 0; i < totalBatches; i++) {
+            const batch = pairs.slice(i * size, (i + 1) * size);
+            const span = spans[i];
+
+            try {
+                await retry.retryWithBackoff(
+                    () => retry.withTimeout(() => transporter.sendMessages(eventName, batch), 10000),
+                    5, // Retry up to 5 times
+                    2000 // Initial delay in ms
+                );
+
+                logger.info(`[messageSender] Batch ${i + 1}/${totalBatches} sent successfully`, { batch });
+            } catch (batchError) {
+                logger.error(`[messageSender] Failed to send batch ${i + 1}/${totalBatches}`, { batchError, batch });
+                throw batchError; // Stop processing further batches on error
+            } finally {
+                span.end();
+            }
+        }
+
+        logger.info(`[messageSender] Successfully sent all ${totalBatches} batches to "${eventName}"`);
     } catch (error) {
-        logger.error(`[messageSender] Failed to send some batches`, error);
+        logger.error(`[messageSender] Failed to send all messages to "${eventName}"`, { error });
         throw error;
+    } finally {
+        spans.forEach((span) => span.end());
     }
 }
-
 
 module.exports = { sendMessage, sendMessages };
