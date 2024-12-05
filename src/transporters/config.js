@@ -144,6 +144,9 @@ let JAEGER_ZIPKIN_PORT = getIntEnvironmentVariable("JAEGER_ZIPKIN_PORT", 9412);
 let JAEGER_HOST_PORT = getIntEnvironmentVariable("JAEGER_HOST_PORT", 14250);
 let JAEGER_HTTP_PORT = getIntEnvironmentVariable("JAEGER_HTTP_PORT", 14268);
 let JAEGER_UI_PORT = getIntEnvironmentVariable("JAEGER_UI_PORT", 16686);
+// Open Telemetry Collector
+let OTLP_HOST_ADDRESS = getStringEnvironmentVariable("OTLP_HOST_ADDRESS", '127.0.0.1');
+let OTLP_HOST_PORT = getIntEnvironmentVariable("OTLP_HOST_PORT", 4317);
 
 /**
  * Validates the Kafka log level environment variable.
