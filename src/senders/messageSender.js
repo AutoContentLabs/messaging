@@ -29,7 +29,7 @@ const transporterName = transporter.Name;
  * Sends a single message with retry logic and telemetry.
  * @param {string} eventName - Topic or channel name.
  * @param {object} pair - The message key-value pair to send.
- * @returns {Promise<void>}
+ * @returns {Promise<object>} - Telemetry and status details.
  * 
  * @example
  * 
@@ -44,19 +44,38 @@ const transporterName = transporter.Name;
 */
 async function sendMessage(eventName, pair) {
     const span = telemetry.start("send", eventName, pair);
+    let retries = 0;
+    const startTimeMs = Date.now();
     try {
         logger.debug(`[messageSender] Sending message to "${eventName}" via "${transporterName}"`, { pair });
 
         await retry.retryWithBackoff(
-            () => retry.withTimeout(() => transporter.sendMessage(eventName, pair), 5000),
+            async () => {
+                retries++;
+                await retry.withTimeout(() => transporter.sendMessage(eventName, pair), 5000);
+            },
             5, // Retry up to 5 times
             1000 // Initial delay in ms
         );
 
         logger.info(`[messageSender] Successfully sent message to "${eventName}"`, { pair });
+        return {
+            success: true,
+            eventName,
+            key: pair.key,
+            duration: Date.now() - startTimeMs,
+            retries,
+        };
     } catch (error) {
         logger.error(`[messageSender] Failed to send message to "${eventName}"`, { error, pair });
-        throw new Error(`Failed to send message after retries: ${error.message}`);
+        return {
+            success: false,
+            eventName,
+            key: pair.key,
+            duration: Date.now() - startTimeMs,
+            retries,
+            error: error.message,
+        };
     } finally {
         span.end();
     }
@@ -66,7 +85,7 @@ async function sendMessage(eventName, pair) {
  * Sends multiple messages in batches with telemetry and retry logic.
  * @param {string} eventName - Topic or channel name.
  * @param {Array<object>} pairs - Array of message key-value pairs to send.
- * @returns {Promise<void>}
+ * @returns {Promise<object>} - Batch processing summary.
  * 
  * @example
  * 
@@ -85,6 +104,11 @@ async function sendMessages(eventName, pairs) {
     const size = batchSize(pairs.length);
     const totalBatches = Math.ceil(pairs.length / size);
     const spans = telemetry.startBatch("sendBatch", eventName, pairs);
+    const startTimeMs = Date.now();
+    let successfulMessages = 0;
+    let failedMessages = 0;
+
+    const batchResults = [];
 
     try {
         logger.info(`[messageSender] Starting batch send to "${eventName}", Total Messages: ${pairs.length}, Batch Size: ${size}`);
@@ -92,27 +116,62 @@ async function sendMessages(eventName, pairs) {
         for (let i = 0; i < totalBatches; i++) {
             const batch = pairs.slice(i * size, (i + 1) * size);
             const span = spans[i];
+            const batchStartTime = Date.now();
 
             try {
                 await retry.retryWithBackoff(
-                    () => retry.withTimeout(() => transporter.sendMessages(eventName, batch), 10000),
+                    async () => {
+                        await retry.withTimeout(() => transporter.sendMessages(eventName, batch), 10000);
+                    },
                     5, // Retry up to 5 times
                     2000 // Initial delay in ms
                 );
 
                 logger.info(`[messageSender] Batch ${i + 1}/${totalBatches} sent successfully`, { batch });
+                successfulMessages += batch.length;
+                batchResults.push({
+                    batchIndex: i + 1,
+                    success: true,
+                    messageCount: batch.length,
+                    duration: Date.now() - batchStartTime,
+                });
             } catch (batchError) {
                 logger.error(`[messageSender] Failed to send batch ${i + 1}/${totalBatches}`, { batchError, batch });
-                throw batchError; // Stop processing further batches on error
+                failedMessages += batch.length;
+                batchResults.push({
+                    batchIndex: i + 1,
+                    success: false,
+                    messageCount: batch.length,
+                    duration: Date.now() - batchStartTime,
+                    error: batchError.message,
+                });
             } finally {
                 span.end();
             }
         }
 
-        logger.info(`[messageSender] Successfully sent all ${totalBatches} batches to "${eventName}"`);
+        logger.info(`[messageSender] Successfully sent ${successfulMessages} messages out of ${pairs.length} in ${totalBatches} batches.`);
+        return {
+            success: failedMessages === 0,
+            eventName,
+            totalMessages: pairs.length,
+            successfulMessages,
+            failedMessages,
+            duration: Date.now() - startTimeMs,
+            batches: batchResults,
+        };
     } catch (error) {
         logger.error(`[messageSender] Failed to send all messages to "${eventName}"`, { error });
-        throw error;
+        return {
+            success: false,
+            eventName,
+            totalMessages: pairs.length,
+            successfulMessages,
+            failedMessages,
+            duration: Date.now() - startTimeMs,
+            error: error.message,
+            batches: batchResults,
+        };
     } finally {
         spans.forEach((span) => span.end());
     }
